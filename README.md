@@ -12,7 +12,7 @@ MTN QuantRisk is a full-stack platform that automatically monitors, analyzes, an
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 - **Real-Time Risk Monitoring** - Automated scraping of news, social media, and regulatory sources
 - **AI-Powered Risk Scoring** - BERT-based NLP and ML models to classify and quantify risk
@@ -97,7 +97,7 @@ mtn_quantrisk/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -143,7 +143,7 @@ docker-compose up -d
 
 ---
 
-## 🏗️ Architecture Highlights
+## Architecture Highlights
 
 ### Data Pipeline
 
@@ -207,7 +207,7 @@ eas build --platform all
 
 ---
 
-## 🔄 Development Phases
+## Development Phases
 
 The project follows a **6-week agile sprint** structure:
 
@@ -224,7 +224,7 @@ See [MTN_QuantRisk_Roadmap.md](docs/MTN_QuantRisk_Roadmap.md) for detailed phase
 
 ---
 
-## 📝 Key Design Principles
+## Key Design Principles
 
 1. **Ship Vertically** - Each phase delivers a complete, working slice of the system
 2. **Data Pipeline First** - Scrapers and data flow are the heartbeat of the platform
@@ -248,7 +248,7 @@ See the [Roadmap](docs/MTN_QuantRisk_Roadmap.md) for the full development guide 
 
 ---
 
-## 📞 Support & Documentation
+## Support & Documentation
 
 - **Architecture Deep-Dive:** See [MTN_QuantRisk_Roadmap.md](docs/MTN_QuantRisk_Roadmap.md)
 - **API Docs:** Available at `/docs` endpoint (Swagger UI)
