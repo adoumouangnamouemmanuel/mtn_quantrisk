@@ -14,12 +14,12 @@ MTN QuantRisk is a full-stack platform that automatically monitors, analyzes, an
 
 ## ✨ Key Features
 
-- **Real-Time Risk Monitoring** — Automated scraping of news, social media, and regulatory sources
-- **AI-Powered Risk Scoring** — BERT-based NLP and ML models to classify and quantify risk
-- **Intelligent Dashboards** — Web and mobile apps for risk visualization and decision-making
-- **Sub-15-Minute Latency** — Architectural focus on speed and reliability for time-critical alerts
-- **Multi-Platform** — Desktop (web), mobile (iOS/Android), and PWA support
-- **Production-Ready** — Built with monitoring, error handling, and scalability from day one
+- **Real-Time Risk Monitoring** - Automated scraping of news, social media, and regulatory sources
+- **AI-Powered Risk Scoring** - BERT-based NLP and ML models to classify and quantify risk
+- **Intelligent Dashboards** - Web and mobile apps for risk visualization and decision-making
+- **Sub-15-Minute Latency** - Architectural focus on speed and reliability for time-critical alerts
+- **Multi-Platform** - Desktop (web), mobile (iOS/Android), and PWA support
+- **Production-Ready** - Built with monitoring, error handling, and scalability from day one
 
 ---
 
@@ -226,11 +226,11 @@ See [MTN_QuantRisk_Roadmap.md](docs/MTN_QuantRisk_Roadmap.md) for detailed phase
 
 ## 📝 Key Design Principles
 
-1. **Ship Vertically** — Each phase delivers a complete, working slice of the system
-2. **Data Pipeline First** — Scrapers and data flow are the heartbeat of the platform
-3. **Real Data Over Mocks** — Use live MTN news from day one
-4. **ML Serves Product** — Practical models over over-engineered AI
-5. **Latency Obsession** — Every decision evaluated against the 15-minute promise
+1. **Ship Vertically** - Each phase delivers a complete, working slice of the system
+2. **Data Pipeline First** - Scrapers and data flow are the heartbeat of the platform
+3. **Real Data Over Mocks** - Use live MTN news from day one
+4. **ML Serves Product** - Practical models over over-engineered AI
+5. **Latency Obsession** - Every decision evaluated against the 15-minute promise
 
 ---
 

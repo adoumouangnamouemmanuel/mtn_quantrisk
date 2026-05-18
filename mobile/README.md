@@ -1,4 +1,4 @@
-# Mobile — MTN QuantRisk Risk Intelligence App
+# Mobile - MTN QuantRisk Risk Intelligence App
 
 **A cross-platform mobile app for iOS, Android, and Web built with React Native and Expo.**
 
