@@ -29,6 +29,18 @@ export function Topbar() {
           >
             Radar
           </Link>
+          <Link 
+            href="/reports" 
+            className={`text-sm font-medium uppercase tracking-wider ${pathname === '/reports' ? 'text-white border-b-2 border-brand-yellow py-5' : 'text-brand-text-muted hover:text-white'}`}
+          >
+            Reports
+          </Link>
+          <Link 
+            href="/settings" 
+            className={`text-sm font-medium uppercase tracking-wider ${pathname === '/settings' ? 'text-white border-b-2 border-brand-yellow py-5' : 'text-brand-text-muted hover:text-white'}`}
+          >
+            Settings
+          </Link>
         </nav>
       </div>
 
