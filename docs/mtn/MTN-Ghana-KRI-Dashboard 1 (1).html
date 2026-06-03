@@ -1,0 +1,3404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTN Ghana — KRI Risk Intelligence Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #002B5C;
+    --navy-dark: #001A3A;
+    --yellow: #FFC72C;
+    --yellow-dim: #E0AA00;
+    --ink: #0B1220;
+    --paper: #F7F4ED;
+    --paper-2: #EFEAE0;
+    --line: #1A2742;
+    --red: #C53030;
+    --amber: #D69E2E;
+    --green: #2F855A;
+    --red-soft: #FED7D7;
+    --amber-soft: #FEF3C7;
+    --green-soft: #C6F6D5;
+    --mute: #6B7280;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); color: var(--ink); font-family: 'Manrope', sans-serif; min-height: 100vh; }
+
+  /* MASTHEAD */
+  .masthead { background: var(--navy); color: #fff; border-bottom: 6px solid var(--yellow); position: relative; overflow: hidden; }
+  .masthead::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(800px 300px at 90% -10%, rgba(255,199,44,0.18), transparent 60%),
+      radial-gradient(600px 250px at 10% 110%, rgba(255,199,44,0.10), transparent 60%);
+    pointer-events: none;
+  }
+  .masthead-inner {
+    max-width: 1500px; margin: 0 auto; padding: 28px 36px 22px;
+    display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end;
+    position: relative;
+  }
+  .brand-mark { display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--yellow); }
+  .brand-mark .dot { width: 8px; height: 8px; background: var(--yellow); border-radius: 50%; box-shadow: 0 0 12px var(--yellow); }
+  h1.title { font-family: 'Fraunces', serif; font-weight: 800;
+    font-size: clamp(2.2rem, 4.5vw, 3.6rem); line-height: 0.98; letter-spacing: -0.02em; }
+  h1.title em { font-style: italic; font-weight: 400; color: var(--yellow); }
+  .subtitle { margin-top: 14px; max-width: 720px; font-size: 14px; line-height: 1.55; color: rgba(255,255,255,0.78); font-weight: 300; }
+  .meta-strip { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.65); line-height: 1.7; }
+  .meta-strip strong { color: var(--yellow); font-weight: 500; }
+
+  /* LOADER */
+  .loader-bar { background: var(--navy-dark); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 14px 36px; }
+  .loader-inner { max-width: 1500px; margin: 0 auto; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .loader-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.15em; }
+  .file-btn { background: var(--yellow); color: var(--ink); border: none; padding: 10px 20px;
+    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px;
+    letter-spacing: 0.02em; cursor: pointer; border-radius: 2px; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px; }
+  .file-btn:hover { background: #fff; transform: translateY(-1px); }
+  .file-btn.ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+  .file-btn.ghost:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+  .file-btn svg { width: 14px; height: 14px; }
+  .file-status { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.8); }
+  .file-status.ok { color: #6EE7B7; }
+  .file-status.err { color: #FCA5A5; }
+  #file-input { display: none; }
+
+  /* TABS */
+  .tab-bar {
+    max-width: 1500px; margin: 0 auto; padding: 0 36px;
+    display: flex; gap: 0; border-bottom: 1px solid rgba(11,18,32,0.12);
+    background: var(--paper);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .tab {
+    padding: 18px 28px 16px;
+    font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 13px;
+    letter-spacing: 0.03em; text-transform: uppercase;
+    cursor: pointer; color: var(--mute);
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .tab:hover { color: var(--navy); }
+  .tab.active { color: var(--navy); border-bottom-color: var(--yellow); }
+  .tab .num { font-family: 'JetBrains Mono', monospace; font-size: 10px; opacity: 0.6; }
+  .tab .badge { background: var(--navy); color: #fff; font-size: 10px;
+    padding: 2px 7px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; }
+
+  main { max-width: 1500px; margin: 0 auto; padding: 36px; }
+
+  /* SECTION */
+  .section-head { display: flex; align-items: baseline; gap: 16px;
+    border-bottom: 1px solid rgba(11,18,32,0.12); padding-bottom: 12px; margin-bottom: 24px; }
+  .section-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--yellow-dim); font-weight: 700; letter-spacing: 0.1em; }
+  .section-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 26px; letter-spacing: -0.01em; }
+  .section-sub { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* KPI ROW */
+  .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line); margin-bottom: 48px; }
+  .kpi-tile { background: #fff; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+  .kpi-tile .label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.12em; }
+  .kpi-tile .value { font-family: 'Fraunces', serif; font-weight: 600; font-size: 36px; line-height: 1; letter-spacing: -0.02em; color: var(--navy); }
+  .kpi-tile .delta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--mute); }
+  .kpi-tile.accent { background: var(--navy); color: #fff; }
+  .kpi-tile.accent .label { color: var(--yellow); }
+  .kpi-tile.accent .value { color: #fff; }
+  .kpi-tile.accent .delta { color: rgba(255,255,255,0.7); }
+
+  /* CATEGORY GRID */
+  .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 48px; }
+  .cat-card { background: #fff; border: 1px solid rgba(11,18,32,0.12); padding: 22px; position: relative; cursor: pointer; transition: all 0.2s; overflow: hidden; }
+  .cat-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--yellow); transform: scaleY(0); transform-origin: top; transition: transform 0.3s; }
+  .cat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,43,92,0.10); }
+  .cat-card:hover::before { transform: scaleY(1); }
+  .cat-card.active { background: var(--navy); color: #fff; }
+  .cat-card.active::before { transform: scaleY(1); }
+  .cat-card .cat-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--yellow-dim); letter-spacing: 0.15em; }
+  .cat-card.active .cat-num { color: var(--yellow); }
+  .cat-card .cat-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; margin-top: 6px; margin-bottom: 14px; letter-spacing: -0.01em; }
+  .cat-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .cat-stat { text-align: center; padding: 8px 4px; border: 1px solid rgba(11,18,32,0.08); }
+  .cat-card.active .cat-stat { border-color: rgba(255,255,255,0.15); }
+  .cat-stat .num { font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; line-height: 1; }
+  .cat-stat .num.red { color: var(--red); }
+  .cat-stat .num.amb { color: var(--amber); }
+  .cat-stat .num.grn { color: var(--green); }
+  .cat-stat .lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+  .cat-card.active .cat-stat .lbl { color: rgba(255,255,255,0.5); }
+
+  /* FILTER */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+  .filter-bar .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.12em; margin-right: 4px; }
+  .chip { background: #fff; border: 1px solid rgba(11,18,32,0.18); padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; border-radius: 2px; transition: all 0.15s; font-family: 'Manrope', sans-serif; }
+  .chip:hover { border-color: var(--navy); }
+  .chip.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .chip.on.red { background: var(--red); border-color: var(--red); }
+  .chip.on.amb { background: var(--amber); border-color: var(--amber); }
+  .chip.on.grn { background: var(--green); border-color: var(--green); }
+  .search-box { flex: 1; min-width: 220px; max-width: 320px; margin-left: auto; padding: 8px 12px; border: 1px solid rgba(11,18,32,0.18); background: #fff; font-family: 'Manrope', sans-serif; font-size: 13px; border-radius: 2px; }
+  .search-box:focus { outline: none; border-color: var(--navy); }
+
+  /* TABLE */
+  .table-wrap { background: #fff; border: 1px solid rgba(11,18,32,0.12); overflow: hidden; margin-bottom: 48px; overflow-x: auto; }
+  table.kri-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.kri-table thead th { background: var(--navy); color: #fff; font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 10px; text-align: left; border-right: 1px solid rgba(255,255,255,0.08); cursor: pointer; user-select: none; }
+  table.kri-table thead th:hover { background: var(--navy-dark); }
+  table.kri-table tbody tr { border-bottom: 1px solid rgba(11,18,32,0.06); transition: background 0.1s; }
+  table.kri-table tbody tr:hover { background: var(--paper-2); }
+  table.kri-table tbody td { padding: 12px 10px; vertical-align: top; border-right: 1px solid rgba(11,18,32,0.04); }
+  td.idx { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--mute); width: 36px; }
+  td.cat { font-weight: 700; color: var(--navy); white-space: nowrap; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  td.kri-name { font-weight: 600; min-width: 220px; }
+  td.kri-name .sub { display: block; font-weight: 400; font-size: 11px; color: var(--mute); margin-top: 2px; }
+  td.type { text-align: center; width: 70px; font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; font-weight: 700; }
+  td.type.leading { color: #1E40AF; }
+  td.type.lagging { color: #92400E; }
+  td.thresh { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-align: center; min-width: 90px; }
+  td.thresh.g { background: var(--green-soft); }
+  td.thresh.a { background: var(--amber-soft); }
+  td.thresh.r { background: var(--red-soft); }
+  td.actual { font-family: 'JetBrains Mono', monospace; font-size: 11px; min-width: 130px; }
+  td.rag { text-align: center; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; width: 80px; }
+  td.rag.Red { background: var(--red); color: #fff; }
+  td.rag.Amber { background: var(--amber); color: #fff; }
+  td.rag.Green { background: var(--green); color: #fff; }
+  td.trend { text-align: center; font-size: 16px; width: 40px; }
+  td.trend.up { color: var(--green); }
+  td.trend.dn { color: var(--red); }
+  td.owner { font-size: 11px; color: var(--mute); min-width: 130px; }
+  td.mitig { font-size: 11px; color: #2D3748; min-width: 260px; }
+
+  /* CHARTS */
+  .chart-controls { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-bottom: 24px; padding: 16px 20px; background: #fff; border: 1px solid rgba(11,18,32,0.12); }
+  .control-group { display: flex; align-items: center; gap: 8px; }
+  .control-group label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.12em; }
+  .control-group select { padding: 7px 12px; border: 1px solid rgba(11,18,32,0.18); background: #fff; font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 500; border-radius: 2px; cursor: pointer; min-width: 150px; }
+  .control-group select:focus { outline: none; border-color: var(--navy); }
+
+  .chart-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 48px; }
+  .chart-card { background: #fff; border: 1px solid rgba(11,18,32,0.12); padding: 24px; position: relative; }
+  .chart-card.full { grid-column: span 2; }
+  .chart-card .title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px; letter-spacing: -0.01em; color: var(--navy); margin-bottom: 4px; }
+  .chart-card .sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 18px; }
+  .chart-card .chart-container { position: relative; height: 280px; }
+  .chart-card.tall .chart-container { height: 360px; }
+
+  .note { font-size: 11px; color: var(--mute); font-style: italic; margin-top: 12px; line-height: 1.5; }
+  .note strong { color: var(--amber); font-weight: 700; }
+
+  /* EMPTY */
+  .empty-state { background: #fff; border: 2px dashed rgba(11,18,32,0.15); padding: 60px 30px; text-align: center; color: var(--mute); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+  .empty-state h3 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; max-width: 480px; margin: 0 auto; line-height: 1.6; }
+  .empty-state .file-btn { margin-top: 20px; }
+
+  footer { border-top: 1px solid rgba(11,18,32,0.1); padding: 24px 36px; margin-top: 60px; text-align: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mute); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .hidden { display: none !important; }
+
+  /* ===== VALIDATION BANNER ===== */
+  .validation-banner {
+    max-width: 1500px; margin: 0 auto;
+    padding: 14px 36px;
+    border-bottom: 1px solid rgba(11,18,32,0.08);
+    background: var(--paper-2);
+  }
+  .validation-banner.ok { background: #E8F5E9; border-bottom-color: #93C47D; }
+  .validation-banner.warn { background: #FFF8E1; border-bottom-color: #FFC72C; }
+  .validation-banner.err { background: #FFEBEE; border-bottom-color: #E06666; }
+  .validation-banner-inner {
+    display: flex; align-items: flex-start; gap: 16px;
+    max-width: 1500px; margin: 0 auto;
+  }
+  .vb-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 18px;
+  }
+  .validation-banner.ok .vb-icon { background: var(--green); color: #fff; }
+  .validation-banner.warn .vb-icon { background: var(--amber); color: #fff; }
+  .validation-banner.err .vb-icon { background: var(--red); color: #fff; }
+  .vb-content { flex: 1; }
+  .vb-headline {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: 15px; letter-spacing: -0.01em; line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .validation-banner.ok .vb-headline { color: #1B5E20; }
+  .validation-banner.warn .vb-headline { color: #8B5A00; }
+  .validation-banner.err .vb-headline { color: #9C0000; }
+  .vb-issues {
+    margin-top: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    font-size: 12px; line-height: 1.4;
+  }
+  .vb-issue {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 4px 0;
+  }
+  .vb-issue .sev {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    padding: 2px 6px; border-radius: 2px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .vb-issue .sev.BLOCKER { background: var(--red); color: #fff; }
+  .vb-issue .sev.WARN { background: var(--amber); color: #fff; }
+  .vb-issue .sev.INFO { background: var(--mute); color: #fff; }
+  .vb-issue .msg { color: #2D3748; }
+  .vb-issue .where {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--mute);
+  }
+  .vb-toggle {
+    background: rgba(0,0,0,0.05); border: none;
+    padding: 4px 10px; font-size: 11px; cursor: pointer;
+    border-radius: 2px; font-family: 'Manrope', sans-serif;
+    font-weight: 600; color: var(--ink);
+    flex-shrink: 0; align-self: flex-start;
+  }
+  .vb-toggle:hover { background: rgba(0,0,0,0.1); }
+  .vb-list-collapsed .vb-issues { display: none; }
+
+  /* ===== SCENARIO TABS ===== */
+  .scenario-layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
+  .scenario-panel { background: #fff; border: 1px solid rgba(11,18,32,0.12); padding: 22px; align-self: start; position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; }
+  .scenario-panel h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 16px; color: var(--navy); margin-bottom: 4px; letter-spacing: -0.01em; }
+  .scenario-panel .panel-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+  .scenario-list { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; margin-bottom: 18px; border: 1px solid rgba(11,18,32,0.08); padding: 6px; background: var(--paper); }
+  .scenario-item { padding: 10px 12px; cursor: pointer; border-left: 3px solid transparent; background: #fff; transition: all 0.15s; }
+  .scenario-item:hover { background: var(--paper-2); }
+  .scenario-item.selected { border-left-color: var(--yellow); background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .scenario-item .sid { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--mute); letter-spacing: 0.1em; }
+  .scenario-item .sname { font-size: 12px; font-weight: 600; color: var(--ink); margin-top: 2px; }
+  .scenario-item .stype { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+  .scenario-item .stype.Stress   { background: var(--paper-2); color: var(--navy); }
+  .scenario-item .stype.Shock    { background: #FED7D7; color: #9C2424; }
+  .scenario-item .stype.Combined { background: #EAD1DC; color: #4A148C; }
+  .scenario-info { background: var(--paper); border-left: 3px solid var(--yellow); padding: 12px 14px; margin-bottom: 16px; font-size: 12px; line-height: 1.5; }
+  .scenario-info .si-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--navy); }
+  .scenario-info .si-desc { color: #2D3748; font-size: 11px; }
+  .scenario-info .si-meta { display: flex; gap: 10px; margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--mute); flex-wrap: wrap; }
+  .scenario-info .si-meta span strong { color: var(--ink); }
+  .slider-group { margin-bottom: 14px; }
+  .slider-group label { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; margin-bottom: 4px; color: var(--ink); }
+  .slider-group .sval { font-family: 'JetBrains Mono', monospace; color: var(--navy); font-weight: 700; }
+  .slider-group input[type="range"] { width: 100%; -webkit-appearance: none; height: 4px; background: rgba(11,18,32,0.12); border-radius: 2px; outline: none; }
+  .slider-group input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--yellow); border: 2px solid var(--navy); border-radius: 50%; cursor: pointer; }
+  .slider-group input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: var(--yellow); border: 2px solid var(--navy); border-radius: 50%; cursor: pointer; }
+  .slider-group .srange { display: flex; justify-content: space-between; font-size: 9px; color: var(--mute); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+  .multi-toggle { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .multi-toggle .chip { font-size: 10px; padding: 4px 10px; }
+  .btn-apply { width: 100%; padding: 11px; background: var(--navy); color: #fff; border: none; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; border-radius: 2px; margin-top: 6px; }
+  .btn-apply:hover { background: var(--navy-dark); }
+  .btn-apply.alt { background: var(--yellow); color: var(--ink); margin-top: 8px; }
+
+  /* KPI Impact Table */
+  .impact-table-wrap { background: #fff; border: 1px solid rgba(11,18,32,0.12); overflow: auto; }
+  .impact-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .impact-table th { background: var(--navy); color: #fff; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; position: sticky; top: 0; }
+  .impact-table th.num, .impact-table td.num { text-align: right; font-family: 'JetBrains Mono', monospace; }
+  .impact-table tbody tr { border-bottom: 1px solid rgba(11,18,32,0.05); }
+  .impact-table tbody tr:hover { background: var(--paper-2); }
+  .impact-table td { padding: 9px 8px; }
+  .impact-table td.cat { font-size: 10px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+  .delta-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; }
+  .delta-pill.up   { background: var(--green-soft); color: #1B4332; }
+  .delta-pill.dn   { background: var(--red-soft); color: #7A1A1A; }
+  .delta-pill.zero { background: rgba(11,18,32,0.06); color: var(--mute); }
+  .impact-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-bottom: 24px; }
+  .impact-summary .tile { background: #fff; padding: 18px 16px; }
+  .impact-summary .tile .label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--mute); text-transform: uppercase; letter-spacing: 0.1em; }
+  .impact-summary .tile .value { font-family: 'Fraunces', serif; font-weight: 600; font-size: 30px; color: var(--navy); line-height: 1; margin-top: 8px; }
+  .impact-summary .tile .delta { font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-top: 6px; }
+  .impact-summary .tile .delta.dn { color: var(--red); }
+  .impact-summary .tile .delta.up { color: var(--green); }
+
+  /* Reverse stress */
+  .reverse-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .reverse-card { background: #fff; border: 1px solid rgba(11,18,32,0.12); padding: 22px; }
+  .reverse-card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px; color: var(--navy); margin-bottom: 14px; letter-spacing: -0.01em; }
+  .reverse-result { background: var(--paper); border-left: 3px solid var(--red); padding: 14px; margin-top: 14px; font-size: 12px; line-height: 1.5; }
+  .reverse-result .rr-headline { font-family: 'Fraunces', serif; font-weight: 600; font-size: 16px; margin-bottom: 6px; color: var(--red); }
+  .reverse-result .rr-detail { color: #2D3748; }
+  .num-input { width: 100%; padding: 10px 12px; border: 1px solid rgba(11,18,32,0.2); font-family: 'JetBrains Mono', monospace; font-size: 14px; border-radius: 2px; }
+  .num-input:focus { outline: none; border-color: var(--navy); }
+
+  @media (max-width: 1100px) {
+    .scenario-layout { grid-template-columns: 1fr; }
+    .scenario-panel { position: static; max-height: none; }
+    .reverse-grid { grid-template-columns: 1fr; }
+    .impact-summary { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 1100px) {
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+    .cat-grid { grid-template-columns: repeat(2, 1fr); }
+    .chart-grid { grid-template-columns: 1fr; }
+    .chart-card.full { grid-column: span 1; }
+    .masthead-inner { grid-template-columns: 1fr; }
+    .meta-strip { text-align: left; }
+  }
+  @media (max-width: 700px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .cat-grid { grid-template-columns: 1fr; }
+    main { padding: 24px 18px; }
+    .masthead-inner { padding: 22px 18px; }
+    .loader-bar { padding: 12px 18px; }
+    .tab-bar { padding: 0 18px; overflow-x: auto; }
+    .tab { padding: 14px 16px 12px; font-size: 11px; white-space: nowrap; }
+    table.kri-table { font-size: 11px; }
+    table.kri-table thead th, table.kri-table tbody td { padding: 8px 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div>
+      <div class="brand-mark"><span class="dot"></span><span>MTN GHANA // Enterprise Risk Intelligence</span></div>
+      <h1 class="title">Key Risk <em>Indicators</em><br>MTN Ghana FY25 Dashboard</h1>
+      <p class="subtitle">Leading &amp; lagging KRIs across the six principal risk categories — calibrated to FY25 operational data, 6-year quarterly history, and Ghana macro-economic context.</p>
+    </div>
+    <div class="meta-strip">
+      <div>REPORT // <strong>MTN GHANA FY 2025</strong></div>
+      <div>FRAMEWORK // <strong>v8.0</strong></div>
+      <div id="meta-loaded">SOURCE // <strong>—</strong></div>
+      <div id="meta-time">TS // <strong>—</strong></div>
+    </div>
+  </div>
+</header>
+
+<div class="loader-bar">
+  <div class="loader-inner">
+    <span class="loader-label">Data source</span>
+    <button class="file-btn" onclick="document.getElementById('file-input').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Load KRI workbook
+    </button>
+    <input type="file" id="file-input" accept=".xlsx,.xlsm,.xls" multiple onchange="loadFromInput(event)">
+    <button class="file-btn ghost" onclick="loadDataFile()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Load FY25 data sheets
+    </button>
+    <button class="file-btn ghost" onclick="autoLoad()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Auto-detect
+    </button>
+    <span id="file-status" class="file-status">No file loaded. Drop one or more Excel files anywhere, or use the buttons above.</span>
+  </div>
+</div>
+
+<input type="file" id="data-input" accept=".xlsx,.xlsm,.xls" style="display:none" onchange="loadDataFromInput(event)">
+
+<!-- VALIDATION BANNER (populated by JS) -->
+<div id="validation-banner" class="validation-banner hidden">
+  <div class="validation-banner-inner">
+    <div class="vb-icon" id="vb-icon">✓</div>
+    <div class="vb-content">
+      <div class="vb-headline" id="vb-headline">—</div>
+      <div class="vb-issues" id="vb-issues"></div>
+    </div>
+    <button class="vb-toggle" id="vb-toggle" onclick="toggleValidationBanner()">Hide details</button>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" data-tab="register" onclick="switchTab('register')"><span class="num">01</span><span>KRI Register</span><span class="badge" id="tab-count">—</span></div>
+  <div class="tab" data-tab="quarterly" onclick="switchTab('quarterly')"><span class="num">02</span><span>Quarterly Trends</span></div>
+  <div class="tab" data-tab="monthly" onclick="switchTab('monthly')"><span class="num">03</span><span>Monthly Trends</span></div>
+  <div class="tab" data-tab="scenarios" onclick="switchTab('scenarios')"><span class="num">04</span><span>Scenario Modeling</span></div>
+  <div class="tab" data-tab="compare" onclick="switchTab('compare')"><span class="num">05</span><span>Base vs Scenario</span></div>
+  <div class="tab" data-tab="reverse" onclick="switchTab('reverse')"><span class="num">06</span><span>Reverse Stress</span></div>
+</div>
+
+<main>
+
+  <!-- ========= TAB 01: KRI REGISTER ========= -->
+  <div id="tab-register" class="tab-content">
+    <section>
+      <div class="section-head"><span class="section-num">01 //</span><span class="section-title">Risk Posture Snapshot</span><span class="section-sub" id="kpi-sub">Awaiting data</span></div>
+      <div class="kpi-row" id="kpi-row">
+        <div class="kpi-tile"><span class="label">Total KRIs</span><span class="value" id="kpi-total">—</span><span class="delta">across six categories</span></div>
+        <div class="kpi-tile"><span class="label">Leading</span><span class="value" id="kpi-lead">—</span><span class="delta">forward-looking signals</span></div>
+        <div class="kpi-tile"><span class="label">Lagging</span><span class="value" id="kpi-lag">—</span><span class="delta">outcome confirmation</span></div>
+        <div class="kpi-tile"><span class="label" style="color:var(--red)">RED</span><span class="value" id="kpi-red" style="color:var(--red)">—</span><span class="delta">tolerance breached</span></div>
+        <div class="kpi-tile"><span class="label" style="color:var(--amber)">AMBER</span><span class="value" id="kpi-amb" style="color:var(--amber)">—</span><span class="delta">approaching limit</span></div>
+        <div class="kpi-tile accent"><span class="label">GREEN</span><span class="value" id="kpi-grn">—</span><span class="delta">within appetite</span></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">02 //</span><span class="section-title">Six Principal Risk Categories</span><span class="section-sub">Click to filter the register below</span></div>
+      <div class="cat-grid" id="cat-grid"></div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">03 //</span><span class="section-title">KRI Register</span><span class="section-sub" id="reg-sub">—</span></div>
+      <div class="filter-bar" id="filter-bar">
+        <span class="lbl">Type</span>
+        <span class="chip" data-filter="type" data-value="all">All</span>
+        <span class="chip" data-filter="type" data-value="Leading">Leading</span>
+        <span class="chip" data-filter="type" data-value="Lagging">Lagging</span>
+        <span class="lbl" style="margin-left:14px">Status</span>
+        <span class="chip" data-filter="rag" data-value="all">All</span>
+        <span class="chip" data-filter="rag" data-value="Red">Red</span>
+        <span class="chip" data-filter="rag" data-value="Amber">Amber</span>
+        <span class="chip" data-filter="rag" data-value="Green">Green</span>
+        <input class="search-box" type="text" id="search-input" placeholder="Search KRI, owner, mitigation…">
+      </div>
+      <div id="table-container">
+        <div class="empty-state">
+          <div class="icon">⊟</div>
+          <h3>No KRI data loaded</h3>
+          <p>Load <code>MTN-FY25-KRI-Framework.xlsx</code> to populate the register. Charts on other tabs use <code>MTN-Group-FY-25-data-sheets.xlsx</code> when available.</p>
+          <button class="file-btn" onclick="document.getElementById('file-input').click()">Choose file</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ========= TAB 02: QUARTERLY ========= -->
+  <div id="tab-quarterly" class="tab-content hidden">
+    <section>
+      <div class="section-head">
+        <span class="section-num">02 //</span><span class="section-title">Quarterly Trends</span>
+        <span class="section-sub">1Q24 → 4Q25 · 8 quarters · sourced from FY25 data sheets</span>
+      </div>
+
+      <div class="chart-controls">
+        <div class="control-group">
+          <label for="q-country">Country</label>
+          <select id="q-country" onchange="renderQuarterly()"></select>
+        </div>
+        <div class="control-group">
+          <label for="q-metric">Metric focus</label>
+          <select id="q-metric" onchange="renderQuarterly()">
+            <option value="all">All metrics</option>
+            <option value="arpu">ARPU only</option>
+            <option value="subs">Subscribers only</option>
+            <option value="data">Data subscribers only</option>
+          </select>
+        </div>
+        <span class="loader-label" id="q-data-status" style="margin-left:auto; color: var(--mute)">No data sheet loaded</span>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="title">ARPU — USD blended</div>
+          <div class="sub">Lagging · Customer-experience risk indicator</div>
+          <div class="chart-container"><canvas id="chart-arpu"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="title">Total Subscribers</div>
+          <div class="sub">Lagging · Strategic — customer-base risk</div>
+          <div class="chart-container"><canvas id="chart-subs"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="title">Active Data Subscribers</div>
+          <div class="sub">Leading · Strategic — data monetisation</div>
+          <div class="chart-container"><canvas id="chart-data"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="title">Data Penetration (% of total subs)</div>
+          <div class="sub">Leading · Digital transformation indicator</div>
+          <div class="chart-container"><canvas id="chart-pen"></canvas></div>
+        </div>
+        <div class="chart-card full">
+          <div class="title">Group MoMo &amp; Fintech KPIs — Quarterly</div>
+          <div class="sub">Operational + Strategic — Fintech platform risk indicators</div>
+          <div class="chart-container"><canvas id="chart-fintech"></canvas></div>
+        </div>
+        <div class="chart-card full">
+          <div class="title">Net Subscriber Adds — Group (Quarter-on-Quarter)</div>
+          <div class="sub">Leading · early-warning indicator for customer-base risk</div>
+          <div class="chart-container"><canvas id="chart-netadds"></canvas></div>
+        </div>
+      </div>
+
+      <div class="note">Source: <code>MTN-Group-FY-25-data-sheets.xlsx</code> — ARPU, Subscribers, Active Data Subscribers, and Fintech KPI Summary sheets. All quarterly figures are reported actuals.</div>
+    </section>
+  </div>
+
+  <!-- ========= TAB 03: MONTHLY ========= -->
+  <div id="tab-monthly" class="tab-content hidden">
+    <section>
+      <div class="section-head">
+        <span class="section-num">03 //</span><span class="section-title">Monthly Trends</span>
+        <span class="section-sub">Jan 24 → Dec 25 · 24 months · interpolated from quarterly actuals</span>
+      </div>
+
+      <div class="chart-controls">
+        <div class="control-group">
+          <label for="m-country">Country</label>
+          <select id="m-country" onchange="renderMonthly()"></select>
+        </div>
+        <div class="control-group">
+          <label for="m-period">Window</label>
+          <select id="m-period" onchange="renderMonthly()">
+            <option value="24">Last 24 months</option>
+            <option value="12">Last 12 months</option>
+            <option value="6">Last 6 months</option>
+          </select>
+        </div>
+        <span class="loader-label" id="m-data-status" style="margin-left:auto; color: var(--mute)">No data sheet loaded</span>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card tall">
+          <div class="title">Monthly ARPU — USD</div>
+          <div class="sub">Smoothed monthly path with seasonality (+ Dec uplift / Feb dip)</div>
+          <div class="chart-container"><canvas id="m-chart-arpu"></canvas></div>
+        </div>
+        <div class="chart-card tall">
+          <div class="title">Monthly Subscribers (’000)</div>
+          <div class="sub">Linear interpolation with realistic month-on-month variance</div>
+          <div class="chart-container"><canvas id="m-chart-subs"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="title">Monthly Net Adds (’000)</div>
+          <div class="sub">Leading — churn/acquisition early-warning</div>
+          <div class="chart-container"><canvas id="m-chart-netadds"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="title">Monthly Active Data Subscribers (’000)</div>
+          <div class="sub">Leading — data adoption velocity</div>
+          <div class="chart-container"><canvas id="m-chart-data"></canvas></div>
+        </div>
+        <div class="chart-card full">
+          <div class="title">Group MoMo Users — Monthly (millions)</div>
+          <div class="sub">Operational — fintech platform momentum</div>
+          <div class="chart-container"><canvas id="m-chart-momo"></canvas></div>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>Note on data:</strong> Monthly figures are <em>synthetically derived</em> by interpolating between published quarterly actuals using a cubic spline-style path with a small seasonal adjustment (December uplift, February post-holiday dip, ±1.5% noise band).
+        Use for visualising shape and direction only; refer to the quarterly tab for reported-actual values. Replace with actual monthly data feeds when available.
+      </div>
+    </section>
+  </div>
+
+  <!-- ========= TAB 04: SCENARIO MODELING ========= -->
+  <div id="tab-scenarios" class="tab-content hidden">
+    <section>
+      <div class="section-head">
+        <span class="section-num">04 //</span><span class="section-title">Scenario Modeling</span>
+        <span class="section-sub" id="scen-status">Loading scenario library…</span>
+      </div>
+
+      <div class="scenario-layout">
+
+        <!-- LEFT: scenario picker + sliders -->
+        <div class="scenario-panel">
+          <h3>Scenario Library</h3>
+          <div class="panel-sub">Select stress, shock or combined</div>
+
+          <div class="multi-toggle" id="scen-type-filter">
+            <span class="chip on" data-stype="all">All</span>
+            <span class="chip" data-stype="Stress">Stress</span>
+            <span class="chip" data-stype="Shock">Shock</span>
+            <span class="chip" data-stype="Combined">Combined</span>
+          </div>
+
+          <div class="scenario-list" id="scenario-list"><em style="font-size:11px; color: var(--mute); padding: 12px;">Awaiting workbook…</em></div>
+
+          <div class="scenario-info hidden" id="scenario-info">
+            <div class="si-name" id="si-name">—</div>
+            <div class="si-desc" id="si-desc">—</div>
+            <div class="si-meta" id="si-meta"></div>
+          </div>
+
+          <h3 style="margin-top: 18px;">Intensity Sliders</h3>
+          <div class="panel-sub">Override scenario severity</div>
+
+          <div class="slider-group">
+            <label>Scenario severity multiplier <span class="sval" id="sev-val">1.0×</span></label>
+            <input type="range" id="sev-mult" min="0" max="200" value="100" oninput="updateSliderDisplay(); recomputeScenario();">
+            <div class="srange"><span>0×</span><span>1×</span><span>2×</span></div>
+          </div>
+
+          <!-- Macro overlay sliders rendered here dynamically from MACRO_OVERLAYS config -->
+          <div id="macro-overlay-container"></div>
+
+          <button class="btn-apply" onclick="recomputeScenario()">Recompute</button>
+          <button class="btn-apply alt" onclick="resetScenario()">Reset to Base</button>
+        </div>
+
+        <!-- RIGHT: outputs -->
+        <div>
+          <div class="impact-summary" id="impact-summary">
+            <div class="tile"><span class="label">Service Revenue</span><span class="value" id="kpi-rev-val">—</span><span class="delta" id="kpi-rev-d">—</span></div>
+            <div class="tile"><span class="label">EBITDA Margin</span><span class="value" id="kpi-marg-val">—</span><span class="delta" id="kpi-marg-d">—</span></div>
+            <div class="tile"><span class="label">Net Debt / EBITDA</span><span class="value" id="kpi-lev-val">—</span><span class="delta" id="kpi-lev-d">—</span></div>
+            <div class="tile"><span class="label">Group ARPU (USD)</span><span class="value" id="kpi-arpu-val">—</span><span class="delta" id="kpi-arpu-d">—</span></div>
+          </div>
+
+          <div class="chart-grid">
+            <div class="chart-card full tall">
+              <div class="title">Waterfall — Financial KPI Impact</div>
+              <div class="sub">Base → individual scenario impacts → final value (Rbn)</div>
+              <div class="chart-container"><canvas id="chart-wf-fin"></canvas></div>
+            </div>
+            <div class="chart-card full tall">
+              <div class="title">Waterfall — Non-Financial KPI Impact</div>
+              <div class="sub">Operational, technology, governance, external indicators</div>
+              <div class="chart-container"><canvas id="chart-wf-ops"></canvas></div>
+            </div>
+            <div class="chart-card full">
+              <div class="title">KPI Impact Heatmap</div>
+              <div class="sub">All affected KPIs · sorted by % impact</div>
+              <div class="chart-container" style="height: 380px;"><canvas id="chart-heatmap"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ========= TAB 05: BASE vs SCENARIO COMPARISON ========= -->
+  <div id="tab-compare" class="tab-content hidden">
+    <section>
+      <div class="section-head">
+        <span class="section-num">05 //</span><span class="section-title">Base vs Scenario Comparison</span>
+        <span class="section-sub" id="cmp-status">Select a scenario on tab 04</span>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card tall">
+          <div class="title">Financial KPIs — Base vs Scenario</div>
+          <div class="sub">Grouped bar comparison</div>
+          <div class="chart-container"><canvas id="chart-cmp-fin"></canvas></div>
+        </div>
+        <div class="chart-card tall">
+          <div class="title">Non-Financial KPIs — Base vs Scenario</div>
+          <div class="sub">Grouped bar comparison</div>
+          <div class="chart-container"><canvas id="chart-cmp-ops"></canvas></div>
+        </div>
+        <div class="chart-card full">
+          <div class="title">Combined Waterfall — All Affected KPIs</div>
+          <div class="sub">Aggregated revenue / EBITDA path showing each KPI's contribution</div>
+          <div class="chart-container" style="height: 360px;"><canvas id="chart-cmp-waterfall"></canvas></div>
+        </div>
+      </div>
+
+      <div class="section-head" style="margin-top:32px"><span class="section-num">05.1 //</span><span class="section-title">Full KPI Comparison Table</span></div>
+      <div class="impact-table-wrap" id="cmp-table"></div>
+    </section>
+  </div>
+
+  <!-- ========= TAB 06: REVERSE STRESS ========= -->
+  <div id="tab-reverse" class="tab-content hidden">
+    <section>
+      <div class="section-head">
+        <span class="section-num">06 //</span><span class="section-title">Reverse Stress Testing</span>
+        <span class="section-sub">Set a target outcome — back-solve the required shock</span>
+      </div>
+
+      <div class="reverse-grid">
+        <div class="reverse-card">
+          <h3>1. Define target breach condition</h3>
+          <p style="font-size: 12px; color: var(--mute); margin-bottom: 14px;">Pick a KPI and the threshold you want to test. The dashboard back-solves what level of shock would push the KPI to that value.</p>
+
+          <div class="slider-group">
+            <label>Target KPI</label>
+            <select class="num-input" id="rev-kpi" onchange="recomputeReverse()"></select>
+          </div>
+
+          <div class="slider-group">
+            <label>Target value <span class="sval" id="rev-target-display">—</span></label>
+            <input type="number" class="num-input" id="rev-target" step="0.1" oninput="recomputeReverse()">
+          </div>
+
+          <div class="slider-group">
+            <label>Apply via scenario</label>
+            <select class="num-input" id="rev-scenario" onchange="recomputeReverse()"></select>
+          </div>
+
+          <button class="btn-apply" onclick="recomputeReverse()">Back-solve</button>
+        </div>
+
+        <div class="reverse-card">
+          <h3>2. Required shock magnitude</h3>
+          <div class="reverse-result" id="rev-result">
+            <div class="rr-headline">Awaiting inputs</div>
+            <div class="rr-detail">Pick a target KPI, set a target value, and choose the scenario via which the shock is applied. The model will compute the severity multiplier required for the target KPI to reach the target value, holding other scenario impacts proportional.</div>
+          </div>
+
+          <div style="margin-top: 18px;">
+            <h3>Scenario path under required severity</h3>
+            <div class="chart-container" style="height: 240px;"><canvas id="chart-reverse"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card full tall">
+          <div class="title">Sensitivity — KPI value vs scenario severity multiplier</div>
+          <div class="sub">Sweep across 0× → 2× severity to visualise where breach occurs</div>
+          <div class="chart-container"><canvas id="chart-sensitivity"></canvas></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<footer>MTN Ghana · Enterprise Risk Management · FY25 KRI Framework · Local-first &amp; offline-capable</footer>
+
+<script>
+/* =================================================================== */
+/* CONFIG                                                              */
+/* =================================================================== */
+Chart.defaults.font.family = "'Manrope', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#0B1220';
+
+const COLORS = {
+  navy: '#002B5C', yellow: '#FFC72C', red: '#C53030', amber: '#D69E2E', green: '#2F855A',
+  blue: '#2563EB', purple: '#7C3AED', teal: '#0D9488', orange: '#EA580C', pink: '#DB2777', sky: '#0EA5E9'
+};
+const PALETTE = [COLORS.navy, COLORS.yellow, COLORS.green, COLORS.red, COLORS.blue, COLORS.purple, COLORS.teal, COLORS.orange, COLORS.pink, COLORS.sky, COLORS.amber, '#475569'];
+
+const state = {
+  rows: [],
+  filtered: [],
+  filters: { type: 'all', rag: 'all', cat: 'all', search: '' },
+  sortKey: null, sortDir: 1,
+  loadedFrom: null,
+  // operational data
+  ops: null,           // { arpu, subs, data, fintech }
+  opsLoadedFrom: null,
+  // scenario modeling
+  baseCase: null,
+  scenarios: null,
+  currentScenario: null,
+  scenarioOutput: null,
+  scenarioFilter: 'all',
+  // dashboard config (from "Dashboard Config" sheet, optional)
+  config: {},
+  // file/sheet integrity tracking
+  autoDetectAttempted: false,
+  autoDetectFiles: [],          // list of {name, source: 'default'|'configured'|'discovered'}
+  loadedSheetNames: [],         // sheet names actually found in loaded workbooks
+};
+
+const charts = {};   // chart instances
+
+const CATEGORIES = [
+  { num: '01', name: 'Strategic',   blurb: 'Long-term portfolio, segments mix, market share defence' },
+  { num: '02', name: 'Governance',  blurb: 'Board oversight, NCA & BoG regulatory licensing, ethics & conduct' },
+  { num: '03', name: 'Financial',   blurb: 'Liquidity, FX (Cedi/USD), capital, margin defence, dividend upstreaming' },
+  { num: '04', name: 'Technology',  blurb: 'Cyber, MoMo platform resilience, data privacy, network quality' },
+  { num: '05', name: 'Operational', blurb: 'Network coverage, energy (ECG/diesel), supply chain, people & H&S' },
+  { num: '06', name: 'External',    blurb: 'Macro (inflation, GDP, FX), e-levy & regulatory, competition, climate' },
+];
+
+/* =================================================================== */
+/* TAB SWITCHING                                                       */
+/* =================================================================== */
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  if (tab === 'quarterly') renderQuarterly();
+  if (tab === 'monthly') renderMonthly();
+  if (tab === 'scenarios') { if (!state.currentScenario && state.scenarios && state.scenarios.length) selectScenario(state.scenarios[0].id); recomputeScenario(); }
+  if (tab === 'compare') renderCompare();
+  if (tab === 'reverse') renderReverse();
+}
+
+/* =================================================================== */
+/* FILE LOADING                                                        */
+/* =================================================================== */
+function setStatus(msg, cls='') {
+  const el = document.getElementById('file-status');
+  el.textContent = msg;
+  el.className = 'file-status ' + cls;
+}
+
+function loadFromInput(ev) {
+  const files = Array.from(ev.target.files);
+  if (!files.length) return;
+  files.forEach(f => readFile(f));
+}
+
+function loadDataFile() { document.getElementById('data-input').click(); }
+function loadDataFromInput(ev) {
+  const f = ev.target.files[0];
+  if (f) readFile(f);
+}
+
+function readFile(f) {
+  setStatus('Reading ' + f.name + '…');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array' });
+      routeWorkbook(wb, f.name);
+    } catch (err) {
+      setStatus('Error: ' + err.message, 'err');
+      console.error(err);
+    }
+  };
+  reader.onerror = () => setStatus('Read failed', 'err');
+  reader.readAsArrayBuffer(f);
+}
+
+// Route a workbook to KRI-Register parser, ops-data parser, or both
+function routeWorkbook(wb, source) {
+  let didKRI = false, didOps = false, didBase = false, didScen = false, didConfig = false;
+
+  // Record sheet names this workbook contributes (for sheet-rename validation)
+  wb.SheetNames.forEach(n => {
+    if (!state.loadedSheetNames.includes(n)) state.loadedSheetNames.push(n);
+  });
+
+  // Try Dashboard Config first — other parsers may use sheet names from it
+  let configSheet = wb.SheetNames.find(n => /Dashboard.*Config/i.test(n));
+  if (configSheet) {
+    parseConfig(wb.Sheets[configSheet]);
+    didConfig = true;
+    applyBranding();
+    // Apply flat-config entries (categories, vocab, RAG colours, macro overlays)
+    applyFlatConfig();
+  }
+
+  // Try vocabulary sheets (Config Lists, RAG Colours, Category Definitions, Macro Overlays)
+  // These OVERRIDE the flat-config values if both are present.
+  const listSheet = wb.SheetNames.find(n => /Config.*Lists/i.test(n));
+  if (listSheet) parseConfigLists(wb.Sheets[listSheet]);
+  const ragSheet = wb.SheetNames.find(n => /RAG.*Colou?rs/i.test(n));
+  if (ragSheet) parseRAGColors(wb.Sheets[ragSheet]);
+  const catSheet = wb.SheetNames.find(n => /Category.*Definitions/i.test(n));
+  if (catSheet) parseCategoryDefs(wb.Sheets[catSheet]);
+  const ovrSheet = wb.SheetNames.find(n => /Macro.*Overlays/i.test(n));
+  if (ovrSheet) parseMacroOverlays(wb.Sheets[ovrSheet]);
+  // Apply any visual updates from these sheets
+  applyVocabularyConfig();
+
+  // Try KRI register (config may override sheet name)
+  const kriSheetName = state.config.sheet_kri_register || null;
+  let kriSheet = (kriSheetName && wb.SheetNames.includes(kriSheetName)) ? kriSheetName : null;
+  if (!kriSheet) kriSheet = wb.SheetNames.find(n => /KRI.*Register/i.test(n));
+  if (!kriSheet) kriSheet = wb.SheetNames.find(n => /KRI/i.test(n));
+  if (kriSheet) {
+    parseKRI(wb.Sheets[kriSheet], source);
+    didKRI = true;
+  }
+
+  // Try Base Case
+  const baseSheetName = state.config.sheet_base_case || null;
+  let baseSheet = (baseSheetName && wb.SheetNames.includes(baseSheetName)) ? baseSheetName : null;
+  if (!baseSheet) baseSheet = wb.SheetNames.find(n => /Base.*Case/i.test(n));
+  if (baseSheet) {
+    parseBaseCase(wb.Sheets[baseSheet]);
+    didBase = true;
+  }
+
+  // Try Scenario Library
+  const scenSheetName = state.config.sheet_scenarios || null;
+  let scenSheet = (scenSheetName && wb.SheetNames.includes(scenSheetName)) ? scenSheetName : null;
+  if (!scenSheet) scenSheet = wb.SheetNames.find(n => /Scenario.*Library/i.test(n));
+  if (scenSheet) {
+    parseScenarios(wb.Sheets[scenSheet]);
+    didScen = true;
+  }
+
+  // Try ops data sheets — detect by presence of ARPU section (Group format)
+  const opsSheet = wb.SheetNames.find(n => {
+    const sheet = wb.Sheets[n];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    for (let i = 0; i < Math.min(rows.length, 5); i++) {
+      const r = rows[i];
+      if (r && r.some(c => String(c).trim() === 'ARPU')) return true;
+    }
+    return false;
+  });
+  if (opsSheet) {
+    parseOps(wb.Sheets[opsSheet], source);
+    didOps = true;
+  }
+
+  // Try Ghana ops data sheets — detect by Quarterly + Operational_Quarterly sheet presence
+  const hasGhanaOps = wb.SheetNames.includes('Operational_Quarterly') ||
+                       wb.SheetNames.includes('Quarterly');
+  if (hasGhanaOps && !didOps) {
+    parseGhanaOps(wb, source);
+    didOps = true;
+  }
+
+  if (!didKRI && !didOps && !didBase && !didScen) {
+    setStatus('Unknown workbook structure: ' + source, 'err');
+    return;
+  }
+
+  const parts = [];
+  if (didKRI) parts.push('KRI register');
+  if (didConfig) parts.push('dashboard config');
+  if (didBase) parts.push('base case');
+  if (didScen) parts.push('scenarios');
+  if (didOps) parts.push('operational data');
+  setStatus('Loaded ' + parts.join(' + ') + ' from ' + source, 'ok');
+  document.getElementById('meta-loaded').innerHTML = 'SOURCE // <strong>' + truncate(source, 28) + '</strong>';
+  document.getElementById('meta-time').innerHTML = 'TS // <strong>' + new Date().toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }) + '</strong>';
+
+  // Once base + scenarios loaded, initialise scenario tabs
+  if (state.baseCase && state.scenarios) {
+    initScenarioTabs();
+  }
+
+  // Run validation pass and surface any issues
+  const issues = runValidation();
+  renderValidationBanner(issues);
+}
+
+async function autoLoad() {
+  // Bootstrap candidates - tried first (covers original filenames and the most common renames)
+  const bootstrapCandidates = [
+    'MTN-Ghana-KRI-Framework.xlsx',
+    './MTN-Ghana-KRI-Framework.xlsx',
+    'MTN-FY25-KRI-Framework.xlsx',
+    'MTN-Group-FY-25-data-sheets.xlsx',
+    './MTN-FY25-KRI-Framework.xlsx',
+    './MTN-Group-FY-25-data-sheets.xlsx',
+  ];
+
+  // Patterns used in "discover" mode — match anything that looks like our workbook
+  const discoverPatterns = [
+    'Ghana-KRI-Framework', 'MTN-Ghana', 'Ghana-Risk',
+    'KRI-Framework', 'KRI_Framework', 'KRIFramework',
+    'Risk-Dashboard', 'Risk_Dashboard', 'KRI-Dashboard',
+    'data-sheets', 'data_sheets', 'datasheets',
+    'KRI', 'KPI', 'Risk', 'data'
+  ];
+  const exts = ['.xlsx', '.xlsm'];
+  const yearPrefixes = ['', '2024-', '2025-', '2026-', 'FY24-', 'FY25-', 'FY26-', 'Q1-', 'Q2-', 'Q3-', 'Q4-'];
+
+  setStatus('Auto-detecting…');
+  state.autoDetectAttempted = true;
+  state.autoDetectFiles = [];
+
+  let foundCount = 0;
+  const tried = new Set();
+
+  async function tryFetch(url) {
+    if (tried.has(url)) return null;
+    tried.add(url);
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) return null;
+      const buf = await resp.arrayBuffer();
+      const bytes = new Uint8Array(buf, 0, 4);
+      if (bytes[0] !== 0x50 || bytes[1] !== 0x4B) return null;  // not a zip (Excel)
+      return { url, buf };
+    } catch (e) { return null; }
+  }
+
+  // 1) Bootstrap pass
+  for (const url of bootstrapCandidates) {
+    const res = await tryFetch(url);
+    if (res) {
+      try {
+        const wb = XLSX.read(new Uint8Array(res.buf), { type: 'array' });
+        routeWorkbook(wb, res.url);
+        foundCount++;
+        state.autoDetectFiles.push({ name: res.url, source: 'default' });
+      } catch (e) {}
+    }
+  }
+
+  // 2) Config pass — uses values from Dashboard Config if available
+  if (state.config && (state.config.expected_kri_filename || state.config.expected_data_filename)) {
+    const configured = [];
+    if (state.config.expected_kri_filename)  state.config.expected_kri_filename.split(',').forEach(s => configured.push(s.trim()));
+    if (state.config.expected_data_filename) state.config.expected_data_filename.split(',').forEach(s => configured.push(s.trim()));
+    const searchPaths = (state.config.autodetect_search_paths || '.').split(',').map(s => s.trim());
+    for (const path of searchPaths) {
+      for (const fname of configured) {
+        if (!fname) continue;
+        const url = (path === '.' || path === '') ? fname : (path.replace(/\/$/,'') + '/' + fname);
+        const res = await tryFetch(url);
+        if (res) {
+          try {
+            const wb = XLSX.read(new Uint8Array(res.buf), { type: 'array' });
+            routeWorkbook(wb, res.url);
+            foundCount++;
+            state.autoDetectFiles.push({ name: res.url, source: 'configured' });
+          } catch (e) {}
+        }
+      }
+    }
+  }
+
+  // 3) Discover pass — broad search if mode allows and we haven't found enough
+  const mode = (state.config && state.config.autodetect_mode) || 'discover';
+  if (mode === 'discover' && foundCount < 2) {
+    const searchPaths = (state.config && state.config.autodetect_search_paths || '.').split(',').map(s => s.trim());
+    const candidates = [];
+    for (const path of searchPaths) {
+      for (const prefix of yearPrefixes) {
+        for (const pattern of discoverPatterns) {
+          for (const ext of exts) {
+            const name = prefix + pattern + ext;
+            const url = (path === '.' || path === '') ? name : (path.replace(/\/$/,'') + '/' + name);
+            candidates.push(url);
+            ['-Framework','-Dashboard','-Data','-v2','-v3','-latest','-current'].forEach(suf => {
+              candidates.push(((path === '.' || path === '') ? '' : path.replace(/\/$/,'') + '/') + prefix + pattern + suf + ext);
+            });
+          }
+        }
+      }
+    }
+    const uniq = [...new Set(candidates)].slice(0, 80);
+    for (const url of uniq) {
+      const res = await tryFetch(url);
+      if (res) {
+        try {
+          const wb = XLSX.read(new Uint8Array(res.buf), { type: 'array' });
+          routeWorkbook(wb, res.url);
+          foundCount++;
+          state.autoDetectFiles.push({ name: res.url, source: 'discovered' });
+          if (foundCount >= 2) break;
+        } catch (e) {}
+      }
+    }
+  }
+
+  if (!foundCount) {
+    setStatus('Auto-detect found nothing — use the Load buttons or drag-and-drop. (Auto-detect cannot work under file:// in most browsers.)', 'err');
+  }
+}
+
+function truncate(s, n) { return s.length > n ? s.slice(0, n-1) + '…' : s; }
+
+/* =================================================================== */
+/* PARSE KRI REGISTER                                                  */
+/* =================================================================== */
+function parseKRI(sheet, source) {
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  const headers = rows[0].map(h => String(h).trim());
+  const idx = (label) => headers.findIndex(h => h.toLowerCase().includes(label.toLowerCase()));
+
+  const col = {
+    num: idx('#'), cat: idx('Risk Category'), sub: idx('Sub-risk'),
+    name: headers.findIndex(h => h.trim() === 'KRI'),
+    type: idx('Type'), unit: idx('Unit'), freq: idx('Frequency'), owner: idx('Owner'),
+    green: idx('GREEN'), amber: idx('AMBER'), red: idx('RED'),
+    actual: idx('FY25 Actual'), rag: idx('RAG'), trend: idx('Trend'),
+    source: idx('Data source'), mitig: idx('Mitigation'),
+  };
+
+  state.rows = rows.slice(1)
+    .filter(r => r[col.num] !== '' && r[col.num] != null)
+    .map(r => ({
+      num: r[col.num], cat: r[col.cat], sub: r[col.sub], name: r[col.name],
+      type: r[col.type], unit: r[col.unit], freq: r[col.freq], owner: r[col.owner],
+      green: r[col.green], amber: r[col.amber], red: r[col.red],
+      actual: r[col.actual], rag: r[col.rag] || 'Amber',
+      trend: r[col.trend], source: r[col.source], mitig: r[col.mitig],
+    }));
+  state.loadedFrom = source;
+  renderRegister();
+}
+
+/* =================================================================== */
+/* PARSE OPERATIONAL DATA                                              */
+/* =================================================================== */
+
+/* Ghana-specific ops parser — adapts the Ghana workbook structure
+   (Quarterly, Operational_Quarterly, Segments_Quarterly, Leading_Indicators sheets)
+   into the same state.ops shape that renderQuarterly/renderMonthly consume. */
+function parseGhanaOps(wb, source) {
+  // Helper to read a sheet as array-of-objects
+  function readSheet(name) {
+    if (!wb.SheetNames.includes(name)) return null;
+    return XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: null });
+  }
+  const q = readSheet('Quarterly');
+  const opsQ = readSheet('Operational_Quarterly');
+  const segQ = readSheet('Segments_Quarterly');
+  const ledQ = readSheet('Leading_Indicators');
+
+  if (!q && !opsQ) return;
+
+  // Extract 8 most recent quarters for compatibility with existing chart logic
+  // Period_ID format e.g. "2025Q4"
+  function pickRecentQuarters(arr, field, n=8) {
+    if (!arr) return null;
+    const recent = arr.slice(-n);
+    return {
+      quarters: recent.map(r => {
+        const pid = String(r.Period_ID || '');
+        const m = pid.match(/(\d{4})Q(\d)/);
+        return m ? (m[2] + 'Q' + m[1].slice(-2)) : pid;
+      }),
+      values: recent.map(r => r[field])
+    };
+  }
+
+  // Get the full quarterly history (24 quarters, 2020Q1–2025Q4)
+  function pickAllQuarters(arr, field) {
+    if (!arr) return null;
+    return {
+      quarters: arr.map(r => {
+        const pid = String(r.Period_ID || '');
+        const m = pid.match(/(\d{4})Q(\d)/);
+        return m ? (m[2] + 'Q' + m[1].slice(-2)) : pid;
+      }),
+      values: arr.map(r => r[field])
+    };
+  }
+
+  // Adapt to the state.ops shape used by renderQuarterly/renderMonthly.
+  // Original shape: { arpu: {quarters, data: {countryName: [...]}}, subs: {...}, data: {...}, fintech: {...} }
+  // For Ghana, "country" becomes "metric" — we map each metric to a named series.
+  const arpuFull = pickAllQuarters(opsQ, 'ARPU_GHS');
+  const subsFull = pickAllQuarters(opsQ, 'Total_Subscribers_M');
+  const dataSubsFull = pickAllQuarters(opsQ, 'Active_Data_Subs_M');
+  const momoSubsFull = pickAllQuarters(opsQ, 'Active_MoMo_Users_M');
+  const usageFull = pickAllQuarters(opsQ, 'Data_Usage_GB_Per_User');
+  const coverageFull = pickAllQuarters(opsQ, 'Coverage_Pct');
+  const sitesFull = pickAllQuarters(opsQ, 'Network_Sites');
+
+  // Get the actual quarter labels
+  const quarters = arpuFull ? arpuFull.quarters : (subsFull ? subsFull.quarters : []);
+
+  // Build a multi-metric "country-like" dict for the ARPU chart so it can show multiple lines
+  state.ops = {
+    arpu: arpuFull ? {
+      quarters: arpuFull.quarters,
+      data: {
+        'MTN Ghana (GHS)': arpuFull.values
+      }
+    } : null,
+    subs: subsFull ? {
+      quarters: subsFull.quarters,
+      data: {
+        'MTN Ghana — Total subscribers (m)': subsFull.values,
+        'Active data subscribers (m)': dataSubsFull ? dataSubsFull.values : [],
+        'Active MoMo users (m)': momoSubsFull ? momoSubsFull.values : [],
+        'Total subscribers': subsFull.values  // alias for getSeries() group-total lookup
+      }
+    } : null,
+    data: dataSubsFull ? {
+      quarters: dataSubsFull.quarters,
+      data: {
+        'Active data subscribers (m)': dataSubsFull.values,
+        'Total subscribers': dataSubsFull.values  // alias for group-total lookup
+      }
+    } : null,
+    fintech: null
+  };
+
+  // Build a fintech-style block from segment + leading indicator data
+  // Existing renderQuarterly expects ft.quarters and ft.data with specific keys
+  if (segQ) {
+    const dataRevFull = pickAllQuarters(segQ, 'Data_Revenue');
+    const momoRevFull = pickAllQuarters(segQ, 'MoMo_Revenue');
+    const voiceRevFull = pickAllQuarters(segQ, 'Voice_Revenue');
+    const digitalRevFull = pickAllQuarters(segQ, 'Digital_Revenue');
+    if (dataRevFull) {
+      state.ops.fintech = {
+        quarters: dataRevFull.quarters,
+        data: {
+          'Data revenue (GHSm)':    dataRevFull.values,
+          'MoMo revenue (GHSm)':    momoRevFull ? momoRevFull.values : [],
+          'Voice revenue (GHSm)':   voiceRevFull ? voiceRevFull.values : [],
+          'Digital revenue (GHSm)': digitalRevFull ? digitalRevFull.values : []
+        }
+      };
+    }
+  }
+
+  // Populate country selectors with Ghana-specific options
+  const arpuSel = document.getElementById('q-country');
+  const monthlySel = document.getElementById('m-country');
+  if (arpuSel) {
+    arpuSel.innerHTML =
+      '<option value="MTN Ghana (GHS)">MTN Ghana — ARPU (GHS)</option>' +
+      '<option value="MTN Ghana — Total subscribers (m)">Total subscribers</option>' +
+      '<option value="Active data subscribers (m)">Active data subscribers</option>' +
+      '<option value="Active MoMo users (m)">Active MoMo users</option>';
+  }
+  if (monthlySel) {
+    monthlySel.innerHTML = arpuSel.innerHTML;
+  }
+  state.opsLoadedFrom = source;
+}
+
+function parseOps(sheet, source) {
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
+
+  // Locate sections by their header text in column 1 (B)
+  function findSection(label) {
+    for (let i = 0; i < rows.length; i++) {
+      const c = rows[i][1];
+      if (typeof c === 'string' && c.trim() === label) return i;
+    }
+    return -1;
+  }
+
+  // Extract a country × 8-quarter block starting at the header-row index
+  // The next non-empty row with "Country" defines the headers; data follows.
+  function extractBlock(startIdx) {
+    if (startIdx < 0) return null;
+    // header row (with Country, 1Q24 .. 4Q25)
+    let hdrIdx = -1;
+    for (let i = startIdx; i < startIdx + 8 && i < rows.length; i++) {
+      const r = rows[i];
+      if (r && r[1] && String(r[1]).toLowerCase().includes('country')) { hdrIdx = i; break; }
+    }
+    if (hdrIdx < 0) return null;
+    const quarters = ['1Q24','2Q24','3Q24','4Q24','1Q25','2Q25','3Q25','4Q25'];
+    const data = {};
+    for (let i = hdrIdx + 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r) break;
+      const country = r[1];
+      if (typeof country !== 'string' || !country.trim()) {
+        // empty cell means end of block (unless it's a subgroup header)
+        // but we tolerate one or two blank rows in some sheets
+        if (i > hdrIdx + 25) break;
+        continue;
+      }
+      // Stop if we hit a new uppercase section header
+      if (country.trim() === country.trim().toUpperCase() && country.length > 3 && !country.match(/[a-z]/)) break;
+      const vals = [];
+      let hasNumber = false;
+      for (let q = 0; q < 8; q++) {
+        const v = r[2 + q];
+        const num = (v == null || v === '') ? null : Number(v);
+        if (num != null && !isNaN(num)) hasNumber = true;
+        vals.push(num);
+      }
+      if (hasNumber) {
+        data[country.trim().replace(/[#^*]+$/,'').trim()] = vals;
+      }
+    }
+    return { quarters, data };
+  }
+
+  const arpuIdx = findSection('ARPU');
+  const subsIdx = findSection('SUBSCRIBERS');
+  const dataIdx = findSection('ACTIVE DATA SUBSCRIBERS');
+  const momoIdx = findSection('ACTIVE MOBILE MONEY SUBSCRIBERS');
+  const ftIdx = findSection('FINTECH KPI SUMMARY');
+
+  const ops = {
+    arpu: extractBlock(arpuIdx),
+    subs: extractBlock(subsIdx),
+    data: extractBlock(dataIdx),
+    momo: extractBlock(momoIdx),
+    fintech: extractFintech(rows, ftIdx),
+  };
+  state.ops = ops;
+  state.opsLoadedFrom = source;
+
+  // Populate country selectors
+  populateCountrySelectors();
+  document.getElementById('q-data-status').textContent = 'Loaded: ' + source;
+  document.getElementById('m-data-status').textContent = 'Loaded: ' + source;
+}
+
+// Fintech KPI table has a different shape — 7 quarters (1Q24..3Q25)
+function extractFintech(rows, startIdx) {
+  if (startIdx < 0) return null;
+  // Find header row containing quarters
+  let hdrIdx = -1;
+  for (let i = startIdx; i < startIdx + 10 && i < rows.length; i++) {
+    const r = rows[i];
+    if (r && r.some(c => String(c).includes('1Q 24') || String(c).includes('1Q24'))) { hdrIdx = i; break; }
+  }
+  if (hdrIdx < 0) return null;
+  // Quarters available: 1Q24..3Q25 (7 quarters)
+  const quarters = ['1Q24','2Q24','3Q24','4Q24','1Q25','2Q25','3Q25'];
+  const data = {};
+  for (let i = hdrIdx + 1; i < Math.min(rows.length, hdrIdx + 25); i++) {
+    const r = rows[i];
+    if (!r || !r[1]) continue;
+    const label = String(r[1]).trim();
+    if (!label) continue;
+    const vals = [];
+    let hasNumber = false;
+    for (let q = 0; q < 7; q++) {
+      const v = r[2 + q];
+      const num = (v == null || v === '') ? null : Number(String(v).replace(/\s/g,'').replace(',','.'));
+      if (num != null && !isNaN(num)) hasNumber = true;
+      vals.push(num);
+    }
+    if (hasNumber) data[label] = vals;
+  }
+  return { quarters, data };
+}
+
+function populateCountrySelectors() {
+  const ops = state.ops;
+  if (!ops || !ops.subs) return;
+  const countries = Object.keys(ops.subs.data).filter(c =>
+    !['Postpaid','Prepaid','Total subscribers'].includes(c) &&
+    ops.subs.data[c].some(v => v && v > 100)  // filter to material opcos
+  );
+  // Add overview option
+  const allOptions = ['All series'].concat(countries);
+  ['q-country', 'm-country'].forEach(id => {
+    const sel = document.getElementById(id);
+    const current = sel.value;
+    sel.innerHTML = allOptions.map(c => `<option value="${c}">${c}</option>`).join('');
+    if (current && allOptions.includes(current)) sel.value = current;
+    else sel.value = 'All series';
+  });
+}
+
+/* =================================================================== */
+/* KRI REGISTER RENDER (TAB 01)                                        */
+/* =================================================================== */
+function renderRegister() {
+  renderKPIs();
+  renderCategories();
+  renderFilters();
+  applyFilters();
+  document.getElementById('tab-count').textContent = state.rows.length;
+}
+
+function renderKPIs() {
+  const r = state.rows;
+  const total = r.length;
+  const lead = r.filter(x => /lead/i.test(x.type)).length;
+  const lag  = r.filter(x => /lag/i.test(x.type)).length;
+  const red  = r.filter(x => x.rag === 'Red').length;
+  const amb  = r.filter(x => x.rag === 'Amber').length;
+  const grn  = r.filter(x => x.rag === 'Green').length;
+  document.getElementById('kpi-total').textContent = total;
+  document.getElementById('kpi-lead').textContent = lead;
+  document.getElementById('kpi-lag').textContent = lag;
+  document.getElementById('kpi-red').textContent = red;
+  document.getElementById('kpi-amb').textContent = amb;
+  document.getElementById('kpi-grn').textContent = grn;
+  document.getElementById('kpi-sub').textContent = total + ' KRIs · ' + lead + ' leading · ' + lag + ' lagging';
+}
+
+function renderCategories() {
+  const wrap = document.getElementById('cat-grid');
+  wrap.innerHTML = '';
+  CATEGORIES.forEach(c => {
+    const rows = state.rows.filter(x => x.cat === c.name);
+    const red = rows.filter(x => x.rag === 'Red').length;
+    const amb = rows.filter(x => x.rag === 'Amber').length;
+    const card = document.createElement('div');
+    card.className = 'cat-card' + (state.filters.cat === c.name ? ' active' : '');
+    card.onclick = () => {
+      state.filters.cat = (state.filters.cat === c.name) ? 'all' : c.name;
+      renderCategories();
+      applyFilters();
+    };
+    card.innerHTML = `
+      <div class="cat-num">CATEGORY ${c.num}</div>
+      <div class="cat-name">${c.name}</div>
+      <div style="font-size:11px; opacity:0.7; line-height:1.45">${c.blurb}</div>
+      <div class="cat-stats">
+        <div class="cat-stat"><div class="num">${rows.length}</div><div class="lbl">KRIs</div></div>
+        <div class="cat-stat"><div class="num red">${red}</div><div class="lbl">Red</div></div>
+        <div class="cat-stat"><div class="num amb">${amb}</div><div class="lbl">Amber</div></div>
+      </div>`;
+    wrap.appendChild(card);
+  });
+}
+
+function renderFilters() {
+  document.querySelectorAll('.chip').forEach(chip => {
+    const f = chip.dataset.filter;
+    const v = chip.dataset.value;
+    chip.classList.remove('on', 'red', 'amb', 'grn');
+    if (state.filters[f] === v) {
+      chip.classList.add('on');
+      if (f === 'rag') {
+        if (v === 'Red') chip.classList.add('red');
+        if (v === 'Amber') chip.classList.add('amb');
+        if (v === 'Green') chip.classList.add('grn');
+      }
+    }
+    chip.onclick = () => { state.filters[f] = v; renderFilters(); applyFilters(); };
+  });
+  document.getElementById('search-input').oninput = (e) => {
+    state.filters.search = e.target.value.toLowerCase();
+    applyFilters();
+  };
+}
+
+function applyFilters() {
+  const { type, rag, cat, search } = state.filters;
+  state.filtered = state.rows.filter(r => {
+    if (type !== 'all' && r.type !== type) return false;
+    if (rag !== 'all' && r.rag !== rag) return false;
+    if (cat !== 'all' && r.cat !== cat) return false;
+    if (search) {
+      const blob = [r.name, r.sub, r.owner, r.mitig, r.cat].join(' ').toLowerCase();
+      if (!blob.includes(search)) return false;
+    }
+    return true;
+  });
+  renderTable();
+}
+
+function renderTable() {
+  const wrap = document.getElementById('table-container');
+  document.getElementById('reg-sub').textContent = state.filtered.length + ' of ' + state.rows.length + ' KRIs shown';
+
+  if (state.filtered.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="icon">∅</div><h3>No KRIs match</h3><p>Try clearing filters or the search box.</p></div>`;
+    return;
+  }
+
+  const trendArrow = (t) => {
+    if (!t) return ['',''];
+    const s = String(t);
+    if (s.includes('↑')) return ['↑', 'up'];
+    if (s.includes('↓')) return ['↓', 'dn'];
+    if (s.includes('→')) return ['→', ''];
+    return [s, ''];
+  };
+
+  const rows = state.filtered.map(r => {
+    const [arrow, arrowCls] = trendArrow(r.trend);
+    return `<tr>
+      <td class="idx">${r.num}</td>
+      <td class="cat">${r.cat}</td>
+      <td class="kri-name">${esc(r.name)}<span class="sub">${esc(r.sub || '')}</span></td>
+      <td class="type ${r.type ? r.type.toLowerCase() : ''}">${r.type || ''}</td>
+      <td class="thresh g">${esc(r.green)}</td>
+      <td class="thresh a">${esc(r.amber)}</td>
+      <td class="thresh r">${esc(r.red)}</td>
+      <td class="actual">${esc(r.actual)}</td>
+      <td class="rag ${r.rag}">${r.rag}</td>
+      <td class="trend ${arrowCls}">${arrow}</td>
+      <td class="owner">${esc(r.owner)}</td>
+      <td class="mitig">${esc(r.mitig)}</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<div class="table-wrap"><table class="kri-table"><thead><tr>
+    <th data-sort="num">#</th><th data-sort="cat">Category</th><th data-sort="name">KRI</th>
+    <th data-sort="type">Type</th><th>Green</th><th>Amber</th><th>Red</th>
+    <th data-sort="actual">FY25 Actual</th><th data-sort="rag">RAG</th>
+    <th data-sort="trend">Trend</th><th data-sort="owner">Owner</th><th>Mitigation</th>
+  </tr></thead><tbody>${rows}</tbody></table></div>`;
+
+  document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.onclick = () => {
+      const key = th.dataset.sort;
+      state.sortDir = (state.sortKey === key) ? -state.sortDir : 1;
+      state.sortKey = key;
+      state.filtered.sort((a, b) => {
+        const av = String(a[key] || ''); const bv = String(b[key] || '');
+        if (!isNaN(parseFloat(av)) && !isNaN(parseFloat(bv))) return (parseFloat(av) - parseFloat(bv)) * state.sortDir;
+        return av.localeCompare(bv) * state.sortDir;
+      });
+      renderTable();
+    };
+  });
+}
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* =================================================================== */
+/* QUARTERLY CHARTS (TAB 02)                                           */
+/* =================================================================== */
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function getSeries(block, country) {
+  if (!block) return null;
+  if (country === 'All series') {
+    if (block.data['Total subscribers']) return block.data['Total subscribers'];
+    if (block.data['Total reported']) return block.data['Total reported'];
+    // sum non-total countries
+    const vals = block.quarters.map(() => 0);
+    Object.entries(block.data).forEach(([k, arr]) => {
+      if (['Postpaid','Prepaid','Total subscribers'].includes(k)) return;
+      arr.forEach((v, i) => { if (v != null) vals[i] += v; });
+    });
+    return vals;
+  }
+  return block.data[country] || null;
+}
+
+function lineChart(canvasId, labels, datasets, opts={}) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  charts[canvasId] = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: Object.assign({
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 12, padding: 14, font: { size: 11, weight: '600' } } },
+        tooltip: {
+          backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1,
+          padding: 10, titleFont: { weight: 'bold' }, bodyFont: { size: 11 },
+          callbacks: opts.tooltipCallbacks
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10, family: "'JetBrains Mono', monospace" } } },
+        y: { grid: { color: 'rgba(11,18,32,0.06)' }, ticks: { font: { size: 10, family: "'JetBrains Mono', monospace" }, callback: opts.yCallback } }
+      }
+    }, opts.chartOpts || {})
+  });
+}
+
+function barChart(canvasId, labels, datasets, opts={}) {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  charts[canvasId] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: Object.assign({
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', align: 'end', labels: { boxWidth: 12, boxHeight: 12, padding: 14, font: { size: 11, weight: '600' } } },
+        tooltip: { backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1, padding: 10 }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10, family: "'JetBrains Mono', monospace" } } },
+        y: { grid: { color: 'rgba(11,18,32,0.06)' }, ticks: { font: { size: 10, family: "'JetBrains Mono', monospace" }, callback: opts.yCallback } }
+      }
+    }, opts.chartOpts || {})
+  });
+}
+
+function renderQuarterly() {
+  if (!state.ops) {
+    ['chart-arpu','chart-subs','chart-data','chart-pen','chart-fintech','chart-netadds'].forEach(destroyChart);
+    return;
+  }
+  const country = document.getElementById('q-country').value || 'All series';
+  const quarters = state.ops.subs ? state.ops.subs.quarters : ['1Q24','2Q24','3Q24','4Q24','1Q25','2Q25','3Q25','4Q25'];
+
+  // ARPU
+  if (state.ops.arpu) {
+    // Determine series to show:
+    //   - If user selected a specific country/metric, show only that.
+    //   - If "All series", show all available keys from arpu.data.
+    let seriesCountries;
+    if (country === 'All series') {
+      // Show all available series from the loaded dataset
+      seriesCountries = Object.keys(state.ops.arpu.data);
+    } else {
+      seriesCountries = [country];
+    }
+    // Detect unit dynamically from series name (USD if "$" present, otherwise local label)
+    const isGhana = seriesCountries.some(c => /GHS|Ghana/i.test(c));
+    const fmt = isGhana ? (v => 'GHS ' + v.toFixed(2)) : (v => '$' + v.toFixed(2));
+    const datasets = seriesCountries.map((c, i) => {
+      const arr = state.ops.arpu.data[c];
+      if (!arr) return null;
+      return {
+        label: c, data: arr,
+        borderColor: PALETTE[i], backgroundColor: PALETTE[i] + '20',
+        tension: 0.35, pointRadius: 4, pointHoverRadius: 7, borderWidth: 2.5, fill: false
+      };
+    }).filter(Boolean);
+    lineChart('chart-arpu', quarters, datasets, { yCallback: fmt });
+  }
+
+  // Subscribers
+  if (state.ops.subs) {
+    const series = getSeries(state.ops.subs, country);
+    if (series) {
+      lineChart('chart-subs', quarters, [{
+        label: country + ' subscribers (’000)', data: series,
+        borderColor: COLORS.navy, backgroundColor: COLORS.navy + '15',
+        tension: 0.35, pointRadius: 4, pointHoverRadius: 7, borderWidth: 2.5, fill: true
+      }], { yCallback: v => (v/1000).toFixed(1) + 'm' });
+    }
+  }
+
+  // Active Data Subscribers
+  if (state.ops.data) {
+    const series = getSeries(state.ops.data, country);
+    if (series) {
+      lineChart('chart-data', quarters, [{
+        label: country + ' data subs (’000)', data: series,
+        borderColor: COLORS.yellow, backgroundColor: COLORS.yellow + '30',
+        tension: 0.35, pointRadius: 4, pointHoverRadius: 7, borderWidth: 2.5, fill: true
+      }], { yCallback: v => (v/1000).toFixed(1) + 'm' });
+    }
+  }
+
+  // Data penetration
+  if (state.ops.data && state.ops.subs) {
+    const dataSer = getSeries(state.ops.data, country);
+    const subsSer = getSeries(state.ops.subs, country);
+    if (dataSer && subsSer) {
+      const pen = dataSer.map((v, i) => subsSer[i] ? (v / subsSer[i] * 100) : null);
+      lineChart('chart-pen', quarters, [{
+        label: 'Data penetration %', data: pen,
+        borderColor: COLORS.green, backgroundColor: COLORS.green + '20',
+        tension: 0.35, pointRadius: 4, pointHoverRadius: 7, borderWidth: 2.5, fill: true
+      }], { yCallback: v => v.toFixed(0) + '%' });
+    }
+  }
+
+  // Fintech KPIs (group-level, 7 quarters)
+  if (state.ops.fintech) {
+    const ft = state.ops.fintech;
+    const wanted = [
+      { key: 'Transaction volume (bn)', color: COLORS.navy, axis: 'y' },
+      { key: 'Active MoMo users (m)', color: COLORS.yellow, axis: 'y' },
+      { key: 'Loan value (US$m)', color: COLORS.green, axis: 'y1' },
+    ];
+    const datasets = wanted.map(w => {
+      const arr = ft.data[w.key];
+      if (!arr) return null;
+      return {
+        label: w.key, data: arr,
+        borderColor: w.color, backgroundColor: w.color + '20',
+        tension: 0.35, pointRadius: 4, borderWidth: 2.5, fill: false, yAxisID: w.axis
+      };
+    }).filter(Boolean);
+    destroyChart('chart-fintech');
+    charts['chart-fintech'] = new Chart(document.getElementById('chart-fintech'), {
+      type: 'line',
+      data: { labels: ft.quarters, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, padding: 14, font: { size: 11, weight: '600' } } },
+          tooltip: { backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1, padding: 10 }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 } } },
+          y: { type: 'linear', position: 'left', grid: { color: 'rgba(11,18,32,0.06)' }, title: { display: true, text: 'Volume / Users', font: { size: 10 } } },
+          y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Loan value (US$m)', font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
+  // Net subscriber adds — Group QoQ
+  if (state.ops.subs) {
+    const series = getSeries(state.ops.subs, country);
+    if (series) {
+      const adds = series.map((v, i) => i === 0 ? 0 : (v - series[i-1]));
+      barChart('chart-netadds', quarters, [{
+        label: 'Net adds (’000)', data: adds,
+        backgroundColor: adds.map(v => v >= 0 ? COLORS.green + 'C0' : COLORS.red + 'C0'),
+        borderColor: adds.map(v => v >= 0 ? COLORS.green : COLORS.red),
+        borderWidth: 1.5
+      }], { yCallback: v => (v/1000).toFixed(2) + 'm' });
+    }
+  }
+}
+
+/* =================================================================== */
+/* MONTHLY CHARTS (TAB 03) — interpolated                              */
+/* =================================================================== */
+// Build a months array dynamically based on the current data span
+function buildMonths() {
+  // Try to detect the year range from state.ops.subs.quarters
+  if (!state.ops || !state.ops.subs || !state.ops.subs.quarters || !state.ops.subs.quarters.length) {
+    // Default: 2024-2025
+    return ['Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
+            'Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25'];
+  }
+  // Quarters look like "1Q24" or "1Q20" etc — extract year suffix
+  const years = new Set();
+  state.ops.subs.quarters.forEach(q => {
+    const m = String(q).match(/(\d{2})$/);
+    if (m) years.add(m[1]);
+  });
+  const sortedYears = Array.from(years).sort();
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const out = [];
+  sortedYears.forEach(yy => {
+    monthNames.forEach(mn => out.push(mn + ' ' + yy));
+  });
+  return out;
+}
+
+const MONTHS = ['Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
+                'Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25'];
+
+// Seasonality factors (multiplicative, mean ~1)
+const SEASON = {
+  // Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
+  arpu: [0.99, 0.97, 0.99, 1.00, 1.00, 1.00, 1.01, 1.01, 1.00, 1.00, 1.01, 1.02],
+  subs: [1.00, 0.998, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.001],
+};
+
+// Deterministic pseudo-random for stable visuals
+function seedRand(seed) {
+  let s = seed;
+  return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+
+// Convert 8 quarterly values → 24 monthly values, with seasonality & smoothing
+function quarterlyToMonthly(qVals, mode='subs', seed=42) {
+  const rand = seedRand(seed);
+  const months = [];
+  // For each month i (0..23), determine which quarter it's in and the position within that quarter (0,1,2)
+  // Quarters: Q1=24=>months 0,1,2; Q2=24=>3,4,5; ... Q4=25=>21,22,23
+  for (let i = 0; i < 24; i++) {
+    const qIdx = Math.floor(i / 3);
+    const posInQ = i % 3;  // 0 = first month of quarter, 1 = middle, 2 = last
+    const cur = qVals[qIdx];
+    const nxt = (qIdx < 7) ? qVals[qIdx + 1] : qVals[qIdx];
+    if (cur == null) { months.push(null); continue; }
+    // We treat the quarterly value as the AVERAGE for that quarter for ARPU; or end-of-period for stocks (subs)
+    // For ARPU (rate/avg): use a value that averages out to the quarterly mean
+    // For subs (stock): use the END of quarter as month 3 (posInQ=2), interpolate within
+    let monthVal;
+    if (mode === 'arpu') {
+      // Quarterly value = avg of three months. Build a smooth slope from prev-month to next-quarter mean.
+      const slope = (nxt != null) ? (nxt - cur) / 3 : 0;
+      monthVal = cur + slope * (posInQ - 1);  // posInQ-1 centers on middle of quarter
+    } else {
+      // Stocks: previous quarter's stock at posInQ=-1 conceptually; interpolate linearly to current quarter end
+      const prev = (qIdx > 0) ? qVals[qIdx - 1] : (cur - (nxt - cur));
+      // Month 1, 2, 3 of quarter take values between prev and cur (with cur being end-of-quarter)
+      monthVal = prev + (cur - prev) * ((posInQ + 1) / 3);
+    }
+    // Seasonality
+    const monthOfYear = i % 12;
+    monthVal *= SEASON[mode === 'arpu' ? 'arpu' : 'subs'][monthOfYear];
+    // Noise: ±1.5%
+    monthVal *= (1 + (rand() - 0.5) * 0.03);
+    months.push(monthVal);
+  }
+  return months;
+}
+
+function getMonthlyWindow(arr, months, win) {
+  const start = Math.max(0, arr.length - win);
+  return { vals: arr.slice(start), labels: months.slice(start) };
+}
+
+function renderMonthly() {
+  if (!state.ops) {
+    ['m-chart-arpu','m-chart-subs','m-chart-netadds','m-chart-data','m-chart-momo'].forEach(destroyChart);
+    return;
+  }
+  const country = document.getElementById('m-country').value || 'All series';
+  const win = parseInt(document.getElementById('m-period').value, 10);
+  // Build the month labels dynamically — adapts to Ghana (6 years) vs Group (2 years)
+  const MONTHS_DYN = buildMonths();
+
+  // ARPU
+  if (state.ops.arpu) {
+    let seriesCountries;
+    if (country === 'All series') {
+      seriesCountries = Object.keys(state.ops.arpu.data);
+    } else {
+      seriesCountries = [country];
+    }
+    const isGhana = seriesCountries.some(c => /GHS|Ghana/i.test(c));
+    const fmt = isGhana ? (v => 'GHS ' + v.toFixed(2)) : (v => '$' + v.toFixed(2));
+    const datasets = seriesCountries.map((c, i) => {
+      const q = state.ops.arpu.data[c];
+      if (!q) return null;
+      const m = quarterlyToMonthly(q, 'arpu', 13 + c.charCodeAt(0));
+      const w = getMonthlyWindow(m, MONTHS_DYN, win);
+      return {
+        label: c, data: w.vals,
+        borderColor: PALETTE[i], backgroundColor: PALETTE[i] + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 5, borderWidth: 2.5, fill: false,
+        _labels: w.labels
+      };
+    }).filter(Boolean);
+    const labels = datasets.length ? datasets[0]._labels : [];
+    lineChart('m-chart-arpu', labels, datasets, { yCallback: fmt });
+  }
+
+  // Subs
+  if (state.ops.subs) {
+    const q = getSeries(state.ops.subs, country);
+    if (q) {
+      const m = quarterlyToMonthly(q, 'subs', 7);
+      const w = getMonthlyWindow(m, MONTHS_DYN, win);
+      lineChart('m-chart-subs', w.labels, [{
+        label: country, data: w.vals,
+        borderColor: COLORS.navy, backgroundColor: COLORS.navy + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 5, borderWidth: 2.5, fill: true
+      }], { yCallback: v => (v/1000).toFixed(1) + 'm' });
+
+      // Net adds = MoM delta
+      const adds = w.vals.map((v, i) => i === 0 ? 0 : (v - w.vals[i-1]));
+      barChart('m-chart-netadds', w.labels, [{
+        label: 'Net adds (’000)', data: adds,
+        backgroundColor: adds.map(v => v >= 0 ? COLORS.green + 'B0' : COLORS.red + 'B0'),
+        borderColor: adds.map(v => v >= 0 ? COLORS.green : COLORS.red),
+        borderWidth: 1
+      }], { yCallback: v => v >= 0 ? '+' + (v/1000).toFixed(2) + 'm' : (v/1000).toFixed(2) + 'm' });
+    }
+  }
+
+  // Data subs
+  if (state.ops.data) {
+    const q = getSeries(state.ops.data, country);
+    if (q) {
+      const m = quarterlyToMonthly(q, 'subs', 31);
+      const w = getMonthlyWindow(m, MONTHS_DYN, win);
+      lineChart('m-chart-data', w.labels, [{
+        label: country + ' active data subs (’000)', data: w.vals,
+        borderColor: COLORS.yellow, backgroundColor: COLORS.yellow + '25',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 5, borderWidth: 2.5, fill: true
+      }], { yCallback: v => (v/1000).toFixed(1) + 'm' });
+    }
+  }
+
+  // MoMo (group-level, 7 quarters → 21 months, fill forward to 24 if needed)
+  if (state.ops.fintech && state.ops.fintech.data['Active MoMo users (m)']) {
+    const q7 = state.ops.fintech.data['Active MoMo users (m)']; // 7 values
+    // Extend to 8 quarters by linear extrapolation for visualisation
+    const last = q7[q7.length-1];
+    const prev = q7[q7.length-2];
+    const q8 = q7.concat([last + (last - prev)]);
+    const m = quarterlyToMonthly(q8, 'subs', 99);
+    const w = getMonthlyWindow(m, MONTHS_DYN, win);
+    lineChart('m-chart-momo', w.labels, [{
+      label: 'Active MoMo users (m)', data: w.vals,
+      borderColor: COLORS.green, backgroundColor: COLORS.green + '20',
+      tension: 0.4, pointRadius: 0, pointHoverRadius: 5, borderWidth: 2.5, fill: true
+    }], { yCallback: v => v.toFixed(1) + 'm' });
+  }
+}
+
+/* =================================================================== */
+/* DRAG-DROP + AUTO-INIT                                               */
+/* =================================================================== */
+['dragover','dragenter'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); document.body.style.background = 'var(--paper-2)'; }));
+['dragleave','drop'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); document.body.style.background = ''; }));
+document.addEventListener('drop', e => {
+  Array.from(e.dataTransfer.files).forEach(f => readFile(f));
+});
+
+/* =================================================================== */
+/* DASHBOARD CONFIG MODULE                                             */
+/* =================================================================== */
+
+function parseConfig(sheet) {
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  let hdrIdx = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].some(c => String(c).trim() === 'Setting Key')) { hdrIdx = i; break; }
+  }
+  if (hdrIdx < 0) return;
+  const cfg = {};
+  for (let i = hdrIdx + 1; i < rows.length; i++) {
+    const r = rows[i];
+    const key = String(r[0] || '').trim();
+    const val = r[1];
+    if (!key) continue;
+    // Skip section dividers (uppercase rows in col A like "TAB 04: SUMMARY TILES")
+    if (key === key.toUpperCase() && key.includes(' ')) continue;
+    // Skip blank values
+    if (val == null || val === '') continue;
+    cfg[key] = String(val).trim();
+  }
+  state.config = cfg;
+}
+
+// Lookup config with default. Multi-value (comma-separated) settings return array.
+function getConfig(key, defaultValue, asArray = false) {
+  const v = state.config[key];
+  if (v == null || v === '') return defaultValue;
+  if (asArray) return v.split(',').map(s => s.trim()).filter(Boolean);
+  return v;
+}
+
+function applyBranding() {
+  const title = state.config.report_title;
+  const period = state.config.report_period;
+  const version = state.config.framework_version;
+  if (period) {
+    const el = document.querySelector('.meta-strip');
+    // Find and update period
+    el.innerHTML = el.innerHTML
+      .replace(/REPORT \/\/ <strong>[^<]+<\/strong>/, 'REPORT // <strong>' + esc(period) + '</strong>')
+      .replace(/FRAMEWORK \/\/ <strong>[^<]+<\/strong>/, 'FRAMEWORK // <strong>' + esc(version || 'v4.0') + '</strong>');
+  }
+  // Title is composite (with <em>), only update if explicitly configured
+  if (title && title !== "MTN GHANA — FY25 KRI Dashboard") {
+    const h1 = document.querySelector('h1.title');
+    if (h1) h1.innerHTML = esc(title);
+  }
+}
+
+// Auto-pick top-N KPIs by |% impact| from a given output, optionally filtered by category set.
+function autoPickKpis(output, n, categories = null) {
+  if (!output) return [];
+  const items = Object.values(output).map(o => {
+    const k = state.baseCase[o.id];
+    if (!k) return null;
+    if (categories && !categories.includes(k.cat)) return null;
+    const pct = o.base !== 0 ? Math.abs(o.scenario - o.base) / Math.abs(o.base) : 0;
+    return { id: o.id, pct };
+  }).filter(Boolean);
+  items.sort((a, b) => b.pct - a.pct);
+  return items.slice(0, n).map(it => it.id);
+}
+
+// Resolve a config setting that lists KPI IDs; if missing, auto-pick.
+// Validates that all IDs exist in baseCase, drops any that don't, and pads via auto-pick if needed.
+function resolveKpiList(key, autoCategories, count, output = null) {
+  const configured = getConfig(key, null, true);
+  let ids;
+  if (configured && configured.length) {
+    ids = configured.filter(id => state.baseCase[id]);  // validate
+  } else {
+    ids = [];
+  }
+  // If short of count, top up via auto-pick from output if available
+  if (output && ids.length < count) {
+    const auto = autoPickKpis(output, count * 2, autoCategories);
+    for (const id of auto) {
+      if (ids.length >= count) break;
+      if (!ids.includes(id)) ids.push(id);
+    }
+  }
+  // Final fallback: take first N matching base-case KPIs by category
+  if (ids.length < count) {
+    const fallback = Object.values(state.baseCase)
+      .filter(k => !autoCategories || autoCategories.includes(k.cat))
+      .map(k => k.id);
+    for (const id of fallback) {
+      if (ids.length >= count) break;
+      if (!ids.includes(id)) ids.push(id);
+    }
+  }
+  return ids.slice(0, count);
+}
+
+// Resolve a single KPI ID config setting with fallback chain:
+//   1. Use configured ID if it exists in baseCase
+//   2. Use default if it exists in baseCase
+//   3. Auto-pick highest-impact KPI from output (if provided) matching categories
+//   4. First KPI in baseCase matching categories
+function resolveSingleKpi(key, defaultId, autoCategories = null, output = null) {
+  const configured = getConfig(key, null);
+  if (configured && state.baseCase[configured]) return configured;
+  if (defaultId && state.baseCase[defaultId]) return defaultId;
+  if (output) {
+    const auto = autoPickKpis(output, 1, autoCategories);
+    if (auto.length) return auto[0];
+  }
+  const fallback = Object.values(state.baseCase).find(k => !autoCategories || autoCategories.includes(k.cat));
+  return fallback ? fallback.id : null;
+}
+
+// Generic unit formatter — uses config patterns or sensible defaults.
+function fmtVal(val, unit) {
+  if (val == null || isNaN(val)) return '—';
+  // Look for a configured pattern: format_<unit>
+  const pattern = getConfig('format_' + unit, null);
+  if (pattern) {
+    // Replace numeric placeholders with formatted value
+    // Patterns like 'R#.#bn' → 'R{val:.1f}bn'
+    // Count decimal '#' after the dot in the first numeric block
+    const m = pattern.match(/(#+(?:\.#+)?)/);
+    if (m) {
+      const placeholder = m[1];
+      const dotIdx = placeholder.indexOf('.');
+      const decimals = dotIdx === -1 ? 0 : placeholder.length - dotIdx - 1;
+      const formatted = val.toFixed(decimals);
+      return pattern.replace(placeholder, formatted);
+    }
+    return pattern.replace(/#+/g, val.toFixed(2));
+  }
+  // Built-in defaults if no config
+  switch ((unit || '').toLowerCase()) {
+    case 'usd': return '$' + val.toFixed(2);
+    case 'rbn': return 'R' + val.toFixed(1) + 'bn';
+    case 'bn':  return val.toFixed(1) + 'bn';
+    case 'm':   return val.toFixed(1) + 'm';
+    case '%':   return val.toFixed(1) + '%';
+    case 'pp':  return val.toFixed(1) + 'pp';
+    case 'x':   return val.toFixed(2) + 'x';
+    case 'cents': return val.toFixed(0) + 'c';
+    case 'bps': return val.toFixed(1) + ' bps';
+    case 'hrs': return val.toFixed(1) + ' hrs';
+    case 'score': return val.toFixed(0);
+    case 'count': return val.toFixed(0);
+    default: return val.toFixed(2) + (unit ? ' ' + unit : '');
+  }
+}
+
+/* =================================================================== */
+/* DATA VALIDATION ENGINE                                              */
+/* =================================================================== */
+
+// Built-in fallback vocabularies. These act as defaults if the workbook
+// doesn't include "Config Lists" / "Macro Overlays" / "Category Definitions" / "RAG Colours" sheets.
+// When those sheets are present, the values from the workbook override these.
+let VALID_CATEGORIES = ['Strategic','Governance','Financial','Technology','Operational','External'];
+let VALID_TYPES_KRI  = ['Leading','Lagging'];
+let VALID_RAG        = ['Red','Amber','Green'];
+let VALID_BC_CATS    = ['Financial','Operational','Strategic','Technology','Governance','External'];
+let VALID_DIRECTIONS = ['higher','lower'];
+let VALID_SCEN_TYPES = ['Stress','Shock','Combined','Reverse'];
+let VALID_IMPACT_TYPES = ['pct','delta','abs'];
+let VALID_TREND_SYMBOLS = ['↑','→','↓'];
+let VALID_FREQUENCIES   = ['Per meeting','Daily','Weekly','Monthly','Quarterly','Half-yearly','Annual','Continuous'];
+let VALID_UNITS         = ['Rbn','bn','Rm','m','%','pp','bps','USD','x','cents','hrs','score','count','days'];
+
+// RAG colour mapping (also fallback; overridden from "RAG Colours" sheet)
+let RAG_COLORS = {
+  'Red':   { bg: '#C53030', fg: '#FFFFFF', order: 1 },
+  'Amber': { bg: '#D69E2E', fg: '#FFFFFF', order: 2 },
+  'Green': { bg: '#2F855A', fg: '#FFFFFF', order: 3 },
+};
+
+// Category card definitions (fallback; overridden from "Category Definitions" sheet)
+let CATEGORY_DEFS = [
+  { num: '01', name: 'Strategic',   blurb: 'Long-term portfolio, segments mix, market share defence' },
+  { num: '02', name: 'Governance',  blurb: 'Board oversight, NCA & BoG regulatory licensing, ethics & conduct' },
+  { num: '03', name: 'Financial',   blurb: 'Liquidity, FX (Cedi/USD), capital, margin defence, dividend upstreaming' },
+  { num: '04', name: 'Technology',  blurb: 'Cyber, MoMo platform resilience, data privacy, network quality' },
+  { num: '05', name: 'Operational', blurb: 'Network coverage, energy (ECG/diesel), supply chain, people & H&S' },
+  { num: '06', name: 'External',    blurb: 'Macro (inflation, GDP, FX), e-levy & regulatory, competition, climate' },
+];
+
+// Macro overlay definitions (fallback; overridden from "Macro Overlays" sheet)
+let MACRO_OVERLAYS = [
+  { id: 'fx',    label: 'FX shock %',      min: -40, max: 20, default: 0,
+    impacts: [['FIN01',0.35],['FIN02',0.40],['FIN07',0.85],['OPS04',0.30],['OPS05',0.75]] },
+  { id: 'inf',   label: 'Inflation %',     min: 0,   max: 50, default: 0,
+    impacts: [['FIN03',-0.10],['FIN12',0.18],['OPS04',-0.20],['OPS19',-0.25]] },
+  { id: 'churn', label: 'Churn pressure',  min: 0,   max: 15, default: 0,
+    impacts: [['OPS01',-0.50],['OPS04',-0.30],['FIN01',-0.60],['OPS19',-1.50]] },
+];
+
+function parseConfigLists(sheet) {
+  // Each list is a vertical column starting from row 4 (header) with values below
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  // Find the header row (contains "Risk Categories", "RAG States", etc.)
+  let hdrIdx = -1;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    if (rows[i].some(c => String(c).trim() === 'Risk Categories')) { hdrIdx = i; break; }
+  }
+  if (hdrIdx < 0) return;
+  const headers = rows[hdrIdx].map(h => String(h).trim());
+
+  function readCol(colIdx) {
+    const vals = [];
+    for (let r = hdrIdx + 1; r < rows.length; r++) {
+      const v = rows[r][colIdx];
+      if (v == null || String(v).trim() === '') break;
+      vals.push(String(v).trim());
+    }
+    return vals;
+  }
+  const map = {
+    'Risk Categories': v => { VALID_CATEGORIES = v; VALID_BC_CATS = v; },
+    'RAG States':      v => { VALID_RAG = v; },
+    'Indicator Types': v => { VALID_TYPES_KRI = v; },
+    'Scenario Types':  v => { VALID_SCEN_TYPES = v; },
+    'Impact Types':    v => { VALID_IMPACT_TYPES = v; },
+    'Directions':      v => { VALID_DIRECTIONS = v; },
+    'Trend Symbols':   v => { VALID_TREND_SYMBOLS = v; },
+    'Frequencies':     v => { VALID_FREQUENCIES = v; },
+    'Units':           v => { VALID_UNITS = v; },
+  };
+  Object.entries(map).forEach(([name, setter]) => {
+    const idx = headers.indexOf(name);
+    if (idx >= 0) {
+      const vals = readCol(idx);
+      if (vals.length) setter(vals);
+    }
+  });
+}
+
+function parseRAGColors(sheet) {
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  let hdrIdx = -1;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    if (rows[i].some(c => String(c).trim() === 'RAG State')) { hdrIdx = i; break; }
+  }
+  if (hdrIdx < 0) return;
+  const newColors = {};
+  for (let r = hdrIdx + 1; r < rows.length; r++) {
+    const row = rows[r];
+    const state = String(row[0] || '').trim();
+    const bg = String(row[1] || '').trim();
+    const fg = String(row[2] || '').trim();
+    const order = Number(row[3]);
+    if (!state) continue;
+    newColors[state] = {
+      bg: bg.startsWith('#') ? bg : ('#' + bg),
+      fg: fg.startsWith('#') ? fg : ('#' + (fg || 'FFFFFF')),
+      order: isNaN(order) ? 99 : order
+    };
+  }
+  if (Object.keys(newColors).length) RAG_COLORS = newColors;
+}
+
+function parseCategoryDefs(sheet) {
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  let hdrIdx = -1;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    if (rows[i].some(c => String(c).trim() === 'Category Name')) { hdrIdx = i; break; }
+  }
+  if (hdrIdx < 0) return;
+  const defs = [];
+  for (let r = hdrIdx + 1; r < rows.length; r++) {
+    const row = rows[r];
+    const order = row[0];
+    const name = String(row[1] || '').trim();
+    const num = String(row[2] || '').trim();
+    const blurb = String(row[3] || '').trim();
+    if (!name) continue;
+    defs.push({ order: Number(order) || (r - hdrIdx), num, name, blurb });
+  }
+  if (defs.length) {
+    defs.sort((a,b) => a.order - b.order);
+    CATEGORY_DEFS = defs;
+  }
+}
+
+function parseMacroOverlays(sheet) {
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  let hdrIdx = -1;
+  for (let i = 0; i < Math.min(rows.length, 10); i++) {
+    if (rows[i].some(c => String(c).trim() === 'Overlay ID')) { hdrIdx = i; break; }
+  }
+  if (hdrIdx < 0) return;
+  const overlays = {};
+  let currentOverlay = null;
+  for (let r = hdrIdx + 1; r < rows.length; r++) {
+    const row = rows[r];
+    const ovid = String(row[0] || '').trim();
+    if (ovid) {
+      currentOverlay = {
+        id: ovid,
+        label: String(row[1] || ovid).trim(),
+        min: Number(row[2]) || 0,
+        max: Number(row[3]) || 100,
+        default: Number(row[4]) || 0,
+        impacts: []
+      };
+      overlays[ovid] = currentOverlay;
+    }
+    if (currentOverlay && row[5]) {
+      const kpiId = String(row[5]).trim();
+      const sens = Number(row[6]);
+      if (kpiId && !isNaN(sens)) currentOverlay.impacts.push([kpiId, sens]);
+    }
+  }
+  const list = Object.values(overlays);
+  if (list.length) MACRO_OVERLAYS = list;
+}
+
+// Apply vocabulary lists, RAG colours, category defs, macro overlays to the UI.
+// Called after vocabulary sheets are parsed.
+function applyVocabularyConfig() {
+  // 1. Update CATEGORIES (used by Tab 01)
+  CATEGORIES.length = 0;
+  CATEGORY_DEFS.forEach(d => CATEGORIES.push({ num: d.num, name: d.name, blurb: d.blurb }));
+
+  // 2. Inject RAG colour CSS dynamically (overrides static .rag.Red/.Amber/.Green)
+  let styleEl = document.getElementById('dynamic-rag-style');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'dynamic-rag-style';
+    document.head.appendChild(styleEl);
+  }
+  const ragRules = Object.entries(RAG_COLORS).map(([state, c]) =>
+    `td.rag.${esc(state)}, .chip.on.rag-${esc(state)} { background: ${c.bg}; color: ${c.fg}; }
+     .vb-issue .sev.${esc(state).toUpperCase()} { background: ${c.bg}; color: ${c.fg}; }`
+  ).join('\n');
+  styleEl.textContent = ragRules;
+
+  // 3. Rebuild macro overlay sliders panel
+  rebuildOverlaySliders();
+
+  // 4. Rebuild RAG filter chips on Tab 01 (currently fixed Red/Amber/Green)
+  rebuildRAGChips();
+}
+
+function rebuildRAGChips() {
+  const bar = document.getElementById('filter-bar');
+  if (!bar) return;
+  // Find the existing RAG chips and replace
+  const chips = bar.querySelectorAll('.chip[data-filter="rag"]');
+  if (!chips.length) return;
+  const parent = chips[0].parentNode;
+  // Remove all RAG chips
+  chips.forEach(c => c.remove());
+  // Find anchor (the search box or end)
+  const searchBox = bar.querySelector('.search-box');
+  // Build new chips: All + each RAG state in severity order
+  const states = Object.entries(RAG_COLORS).sort((a,b) => a[1].order - b[1].order).map(e => e[0]);
+  const allChip = document.createElement('span');
+  allChip.className = 'chip on';
+  allChip.dataset.filter = 'rag';
+  allChip.dataset.value = 'all';
+  allChip.textContent = 'All';
+  parent.insertBefore(allChip, searchBox);
+  states.forEach(s => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.dataset.filter = 'rag';
+    chip.dataset.value = s;
+    chip.textContent = s;
+    parent.insertBefore(chip, searchBox);
+  });
+  // Re-bind clicks
+  document.querySelectorAll('.chip[data-filter="rag"]').forEach(c => {
+    c.onclick = () => {
+      state.filters.rag = c.dataset.value;
+      renderFilters();
+      applyFilters();
+    };
+  });
+}
+
+function rebuildOverlaySliders() {
+  // Find the panel — placed below severity slider in scenario panel
+  const panel = document.querySelector('.scenario-panel');
+  if (!panel) return;
+  // Find or create an overlay container
+  let container = document.getElementById('macro-overlay-container');
+  if (!container) {
+    // Find the severity slider's containing group and insert AFTER it
+    const sevSlider = document.getElementById('sev-mult');
+    if (!sevSlider) return;
+    const sevGroup = sevSlider.closest('.slider-group');
+    container = document.createElement('div');
+    container.id = 'macro-overlay-container';
+    sevGroup.after(container);
+  }
+  container.innerHTML = '';
+  MACRO_OVERLAYS.forEach(ov => {
+    const g = document.createElement('div');
+    g.className = 'slider-group';
+    const unit = ov.unit || (ov.label.includes('%') ? '%' : '');
+    g.innerHTML = `
+      <label>Macro overlay — ${esc(ov.label)} <span class="sval" id="${esc(ov.id)}-val">${ov.default}${unit}</span></label>
+      <input type="range" id="${esc(ov.id)}-overlay" min="${ov.min}" max="${ov.max}" value="${ov.default}"
+             oninput="updateSliderDisplay(); recomputeScenario();">
+      <div class="srange"><span>${ov.min}</span><span>${Math.round((ov.min + ov.max) / 2)}</span><span>${ov.max}</span></div>`;
+    container.appendChild(g);
+  });
+}
+
+/* === Apply flat Dashboard Config key-value entries to vocabulary/categories/overlays === */
+function applyFlatConfig() {
+  const c = state.config;
+  if (!c || !Object.keys(c).length) return;
+
+  // 1. VALID DROPDOWNS — split comma-separated values
+  const dropdownMap = {
+    'valid_kri_types':     v => { VALID_TYPES_KRI = v; },
+    'valid_rag_states':    v => { VALID_RAG = v; },
+    'valid_trend_symbols': v => { VALID_TREND_SYMBOLS = v; },
+    'valid_scenario_types':v => { VALID_SCEN_TYPES = v; },
+    'valid_impact_types':  v => { VALID_IMPACT_TYPES = v; },
+    'valid_directions':    v => { VALID_DIRECTIONS = v; },
+    'valid_frequencies':   v => { VALID_FREQUENCIES = v; },
+    'valid_units':         v => { VALID_UNITS = v; },
+  };
+  Object.entries(dropdownMap).forEach(([key, setter]) => {
+    if (c[key]) {
+      const vals = c[key].split(',').map(s => s.trim()).filter(Boolean);
+      if (vals.length) setter(vals);
+    }
+  });
+
+  // 2. RISK CATEGORIES — build from category_NN_name + category_NN_blurb pairs
+  const categories = [];
+  for (let i = 1; i <= 12; i++) {
+    const num = String(i).padStart(2, '0');
+    const name = c[`category_${num}_name`];
+    if (name && name.trim()) {
+      categories.push({
+        num,
+        name: name.trim(),
+        blurb: (c[`category_${num}_blurb`] || '').trim()
+      });
+    }
+  }
+  if (categories.length) {
+    CATEGORY_DEFS = categories;
+    VALID_CATEGORIES = categories.map(c => c.name);
+    VALID_BC_CATS = VALID_CATEGORIES;
+  }
+
+  // 3. RAG COLOURS — pull rag_color_<State> entries (only for states in VALID_RAG)
+  const ragColors = {};
+  VALID_RAG.forEach((state, i) => {
+    const key = `rag_color_${state}`;
+    if (c[key]) {
+      const hex = c[key].trim();
+      ragColors[state] = {
+        bg: hex.startsWith('#') ? hex : ('#' + hex),
+        fg: '#FFFFFF',
+        order: i + 1
+      };
+    } else if (RAG_COLORS[state]) {
+      // Keep built-in default
+      ragColors[state] = RAG_COLORS[state];
+    } else {
+      // No colour configured — use a fallback
+      const defaults = ['#C53030', '#D69E2E', '#2F855A', '#1A202C', '#2C5282', '#7C3AED'];
+      ragColors[state] = { bg: defaults[i % defaults.length], fg: '#FFFFFF', order: i + 1 };
+    }
+  });
+  if (Object.keys(ragColors).length) RAG_COLORS = ragColors;
+
+  // 4. MACRO OVERLAYS — parse overlay_<id>_label / _min / _max / _unit / _kpis
+  const overlayIds = new Set();
+  Object.keys(c).forEach(key => {
+    const m = key.match(/^overlay_([a-z]+)_(?:label|min|max|unit|kpis)$/i);
+    if (m) overlayIds.add(m[1]);
+  });
+  const overlays = [];
+  overlayIds.forEach(id => {
+    const label = c[`overlay_${id}_label`];
+    if (!label || !label.trim()) return;  // skip if no label (means disabled)
+    const min = Number(c[`overlay_${id}_min`]) || 0;
+    const max = Number(c[`overlay_${id}_max`]) || 100;
+    const unit = c[`overlay_${id}_unit`] || '%';
+    const kpisStr = c[`overlay_${id}_kpis`] || '';
+    // Parse "FIN01:0.35,FIN02:0.40" or "FIN01:0.35:pp,FIN02:0.40:pct"
+    // Output format: [kpiId, coef, mode] tuples — mode is 'pp', 'pct', or 'auto' (default).
+    const impacts = [];
+    kpisStr.split(',').forEach(pair => {
+      const parts = pair.trim().split(':');
+      if (parts.length >= 2) {
+        const kpiId = parts[0].trim();
+        const coef = Number(parts[1]);
+        const mode = (parts[2] || 'auto').trim();  // 'auto' lets the loop pick based on KPI unit
+        if (kpiId && !isNaN(coef)) impacts.push([kpiId, coef, mode]);
+      }
+    });
+    overlays.push({ id: id.toLowerCase(), label: label.trim(), min, max, unit, default: 0, impacts });
+  });
+  if (overlays.length) MACRO_OVERLAYS = overlays;
+
+  // 5. CUSTOM IMPACT TYPES — pull impact_<type>_formula entries
+  IMPACT_TYPE_FORMULAS = {};
+  ['pct','delta','abs'].forEach(t => {
+    const f = c[`impact_${t}_formula`];
+    if (f && f.trim()) IMPACT_TYPE_FORMULAS[t] = f.trim();
+  });
+  // Allow additional impact types defined in config (e.g. impact_ratio_formula)
+  Object.keys(c).forEach(key => {
+    const m = key.match(/^impact_([a-z]+)_formula$/);
+    if (m && c[key] && c[key].trim() && !IMPACT_TYPE_FORMULAS[m[1]]) {
+      IMPACT_TYPE_FORMULAS[m[1]] = c[key].trim();
+      if (!VALID_IMPACT_TYPES.includes(m[1])) VALID_IMPACT_TYPES.push(m[1]);
+    }
+  });
+}
+
+// Holds custom impact-type formulas if configured. Falls back to built-in logic if empty.
+let IMPACT_TYPE_FORMULAS = {};
+
+// Safely evaluate a custom impact formula. Variables: base, value, sev.
+function evalImpactFormula(formula, base, value, sev) {
+  // Sandboxed: only allow numeric + arithmetic operations + named variables
+  if (!/^[0-9+\-*/().\s,a-z_]+$/i.test(formula)) {
+    console.warn('Invalid impact formula rejected:', formula);
+    return base;
+  }
+  try {
+    // Build a function with explicit named args
+    const fn = new Function('base', 'value', 'sev', 'return (' + formula + ');');
+    const r = fn(base, value, sev);
+    return (typeof r === 'number' && isFinite(r)) ? r : base;
+  } catch (e) {
+    console.warn('Impact formula error:', e);
+    return base;
+  }
+}
+
+function runValidation() {
+  const issues = [];
+
+  // --- File & sheet integrity ---
+  // Track which loaded files were under non-default filenames
+  if (state.autoDetectFiles && state.autoDetectFiles.length) {
+    const warnOnAlias = !state.config || state.config.autodetect_warn_on_alias !== 'false';
+    if (warnOnAlias) {
+      state.autoDetectFiles.forEach(f => {
+        if (f.source === 'discovered') {
+          issues.push({
+            sev: 'WARN',
+            where: 'Auto-detect',
+            msg: `Loaded "${f.name}" via discovery — this isn't the configured default. Consider updating expected_kri_filename / expected_data_filename in Dashboard Config to match.`
+          });
+        }
+      });
+    }
+  }
+  // Workbooks that loaded but lack required sheets
+  if (state.loadedSheetNames && state.loadedSheetNames.length) {
+    const need = ['KRI Register', 'Base Case', 'Scenario Library', 'Dashboard Config'];
+    const haveCanonical = new Set();
+    // Check via the values we successfully parsed
+    if (state.rows && state.rows.length) haveCanonical.add('KRI Register');
+    if (state.baseCase && Object.keys(state.baseCase).length) haveCanonical.add('Base Case');
+    if (state.scenarios && state.scenarios.length) haveCanonical.add('Scenario Library');
+    if (state.config && Object.keys(state.config).length) haveCanonical.add('Dashboard Config');
+    // Cross-check against what's loaded
+    need.forEach(n => {
+      if (!haveCanonical.has(n)) {
+        // Only flag if we actually loaded something (otherwise nothing's loaded at all)
+        if (haveCanonical.size > 0) {
+          // See if a sheet name was overridden in config
+          const overrideKey = 'sheet_' + n.toLowerCase().replace(' ', '_');
+          if (state.config && state.config[overrideKey]) {
+            issues.push({ sev: 'WARN', where: 'Sheet rename',
+              msg: `Sheet "${n}" was expected but loaded as "${state.config[overrideKey]}" (per Dashboard Config). If that wasn't intended, restore the original name or update the config.` });
+          } else {
+            issues.push({ sev: 'BLOCKER', where: 'Sheet structure',
+              msg: `Sheet "${n}" is missing or renamed. Either restore the name OR set sheet_${n.toLowerCase().replace(' ', '_')} in Dashboard Config to point to the new name.` });
+          }
+        }
+      }
+    });
+  }
+
+  // --- KRI Register checks ---
+  state.rows.forEach((r, i) => {
+    const where = `KRI #${r.num || (i+1)} (row ${i+2})`;
+    if (!r.name || String(r.name).trim() === '') {
+      issues.push({ sev: 'BLOCKER', where, msg: 'Missing KRI name' });
+    }
+    if (r.cat && !VALID_CATEGORIES.includes(r.cat)) {
+      issues.push({ sev: 'BLOCKER', where, msg: `Invalid Risk Category "${r.cat}". Must be one of: ${VALID_CATEGORIES.join(', ')}` });
+    }
+    if (r.type && !VALID_TYPES_KRI.includes(r.type)) {
+      issues.push({ sev: 'BLOCKER', where, msg: `Invalid Type "${r.type}". Must be Leading or Lagging.` });
+    }
+    if (r.rag && !VALID_RAG.includes(r.rag)) {
+      issues.push({ sev: 'BLOCKER', where, msg: `Invalid RAG status "${r.rag}". Must be Red, Amber, or Green.` });
+    }
+  });
+
+  // Duplicate KRI numbers
+  const numCounts = {};
+  state.rows.forEach(r => { if (r.num != null && r.num !== '') numCounts[r.num] = (numCounts[r.num] || 0) + 1; });
+  Object.entries(numCounts).forEach(([num, count]) => {
+    if (count > 1) issues.push({ sev: 'WARN', where: 'KRI Register', msg: `KRI number "${num}" appears ${count} times — should be unique.` });
+  });
+
+  // --- Base Case checks ---
+  if (state.baseCase) {
+    const bcArr = Object.values(state.baseCase);
+    bcArr.forEach(k => {
+      const where = `Base Case ${k.id}`;
+      if (!k.id || !/^[A-Z]+\d+$/.test(k.id)) {
+        issues.push({ sev: 'BLOCKER', where, msg: `Invalid KPI ID format "${k.id}". Must be uppercase letters + digits (e.g. FIN01).` });
+      }
+      if (k.value == null || isNaN(k.value)) {
+        issues.push({ sev: 'BLOCKER', where, msg: `Base value is not numeric (got "${k.value}").` });
+      }
+      if (k.cat && !VALID_BC_CATS.includes(k.cat)) {
+        issues.push({ sev: 'WARN', where, msg: `Category "${k.cat}" is not standard — auto-pick logic may not match.` });
+      }
+      if (k.direction && !VALID_DIRECTIONS.includes(k.direction)) {
+        issues.push({ sev: 'BLOCKER', where, msg: `Invalid direction "${k.direction}". Must be "higher" or "lower".` });
+      }
+      if (!k.unit) {
+        issues.push({ sev: 'WARN', where, msg: 'No unit specified — values may not format correctly in charts.' });
+      }
+    });
+    // Duplicate IDs
+    const idCounts = {};
+    bcArr.forEach(k => { idCounts[k.id] = (idCounts[k.id] || 0) + 1; });
+    Object.entries(idCounts).forEach(([id, count]) => {
+      if (count > 1) issues.push({ sev: 'BLOCKER', where: 'Base Case', msg: `Duplicate KPI ID "${id}" appears ${count} times.` });
+    });
+  }
+
+  // --- Scenario Library checks ---
+  if (state.scenarios) {
+    state.scenarios.forEach(s => {
+      const where = `Scenario ${s.id}`;
+      if (s.type && !VALID_SCEN_TYPES.includes(s.type)) {
+        issues.push({ sev: 'WARN', where, msg: `Scenario type "${s.type}" is non-standard. Type-filter chips may not include it.` });
+      }
+      s.impacts.forEach((imp, idx) => {
+        const ww = `${where} impact #${idx+1}`;
+        if (!VALID_IMPACT_TYPES.includes(imp.itype)) {
+          issues.push({ sev: 'BLOCKER', where: ww, msg: `Invalid impact type "${imp.itype}". Must be pct, delta, or abs.` });
+        }
+        if (imp.ival == null || isNaN(imp.ival)) {
+          issues.push({ sev: 'BLOCKER', where: ww, msg: `Impact value is not numeric.` });
+        }
+        if (state.baseCase && !state.baseCase[imp.kpiId]) {
+          issues.push({ sev: 'BLOCKER', where: ww, msg: `KPI ID "${imp.kpiId}" does not exist in Base Case. Impact will be ignored.` });
+        }
+      });
+    });
+  }
+
+  // --- Dashboard Config anchor checks ---
+  if (state.config && state.baseCase) {
+    const anchorKeys = ['tile_1_kpi','tile_2_kpi','tile_3_kpi','tile_4_kpi',
+                        'waterfall_financial_kpi','waterfall_nonfinancial_kpi'];
+    anchorKeys.forEach(key => {
+      const val = state.config[key];
+      if (val && !state.baseCase[val]) {
+        issues.push({ sev: 'WARN', where: `Dashboard Config "${key}"`,
+                      msg: `Configured KPI "${val}" does not exist in Base Case. Will auto-fall back to highest-impact KPI.` });
+      }
+    });
+    // Compare KPI lists
+    ['compare_financial_kpis','compare_nonfinancial_kpis'].forEach(key => {
+      const val = state.config[key];
+      if (val) {
+        val.split(',').map(s => s.trim()).forEach(id => {
+          if (id && !state.baseCase[id]) {
+            issues.push({ sev: 'WARN', where: `Dashboard Config "${key}"`,
+                          msg: `KPI "${id}" not in Base Case — will be dropped from chart.` });
+          }
+        });
+      }
+    });
+  }
+
+  // --- Macro Overlay KPI reference checks ---
+  if (state.baseCase) {
+    MACRO_OVERLAYS.forEach(ov => {
+      ov.impacts.forEach(([kpiId, sens]) => {
+        if (!state.baseCase[kpiId]) {
+          issues.push({ sev: 'BLOCKER', where: `Macro Overlay "${ov.id}"`,
+            msg: `KPI "${kpiId}" referenced in this overlay does not exist in Base Case. The overlay will silently skip this KPI.` });
+        }
+        if (isNaN(sens)) {
+          issues.push({ sev: 'BLOCKER', where: `Macro Overlay "${ov.id}"`,
+            msg: `Non-numeric sensitivity for KPI "${kpiId}".` });
+        }
+      });
+      if (ov.impacts.length === 0) {
+        issues.push({ sev: 'WARN', where: `Macro Overlay "${ov.id}"`,
+          msg: 'No KPI impacts defined. The slider will move but have no effect.' });
+      }
+    });
+  }
+
+  // --- Category Definitions consistency ---
+  CATEGORY_DEFS.forEach(d => {
+    if (d.name && VALID_CATEGORIES.length && !VALID_CATEGORIES.includes(d.name)) {
+      issues.push({ sev: 'WARN', where: `Category card "${d.name}"`,
+        msg: `Card name "${d.name}" is not in Config Lists → Risk Categories. KRIs in the register won't be filed under this card.` });
+    }
+  });
+
+  return issues;
+}
+
+function renderValidationBanner(issues) {
+  const banner = document.getElementById('validation-banner');
+  banner.classList.remove('hidden', 'ok', 'warn', 'err');
+
+  const blockers = issues.filter(i => i.sev === 'BLOCKER');
+  const warns = issues.filter(i => i.sev === 'WARN');
+
+  let cls, icon, headline;
+  if (blockers.length > 0) {
+    cls = 'err'; icon = '✕';
+    headline = `${blockers.length} BLOCKER issue${blockers.length === 1 ? '' : 's'} found — dashboard may not display correctly until resolved` +
+               (warns.length > 0 ? ` (+${warns.length} warning${warns.length === 1 ? '' : 's'})` : '');
+  } else if (warns.length > 0) {
+    cls = 'warn'; icon = '!';
+    headline = `${warns.length} warning${warns.length === 1 ? '' : 's'} — dashboard will run but check for data-quality issues`;
+  } else {
+    cls = 'ok'; icon = '✓';
+    headline = 'Data validation passed — dashboard ready';
+  }
+
+  banner.classList.add(cls);
+  document.getElementById('vb-icon').textContent = icon;
+  document.getElementById('vb-headline').textContent = headline;
+
+  const list = document.getElementById('vb-issues');
+  if (issues.length === 0) {
+    list.innerHTML = '';
+    document.getElementById('vb-toggle').classList.add('hidden');
+  } else {
+    document.getElementById('vb-toggle').classList.remove('hidden');
+    // Order: blockers first, then warns
+    const ordered = blockers.concat(warns);
+    // Cap to first 15 with a "+N more" suffix if needed
+    const cap = 15;
+    const shown = ordered.slice(0, cap);
+    list.innerHTML = shown.map(iss => `
+      <div class="vb-issue">
+        <span class="sev ${iss.sev}">${iss.sev}</span>
+        <div>
+          <div class="msg">${esc(iss.msg)}</div>
+          <div class="where">@ ${esc(iss.where)}</div>
+        </div>
+      </div>
+    `).join('') + (ordered.length > cap ? `<div class="vb-issue"><span class="sev INFO">+${ordered.length - cap}</span><div class="msg">more issues — open the Data Quality sheet in the workbook for the full list.</div></div>` : '');
+  }
+}
+
+function toggleValidationBanner() {
+  const banner = document.getElementById('validation-banner');
+  banner.classList.toggle('vb-list-collapsed');
+  document.getElementById('vb-toggle').textContent =
+    banner.classList.contains('vb-list-collapsed') ? 'Show details' : 'Hide details';
+}
+
+/* =================================================================== */
+/* SCENARIO MODULE — Base Case, Library, Compute, Charts               */
+/* =================================================================== */
+
+function parseBaseCase(sheet) {
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  // Find header row by KPI ID
+  let hdrIdx = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].some(c => String(c).trim() === 'KPI ID')) { hdrIdx = i; break; }
+  }
+  if (hdrIdx < 0) return;
+  const base = {};
+  for (let i = hdrIdx + 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r[0]) continue;
+    const id = String(r[0]).trim();
+    if (!id.match(/^[A-Z]+\d+$/)) continue;
+    base[id] = {
+      id, cat: r[1], name: r[2], type: r[3],
+      value: Number(r[4]), unit: r[5],
+      direction: String(r[6] || 'higher').toLowerCase(),
+      notes: r[7]
+    };
+  }
+  state.baseCase = base;
+}
+
+function parseScenarios(sheet) {
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+  let hdrIdx = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].some(c => String(c).trim() === 'Scenario ID')) { hdrIdx = i; break; }
+  }
+  if (hdrIdx < 0) return;
+  const scens = {};
+  // Merged cells appear as blanks except in the first row
+  let curr = null;
+  for (let i = hdrIdx + 1; i < rows.length; i++) {
+    const r = rows[i];
+    if (r[0]) {
+      // New scenario row
+      curr = {
+        id: String(r[0]).trim(),
+        type: String(r[1] || '').trim(),
+        name: String(r[2] || '').trim(),
+        desc: String(r[3] || '').trim(),
+        plaus: Number(r[7]) || 0,
+        sev: Number(r[8]) || 0,
+        recov: Number(r[9]) || 0,
+        lever: String(r[10] || '').trim(),
+        impacts: []
+      };
+      scens[curr.id] = curr;
+    }
+    if (curr && r[4]) {
+      const kpiId = String(r[4]).trim();
+      const itype = String(r[5] || 'pct').trim();
+      const ival = Number(r[6]);
+      if (!isNaN(ival)) curr.impacts.push({ kpiId, itype, ival });
+    }
+  }
+  state.scenarios = Object.values(scens);
+}
+
+function initScenarioTabs() {
+  // Filter chips
+  document.querySelectorAll('#scen-type-filter .chip').forEach(c => {
+    c.onclick = () => {
+      document.querySelectorAll('#scen-type-filter .chip').forEach(x => x.classList.remove('on'));
+      c.classList.add('on');
+      state.scenarioFilter = c.dataset.stype;
+      renderScenarioList();
+    };
+  });
+  // Reverse stress KPI dropdown
+  const sel = document.getElementById('rev-kpi');
+  sel.innerHTML = Object.values(state.baseCase).map(k =>
+    `<option value="${k.id}">${k.id} · ${k.name} (${k.unit})</option>`).join('');
+  const sel2 = document.getElementById('rev-scenario');
+  sel2.innerHTML = state.scenarios.map(s =>
+    `<option value="${s.id}">${s.id} · ${s.name}</option>`).join('');
+  // Defaults from config (with safe fallbacks)
+  const defKpi = getConfig('reverse_default_kpi', 'FIN03');
+  const defTarget = parseFloat(getConfig('reverse_default_target', '35'));
+  const defScenario = getConfig('reverse_default_scenario', 'S13');
+  sel.value = state.baseCase[defKpi] ? defKpi : Object.keys(state.baseCase)[0];
+  document.getElementById('rev-target').value = isNaN(defTarget) ? 0 : defTarget;
+  if (state.scenarios.find(s => s.id === defScenario)) sel2.value = defScenario;
+  renderScenarioList();
+  const scenStatus = document.getElementById('scen-status');
+  scenStatus.textContent = state.scenarios.length + ' scenarios loaded';
+}
+
+function renderScenarioList() {
+  const wrap = document.getElementById('scenario-list');
+  if (!state.scenarios) return;
+  const filter = state.scenarioFilter;
+  const items = state.scenarios.filter(s => filter === 'all' || s.type === filter);
+  wrap.innerHTML = items.map(s => `
+    <div class="scenario-item ${state.currentScenario === s.id ? 'selected' : ''}" onclick="selectScenario('${s.id}')">
+      <div class="sid">${s.id}</div>
+      <div class="sname">${esc(s.name)}</div>
+      <span class="stype ${s.type}">${s.type}</span>
+    </div>`).join('');
+}
+
+function selectScenario(sid) {
+  state.currentScenario = sid;
+  // Reset severity slider
+  document.getElementById('sev-mult').value = 100;
+  // Reset all macro overlay sliders to their configured defaults
+  MACRO_OVERLAYS.forEach(ov => {
+    const el = document.getElementById(ov.id + '-overlay');
+    if (el) el.value = ov.default;
+  });
+  updateSliderDisplay();
+  renderScenarioList();
+  recomputeScenario();
+}
+
+function updateSliderDisplay() {
+  const sev = +document.getElementById('sev-mult').value / 100;
+  document.getElementById('sev-val').textContent = sev.toFixed(2) + '×';
+  MACRO_OVERLAYS.forEach(ov => {
+    const el = document.getElementById(ov.id + '-overlay');
+    const valEl = document.getElementById(ov.id + '-val');
+    if (el && valEl) {
+      const v = +el.value;
+      const suffix = ov.unit || (ov.label.includes('%') ? '%' : '');
+      valEl.textContent = v + suffix;
+    }
+  });
+}
+
+function resetScenario() {
+  document.getElementById('sev-mult').value = 100;
+  MACRO_OVERLAYS.forEach(ov => {
+    const el = document.getElementById(ov.id + '-overlay');
+    if (el) el.value = ov.default;
+  });
+  updateSliderDisplay();
+  recomputeScenario();
+}
+
+// Apply scenario impacts (scaled by sev multiplier + macro overlays) to base case
+function computeScenarioOutput() {
+  if (!state.baseCase || !state.currentScenario) return null;
+  const scen = state.scenarios.find(s => s.id === state.currentScenario);
+  if (!scen) return null;
+  const sevMult = +document.getElementById('sev-mult').value / 100;
+
+  const out = {};
+  Object.values(state.baseCase).forEach(k => { out[k.id] = { id: k.id, base: k.value, scenario: k.value, impacts: [] }; });
+
+  // Apply each scenario impact
+  scen.impacts.forEach(imp => {
+    const k = state.baseCase[imp.kpiId];
+    if (!k) return;
+    const cur = out[imp.kpiId].scenario;
+    let next = cur;
+    const scaledVal = imp.ival * sevMult;
+    // If a custom formula is defined in config for this impact type, use it
+    if (IMPACT_TYPE_FORMULAS[imp.itype]) {
+      next = evalImpactFormula(IMPACT_TYPE_FORMULAS[imp.itype], cur, imp.ival, sevMult);
+    } else if (imp.itype === 'pct')   next = cur * (1 + scaledVal / 100);
+    else if (imp.itype === 'delta') next = cur + scaledVal;
+    else if (imp.itype === 'abs')   next = scaledVal;
+    out[imp.kpiId].scenario = next;
+    out[imp.kpiId].impacts.push({ source: 'Scenario', value: next - cur });
+  });
+
+  // Macro overlays — fully data-driven from MACRO_OVERLAYS config
+  const overlayValues = {};
+  MACRO_OVERLAYS.forEach(ov => {
+    const el = document.getElementById(ov.id + '-overlay');
+    const val = el ? (+el.value) : 0;
+    overlayValues[ov.id] = val;
+    // Only apply if value is non-default (and within the configured "active" zone)
+    // Treat any non-zero deviation from the configured default as "active"
+    if (val !== ov.default) {
+      ov.impacts.forEach(entry => {
+        // Entry can be [kpiId, sens] (legacy 2-tuple) or [kpiId, sens, mode] (3-tuple)
+        const kpiId = entry[0];
+        const sens  = entry[1];
+        const mode  = entry[2] || 'auto';
+        const o = out[kpiId];
+        if (!o) return;
+        const k = state.baseCase[kpiId];
+        const cur = o.scenario;
+        const scaled = val * sens;
+        let next;
+        if (mode === 'pp') {
+          next = cur + scaled;
+        } else if (mode === 'pct') {
+          next = cur * (1 + scaled / 100);
+        } else {
+          // 'auto' — pick based on KPI unit
+          if (k.unit === '%' || k.unit === 'pp' || k.unit === 'bps') next = cur + scaled;
+          else next = cur * (1 + scaled / 100);
+        }
+        o.scenario = next;
+        o.impacts.push({ source: ov.label + ' overlay', value: next - cur });
+      });
+    }
+  });
+
+  return { scenario: scen, output: out, sevMult, overlays: overlayValues };
+}
+
+function recomputeScenario() {
+  if (!state.baseCase || !state.scenarios) return;
+  if (!state.currentScenario && state.scenarios.length) {
+    state.currentScenario = state.scenarios[0].id;
+    renderScenarioList();
+  }
+  const result = computeScenarioOutput();
+  if (!result) return;
+  state.scenarioOutput = result;
+
+  // Scenario info card
+  const scen = result.scenario;
+  document.getElementById('scenario-info').classList.remove('hidden');
+  document.getElementById('si-name').textContent = scen.id + ' · ' + scen.name;
+  document.getElementById('si-desc').textContent = scen.desc;
+  document.getElementById('si-meta').innerHTML = `
+    <span><strong>Type:</strong> ${scen.type}</span>
+    <span><strong>Plaus:</strong> ${scen.plaus}/5</span>
+    <span><strong>Sev:</strong> ${scen.sev}/5</span>
+    <span><strong>Recovery:</strong> ${scen.recov} qtrs</span>`;
+
+  // KPI summary tiles — config-driven with fallback
+  const fmt = (val, unit) => fmtVal(val, unit);
+  const showTile = (kpiId, valId, dId, labelId) => {
+    const o = result.output[kpiId];
+    const k = state.baseCase[kpiId];
+    if (!o || !k) return;
+    // Update tile label dynamically
+    const labelEl = document.querySelector('#' + valId).parentElement.querySelector('.label');
+    if (labelEl) labelEl.textContent = k.name.replace(/\s*\([^)]*\)\s*$/, '');
+    document.getElementById(valId).textContent = fmt(o.scenario, k.unit);
+    const delta = o.scenario - o.base;
+    const pct = (delta / o.base) * 100;
+    const dEl = document.getElementById(dId);
+    const dir = k.direction === 'higher' ? Math.sign(delta) : -Math.sign(delta);
+    dEl.className = 'delta ' + (Math.abs(delta) < 0.001 ? '' : (dir >= 0 ? 'up' : 'dn'));
+    const sign = delta >= 0 ? '+' : '';
+    dEl.textContent = sign + fmt(delta, k.unit) + ' (' + sign + pct.toFixed(1) + '%)';
+  };
+  // Resolve which KPIs go in each tile (config overrides; falls back to top-impact KPIs)
+  const tile1 = resolveSingleKpi('tile_1_kpi', 'FIN01', ['Financial'], result.output);
+  const tile2 = resolveSingleKpi('tile_2_kpi', 'FIN03', ['Financial'], result.output);
+  const tile3 = resolveSingleKpi('tile_3_kpi', 'FIN04', ['Financial'], result.output);
+  const tile4 = resolveSingleKpi('tile_4_kpi', 'OPS04', ['Operational','Strategic','Technology','External','Governance'], result.output);
+  if (tile1) showTile(tile1, 'kpi-rev-val', 'kpi-rev-d');
+  if (tile2) showTile(tile2, 'kpi-marg-val', 'kpi-marg-d');
+  if (tile3) showTile(tile3, 'kpi-lev-val', 'kpi-lev-d');
+  if (tile4) showTile(tile4, 'kpi-arpu-val', 'kpi-arpu-d');
+
+  renderWaterfalls(result);
+  renderHeatmap(result);
+
+  // Update compare tab if visible
+  if (!document.getElementById('tab-compare').classList.contains('hidden')) renderCompare();
+}
+
+function renderWaterfalls(result) {
+  const scen = result.scenario;
+  const out = result.output;
+
+  // Resolve waterfall anchors (config or default)
+  const finAnchor = resolveSingleKpi('waterfall_financial_kpi', 'FIN01', ['Financial'], result.output);
+  const opsAnchor = resolveSingleKpi('waterfall_nonfinancial_kpi', 'OPS04',
+    ['Operational','Strategic','Technology','External','Governance'], result.output);
+
+  // Financial Waterfall: drivers of the financial anchor KPI
+  const finK = state.baseCase[finAnchor];
+  if (!finK) { destroyChart('chart-wf-fin'); destroyChart('chart-wf-ops'); return; }
+  const baseRev = finK.value;
+  const finImpacts = out[finAnchor].impacts;
+  const wfLabels = ['Base'];
+  const wfBars = [baseRev];
+  const wfDeltas = [baseRev];
+  let running = baseRev;
+  finImpacts.forEach((imp, i) => {
+    wfLabels.push(imp.source + ' #' + (i+1));
+    wfDeltas.push(imp.value);
+    running += imp.value;
+    wfBars.push(running);
+  });
+  wfLabels.push('Scenario');
+  wfDeltas.push(0);
+  wfBars.push(running);
+
+  destroyChart('chart-wf-fin');
+  const ctx = document.getElementById('chart-wf-fin');
+  // Update title dynamically
+  const finTitleEl = ctx ? ctx.closest('.chart-card').querySelector('.title') : null;
+  if (finTitleEl) finTitleEl.textContent = 'Waterfall — ' + finK.name + ' Impact';
+  if (ctx) {
+    const data = wfLabels.map((lbl, i) => {
+      if (i === 0) return [0, baseRev];
+      if (i === wfLabels.length - 1) return [0, running];
+      const prev = i === 1 ? baseRev : (wfBars[i-1]);
+      return [prev, prev + wfDeltas[i]];
+    });
+    const colors = wfLabels.map((lbl, i) => {
+      if (i === 0 || i === wfLabels.length - 1) return COLORS.navy;
+      return wfDeltas[i] >= 0 ? COLORS.green + 'D0' : COLORS.red + 'D0';
+    });
+    charts['chart-wf-fin'] = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: wfLabels, datasets: [{
+        label: finK.name, data, backgroundColor: colors,
+        borderColor: colors.map(c => c.replace('D0','')), borderWidth: 1
+      }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1, padding: 10,
+            callbacks: {
+              label: (ctx) => {
+                const i = ctx.dataIndex;
+                if (i === 0) return 'Base: ' + fmtVal(baseRev, finK.unit);
+                if (i === wfLabels.length - 1) return 'Scenario: ' + fmtVal(running, finK.unit);
+                const d = wfDeltas[i];
+                return (d >= 0 ? '+' : '') + fmtVal(d, finK.unit) + ' impact';
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+          y: { grid: { color: 'rgba(11,18,32,0.06)' }, ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 }, callback: v => fmtVal(v, finK.unit) } }
+        }
+      }
+    });
+  }
+
+  // NON-FINANCIAL waterfall: anchor KPI
+  const opsK = state.baseCase[opsAnchor];
+  if (!opsK) { destroyChart('chart-wf-ops'); return; }
+  const baseArpu = opsK.value;
+  const arpuImpacts = out[opsAnchor].impacts;
+  const wfLabels2 = ['Base'];
+  const wfDeltas2 = [baseArpu];
+  let running2 = baseArpu;
+  arpuImpacts.forEach((imp, i) => {
+    wfLabels2.push(imp.source + ' #' + (i+1));
+    wfDeltas2.push(imp.value);
+    running2 += imp.value;
+  });
+  wfLabels2.push('Scenario');
+
+  destroyChart('chart-wf-ops');
+  const ctx2 = document.getElementById('chart-wf-ops');
+  const opsTitleEl = ctx2 ? ctx2.closest('.chart-card').querySelector('.title') : null;
+  if (opsTitleEl) opsTitleEl.textContent = 'Waterfall — ' + opsK.name + ' Impact';
+  if (ctx2) {
+    const data2 = wfLabels2.map((lbl, i) => {
+      if (i === 0) return [0, baseArpu];
+      if (i === wfLabels2.length - 1) return [0, running2];
+      const prev = (i === 1) ? baseArpu : (baseArpu + arpuImpacts.slice(0, i-1).reduce((a, b) => a + b.value, 0));
+      return [prev, prev + wfDeltas2[i]];
+    });
+    const colors2 = wfLabels2.map((lbl, i) => {
+      if (i === 0 || i === wfLabels2.length - 1) return COLORS.navy;
+      return wfDeltas2[i] >= 0 ? COLORS.green + 'D0' : COLORS.red + 'D0';
+    });
+    charts['chart-wf-ops'] = new Chart(ctx2, {
+      type: 'bar',
+      data: { labels: wfLabels2, datasets: [{ label: opsK.name, data: data2, backgroundColor: colors2, borderWidth: 1 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1, padding: 10,
+            callbacks: {
+              label: (ctx) => {
+                const i = ctx.dataIndex;
+                if (i === 0) return 'Base: ' + fmtVal(baseArpu, opsK.unit);
+                if (i === wfLabels2.length - 1) return 'Scenario: ' + fmtVal(running2, opsK.unit);
+                const d = wfDeltas2[i];
+                return (d >= 0 ? '+' : '') + fmtVal(d, opsK.unit) + ' impact';
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+          y: { grid: { color: 'rgba(11,18,32,0.06)' }, ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 }, callback: v => fmtVal(v, opsK.unit) } }
+        }
+      }
+    });
+  }
+}
+
+function renderHeatmap(result) {
+  const out = result.output;
+  // Build list of KPIs that have changed (sorted by |% change| desc)
+  const items = Object.values(out).filter(o => Math.abs(o.scenario - o.base) > 1e-6).map(o => {
+    const k = state.baseCase[o.id];
+    const delta = o.scenario - o.base;
+    const pct = o.base !== 0 ? (delta / o.base) * 100 : 0;
+    // Adverse direction
+    const adverse = k.direction === 'higher' ? delta < 0 : delta > 0;
+    return { ...o, k, delta, pct, adverse };
+  });
+  items.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
+
+  destroyChart('chart-heatmap');
+  const ctx = document.getElementById('chart-heatmap');
+  if (!ctx) return;
+  const labels = items.map(it => it.k.name + ' (' + it.k.id + ')');
+  const data = items.map(it => it.pct);
+  const colors = items.map(it => it.adverse ? COLORS.red + 'D0' : COLORS.green + 'D0');
+  charts['chart-heatmap'] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: '% change from base', data, backgroundColor: colors, borderColor: colors.map(c => c.replace('D0','')), borderWidth: 1 }] },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1, padding: 10,
+          callbacks: {
+            label: (ctx) => {
+              const it = items[ctx.dataIndex];
+              const fmtVal = (v) => (it.k.unit === 'USD' ? '$' + v.toFixed(2) : v.toFixed(2) + ' ' + it.k.unit);
+              return ['Base: ' + fmtVal(it.base), 'Scenario: ' + fmtVal(it.scenario), 'Δ: ' + (it.delta>=0?'+':'') + fmtVal(it.delta) + ' (' + (it.pct>=0?'+':'') + it.pct.toFixed(1) + '%)'];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(11,18,32,0.06)' }, ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 }, callback: v => v + '%' } },
+        y: { grid: { display: false }, ticks: { font: { size: 10 }, autoSkip: false } }
+      }
+    }
+  });
+}
+
+/* ===== COMPARE TAB ===== */
+function renderCompare() {
+  if (!state.scenarioOutput) {
+    document.getElementById('cmp-status').textContent = 'No scenario active — choose one on tab 04';
+    return;
+  }
+  const result = state.scenarioOutput;
+  const out = result.output;
+  document.getElementById('cmp-status').textContent = result.scenario.id + ' · ' + result.scenario.name;
+
+  // Financial / non-financial comparison KPI lists — config-driven with auto-pick fallback
+  const finIds = resolveKpiList('compare_financial_kpis',
+    ['Financial'], 10, out);
+  const opsIds = resolveKpiList('compare_nonfinancial_kpis',
+    ['Operational','Strategic','Technology','External','Governance'], 12, out);
+
+  const buildPair = (ids) => {
+    const labels = ids.map(id => state.baseCase[id] ? state.baseCase[id].name.split(' (')[0] : id);
+    const baseVals = ids.map(id => out[id] ? out[id].base : 0);
+    const scenVals = ids.map(id => out[id] ? out[id].scenario : 0);
+    return { labels, baseVals, scenVals };
+  };
+
+  const drawCmp = (canvasId, pair) => {
+    destroyChart(canvasId);
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    charts[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: pair.labels,
+        datasets: [
+          { label: 'Base', data: pair.baseVals, backgroundColor: COLORS.navy + 'C0', borderColor: COLORS.navy, borderWidth: 1 },
+          { label: 'Scenario', data: pair.scenVals, backgroundColor: COLORS.yellow + 'D0', borderColor: COLORS.yellow, borderWidth: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 11, weight: '600' } } },
+          tooltip: { backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1, padding: 10 }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 }, autoSkip: false, maxRotation: 35, minRotation: 35 } },
+          y: { grid: { color: 'rgba(11,18,32,0.06)' }, ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 } } }
+        }
+      }
+    });
+  };
+  drawCmp('chart-cmp-fin', buildPair(finIds));
+  drawCmp('chart-cmp-ops', buildPair(opsIds));
+
+  // Combined waterfall — uses configured financial anchor
+  const finAnchorId = resolveSingleKpi('waterfall_financial_kpi', 'FIN01', ['Financial'], out);
+  const finAnchor = state.baseCase[finAnchorId];
+  if (!finAnchor) {
+    destroyChart('chart-cmp-waterfall');
+  } else {
+    const baseRev = finAnchor.value;
+    const fin01Impacts = out[finAnchorId].impacts;
+    const wfLabels3 = ['Base ' + finAnchor.name.split(' (')[0]].concat(fin01Impacts.map((i, idx) => i.source + ' #' + (idx+1))).concat(['Scenario ' + finAnchor.name.split(' (')[0]]);
+    let running3 = baseRev;
+    const wfData3 = [[0, baseRev]];
+    const colors3 = [COLORS.navy];
+    fin01Impacts.forEach(imp => {
+      wfData3.push([running3, running3 + imp.value]);
+      running3 += imp.value;
+      colors3.push(imp.value >= 0 ? COLORS.green + 'D0' : COLORS.red + 'D0');
+    });
+    wfData3.push([0, running3]);
+    colors3.push(COLORS.yellow);
+
+    destroyChart('chart-cmp-waterfall');
+    const ctxW = document.getElementById('chart-cmp-waterfall');
+    const cmpWfTitle = ctxW ? ctxW.closest('.chart-card').querySelector('.title') : null;
+    if (cmpWfTitle) cmpWfTitle.textContent = 'Combined Waterfall — ' + finAnchor.name;
+    if (ctxW) {
+      charts['chart-cmp-waterfall'] = new Chart(ctxW, {
+        type: 'bar',
+        data: { labels: wfLabels3, datasets: [{ label: finAnchor.name, data: wfData3, backgroundColor: colors3, borderWidth: 1 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1, padding: 10,
+              callbacks: {
+                label: (ctx) => {
+                  const i = ctx.dataIndex;
+                  if (i === 0) return 'Base: ' + fmtVal(baseRev, finAnchor.unit);
+                  if (i === wfLabels3.length - 1) return 'Scenario: ' + fmtVal(running3, finAnchor.unit);
+                  const d = fin01Impacts[i-1].value;
+                  return (d >= 0 ? '+' : '') + fmtVal(d, finAnchor.unit);
+                }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10 }, autoSkip: false, maxRotation: 30, minRotation: 30 } },
+            y: { grid: { color: 'rgba(11,18,32,0.06)' }, ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 }, callback: v => fmtVal(v, finAnchor.unit) } }
+          }
+        }
+      });
+    }
+  }
+
+  // Full comparison table
+  const tbl = document.getElementById('cmp-table');
+  const allRows = Object.values(out).map(o => {
+    const k = state.baseCase[o.id];
+    const delta = o.scenario - o.base;
+    const pct = o.base !== 0 ? (delta / o.base) * 100 : 0;
+    return { o, k, delta, pct };
+  }).sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
+
+  const fmt = (val, unit) => fmtVal(val, unit);
+
+  tbl.innerHTML = `<table class="impact-table">
+    <thead><tr><th>KPI ID</th><th>Category</th><th>KPI</th><th class="num">Base</th><th class="num">Scenario</th><th class="num">Δ</th><th class="num">% Δ</th><th>Direction</th></tr></thead>
+    <tbody>${allRows.map(r => {
+      const adverse = r.k.direction === 'higher' ? r.delta < 0 : r.delta > 0;
+      const cls = Math.abs(r.delta) < 1e-9 ? 'zero' : (adverse ? 'dn' : 'up');
+      const sign = r.delta >= 0 ? '+' : '';
+      return `<tr>
+        <td class="num">${r.k.id}</td>
+        <td class="cat">${r.k.cat}</td>
+        <td>${esc(r.k.name)}</td>
+        <td class="num">${fmt(r.o.base, r.k.unit)}</td>
+        <td class="num"><strong>${fmt(r.o.scenario, r.k.unit)}</strong></td>
+        <td class="num"><span class="delta-pill ${cls}">${sign}${fmt(r.delta, r.k.unit)}</span></td>
+        <td class="num"><span class="delta-pill ${cls}">${sign}${r.pct.toFixed(1)}%</span></td>
+        <td style="font-size:10px; color: var(--mute);">${adverse ? 'adverse' : (Math.abs(r.delta)<1e-9 ? '—' : 'favourable')}</td>
+      </tr>`;
+    }).join('')}</tbody></table>`;
+}
+
+/* ===== REVERSE STRESS TAB ===== */
+function renderReverse() {
+  if (!state.baseCase || !state.scenarios) return;
+  recomputeReverse();
+}
+
+function recomputeReverse() {
+  if (!state.baseCase || !state.scenarios) return;
+  const kpiId = document.getElementById('rev-kpi').value;
+  const scenId = document.getElementById('rev-scenario').value;
+  const targetVal = parseFloat(document.getElementById('rev-target').value);
+  if (!kpiId || !scenId || isNaN(targetVal)) return;
+  const k = state.baseCase[kpiId];
+  const scen = state.scenarios.find(s => s.id === scenId);
+  if (!k || !scen) return;
+  document.getElementById('rev-target-display').textContent = fmtVal(targetVal, k.unit);
+
+  // Find this KPI's sensitivity to scenario
+  const matchImp = scen.impacts.find(i => i.kpiId === kpiId);
+  if (!matchImp) {
+    document.getElementById('rev-result').innerHTML = `<div class="rr-headline" style="color: var(--amber);">No direct sensitivity</div><div class="rr-detail">${scen.name} does not directly impact ${k.name}. Pick a different scenario or target KPI.</div>`;
+    destroyChart('chart-reverse');
+    destroyChart('chart-sensitivity');
+    return;
+  }
+
+  // Solve for sev multiplier: at sev=1, KPI moves by some delta. We need it to move by (target - base).
+  // pct impact: scenario_val = base * (1 + ival * sev / 100)  →  sev = ((target/base) - 1) * 100 / ival
+  // delta:      scenario_val = base + ival * sev               →  sev = (target - base) / ival
+  // abs:        scenario_val = ival * sev                      →  sev = target / ival
+  const base = k.value;
+  let sevReq = NaN;
+  if (matchImp.itype === 'pct') sevReq = ((targetVal / base) - 1) * 100 / matchImp.ival;
+  else if (matchImp.itype === 'delta') sevReq = (targetVal - base) / matchImp.ival;
+  else if (matchImp.itype === 'abs') sevReq = targetVal / matchImp.ival;
+
+  let resultHtml;
+  let direction;
+  if (k.direction === 'higher') direction = targetVal < base ? 'breach' : 'improvement';
+  else direction = targetVal > base ? 'breach' : 'improvement';
+
+  if (isNaN(sevReq) || !isFinite(sevReq)) {
+    resultHtml = `<div class="rr-headline" style="color: var(--amber);">Unsolvable</div><div class="rr-detail">Cannot back-solve numerically for these inputs.</div>`;
+  } else if (sevReq < 0) {
+    resultHtml = `<div class="rr-headline" style="color: var(--green);">No shock needed</div><div class="rr-detail">Target is already favourable — this scenario moves the KPI in the opposite direction. A negative severity multiplier of ${sevReq.toFixed(2)}× would be required (i.e. a tailwind, not a shock).</div>`;
+  } else {
+    let severity = sevReq < 0.5 ? 'mild' : sevReq < 1.0 ? 'within base scenario' : sevReq < 1.5 ? 'moderate amplification' : sevReq < 2.0 ? 'severe' : 'extreme';
+    let color = sevReq < 1.0 ? 'var(--amber)' : sevReq < 2.0 ? 'var(--red)' : '#7A1A1A';
+    resultHtml = `<div class="rr-headline" style="color: ${color};">${sevReq.toFixed(2)}× severity required</div>
+      <div class="rr-detail"><strong>${k.name}</strong> reaches <strong>${fmtVal(targetVal, k.unit)}</strong>
+      (from base ${fmtVal(base, k.unit)}) when scenario <em>${scen.name}</em> is applied at ${sevReq.toFixed(2)}× its defined severity.
+      <br><br>This corresponds to a <strong>${severity}</strong> amplification of the scenario.
+      ${sevReq > 1.5 ? '<br><br><strong>Reverse stress signal:</strong> the shock magnitude required is plausible only under tail-risk conditions. Track related leading indicators closely.' : ''}
+      </div>`;
+  }
+  document.getElementById('rev-result').innerHTML = resultHtml;
+
+  // Render reverse impact chart: at the required severity, show what all KPIs do
+  if (!isNaN(sevReq) && isFinite(sevReq) && sevReq > 0) {
+    // Save current sev, apply sev=sevReq via a synthetic compute
+    const saved = document.getElementById('sev-mult').value;
+    document.getElementById('sev-mult').value = Math.min(200, Math.max(0, sevReq * 100));
+    const saved2 = state.currentScenario;
+    state.currentScenario = scen.id;
+    const res = computeScenarioOutput();
+    // Restore
+    document.getElementById('sev-mult').value = saved;
+    state.currentScenario = saved2;
+    if (res) {
+      const out = res.output;
+      const items = Object.values(out).filter(o => Math.abs(o.scenario - o.base) > 1e-6).map(o => {
+        const kk = state.baseCase[o.id];
+        return { name: kk.name + ' (' + kk.id + ')', pct: (o.scenario - o.base) / o.base * 100, k: kk };
+      });
+      items.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
+      const top = items.slice(0, 8);
+      destroyChart('chart-reverse');
+      const ctx = document.getElementById('chart-reverse');
+      if (ctx) {
+        const colors = top.map(it => {
+          const adverse = it.k.direction === 'higher' ? it.pct < 0 : it.pct > 0;
+          return adverse ? COLORS.red + 'D0' : COLORS.green + 'D0';
+        });
+        charts['chart-reverse'] = new Chart(ctx, {
+          type: 'bar',
+          data: { labels: top.map(t => t.name), datasets: [{ label: '% change', data: top.map(t => t.pct), backgroundColor: colors }] },
+          options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1, padding: 10 } },
+            scales: {
+              x: { grid: { color: 'rgba(11,18,32,0.06)' }, ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 }, callback: v => v + '%' } },
+              y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+            }
+          }
+        });
+      }
+    }
+  }
+
+  // Sensitivity sweep — vary severity 0 → 2×, plot target KPI value
+  const savedSev = document.getElementById('sev-mult').value;
+  const savedScen = state.currentScenario;
+  state.currentScenario = scen.id;
+  const sweep = [];
+  for (let s = 0; s <= 200; s += 10) {
+    document.getElementById('sev-mult').value = s;
+    const res = computeScenarioOutput();
+    if (res) sweep.push({ sev: s / 100, val: res.output[kpiId].scenario });
+  }
+  document.getElementById('sev-mult').value = savedSev;
+  state.currentScenario = savedScen;
+
+  destroyChart('chart-sensitivity');
+  const ctxS = document.getElementById('chart-sensitivity');
+  if (ctxS) {
+    // Draw the target line as well
+    charts['chart-sensitivity'] = new Chart(ctxS, {
+      type: 'line',
+      data: {
+        labels: sweep.map(p => p.sev.toFixed(1) + '×'),
+        datasets: [
+          { label: k.name, data: sweep.map(p => p.val), borderColor: COLORS.navy, backgroundColor: COLORS.navy + '20', tension: 0.3, borderWidth: 2.5, pointRadius: 3, fill: true },
+          { label: 'Target = ' + fmtVal(targetVal, k.unit), data: sweep.map(() => targetVal), borderColor: COLORS.red, borderDash: [6,4], borderWidth: 2, pointRadius: 0, fill: false },
+          { label: 'Base = ' + fmtVal(base, k.unit), data: sweep.map(() => base), borderColor: COLORS.green, borderDash: [3,3], borderWidth: 1.5, pointRadius: 0, fill: false }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 11, weight: '600' } } },
+          tooltip: { backgroundColor: '#001A3A', borderColor: '#FFC72C', borderWidth: 1, padding: 10 }
+        },
+        scales: {
+          x: { grid: { display: false }, title: { display: true, text: 'Scenario severity multiplier', font: { size: 11 } }, ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 } } },
+          y: { grid: { color: 'rgba(11,18,32,0.06)' }, title: { display: true, text: k.name + ' (' + k.unit + ')', font: { size: 11 } }, ticks: { font: { family: "'JetBrains Mono', monospace", size: 10 } } }
+        }
+      }
+    });
+  }
+}
+
+window.addEventListener('load', () => autoLoad());
+</script>
+
+</body>
+</html>
