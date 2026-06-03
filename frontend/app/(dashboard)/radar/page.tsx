@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, MapPin, Target, Activity, Zap, FileText, TrendingUp } from "lucide-react";
+import { Search, Target, Activity, FileText, TrendingUp } from "lucide-react";
 
 export default function RadarPage() {
   const [threshold, setThreshold] = useState(7.5);

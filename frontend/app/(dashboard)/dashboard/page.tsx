@@ -9,11 +9,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // We assume Chart is available globally via CDN
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Chart = (window as any).Chart;
     if (!Chart) return;
 
-    let lineChart: any = null;
-    let barChart: any = null;
+    let lineChart: { destroy: () => void } | null = null;
+    let barChart: { destroy: () => void } | null = null;
 
     if (lineChartRef.current) {
       const ctx = lineChartRef.current.getContext("2d");

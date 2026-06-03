@@ -7,10 +7,11 @@ export default function ForecastsPage() {
   const chartRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const Chart = (window as any).Chart;
     if (!Chart) return;
 
-    let myChart: any = null;
+    let myChart: { destroy: () => void } | null = null;
 
     if (chartRef.current) {
       const ctx = chartRef.current.getContext("2d");
