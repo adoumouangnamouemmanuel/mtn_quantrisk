@@ -1,0 +1,29 @@
+#,Risk Category,Sub-risk / Theme,KRI,Type,Unit,Frequency,Owner,GREEN threshold,AMBER threshold,RED threshold,FY25 Actual / Latest,RAG Status,Trend vs PY,Data source,Mitigation / Response
+1,Financial,Financial,Service Revenue Growth YoY,Lagging,%,Quarterly,Risk Manager,>25,15-25,<15,36.2,Amber,→,Annual.Service_Rev_Growth_Pct,Standard mitigation set
+2,Financial,Financial,EBITDA Margin,Lagging,%,Quarterly,Risk Manager,>55,50-55,<50,60.1,Amber,→,Annual.EBITDA_Margin_Pct,Standard mitigation set
+3,Financial,Financial,EBITDA Growth YoY,Lagging,%,Quarterly,Risk Manager,>25,15-25,<15,43.5,Amber,→,Annual.EBITDA_Growth_Pct,Standard mitigation set
+4,Financial,Financial,PAT Growth YoY,Lagging,%,Quarterly,Risk Manager,>30,20-30,<20,55.9,Amber,→,Annual.PAT_Growth_Pct,Standard mitigation set
+5,Financial,Financial,PAT Margin,Lagging,%,Quarterly,Risk Manager,>25,20-25,<20,32,Amber,→,Annual.PAT_Margin_Pct,Standard mitigation set
+6,Financial,Financial,Cost vs Revenue Growth Ratio,Lagging,%,Quarterly,Risk Manager,<80,80-100,>100,—,Amber,→,Derived_Ratios.Cost_Revenue_Ratio,Standard mitigation set
+7,Financial,Financial,Capex Intensity,Lagging,%,Quarterly,Risk Manager,20-25,15-20 or 25-30,<15 or >30,22.7,Amber,→,Annual.Capex_Intensity_Pct,Standard mitigation set
+8,Financial,Financial,EPS Growth YoY,Lagging,%,Quarterly,Risk Manager,>30,20-30,<20,55.9,Amber,→,Annual.EPS_Growth_Pct,Standard mitigation set
+9,Strategic,Segment,Data Revenue Growth,Lagging,%,Quarterly,Risk Manager,>40,25-40,<25,6.9,Amber,→,Segments_Annual.Data_Growth_Pct,Standard mitigation set
+10,Strategic,Segment,Data Share of Revenue,Lagging,%,Quarterly,Risk Manager,>50,45-50,<45,52.6,Amber,→,Segments_Annual.Data_Share_Pct,Standard mitigation set
+11,Strategic,Segment,MoMo Revenue Growth,Lagging,%,Quarterly,Risk Manager,>35,20-35,<20,-7.5,Amber,→,Segments_Annual.MoMo_Growth_Pct,Standard mitigation set
+12,Strategic,Segment,MoMo Share of Revenue,Lagging,%,Quarterly,Risk Manager,>24,20-24,<20,24.6,Amber,→,Segments_Annual.MoMo_Share_Pct,Standard mitigation set
+13,Strategic,Segment,Voice Revenue Growth,Lagging,%,Quarterly,Risk Manager,>5,-5 to 5,<-5,7.5,Amber,→,Segments_Annual.Voice_Growth_Pct,Standard mitigation set
+14,Strategic,Segment,Digital Revenue Growth,Lagging,%,Quarterly,Risk Manager,>50,30-50,<30,-45.7,Amber,→,Segments_Annual.Digital_Growth_Pct,Standard mitigation set
+15,Strategic,Segment,Digital Share of Revenue,Lagging,%,Quarterly,Risk Manager,>2,1-2,<1,1.7,Amber,→,Segments_Annual.Digital_Share_Pct,Standard mitigation set
+16,Operational,Operational,Subscriber Growth YoY,Lagging,%,Quarterly,Risk Manager,>5,2-5,<2,9.5,Amber,→,Operational_Annual.Subs_Growth_Pct,Standard mitigation set
+17,Operational,Operational,Data Subscriber Growth,Lagging,%,Quarterly,Risk Manager,>10,5-10,<5,13.7,Amber,→,Operational_Annual.Data_Subs_Growth_Pct,Standard mitigation set
+18,Operational,Operational,MoMo User Growth,Lagging,%,Quarterly,Risk Manager,>10,5-10,<5,12.2,Amber,→,Operational_Annual.MoMo_Growth_Pct,Standard mitigation set
+19,Operational,Operational,Data Usage per User GB,Lagging,GB,Quarterly,Risk Manager,>10,7-10,<7,14.5,Amber,→,Operational_Annual.Data_Usage_GB_Annual,Standard mitigation set
+20,Operational,Operational,4G Population Coverage,Lagging,%,Quarterly,Risk Manager,>95,90-95,<90,99.5,Amber,→,Operational_Annual.4G_Coverage_Pct,Standard mitigation set
+21,Operational,Leading,CAC Trend,Leading,GHS,Quarterly,Risk Manager,<70,70-80,>80,70,Amber,→,Leading_Indicators.CAC_Proxy_GHS,Standard mitigation set
+22,Operational,Leading,Network Utilization,Leading,%,Quarterly,Risk Manager,<75,75-85,>85,82,Amber,→,Leading_Indicators.Network_Utilization_Pct,Standard mitigation set
+23,Operational,Leading,Data Session Failure,Leading,%,Quarterly,Risk Manager,<2,2-5,>5,1.7,Amber,→,Leading_Indicators.Data_Session_Failure_Pct,Standard mitigation set
+24,Operational,Leading,MoMo Transactions per User,Leading,count,Quarterly,Risk Manager,>60,40-60,<40,76,Amber,→,Leading_Indicators.MoMo_Trans_Per_User_Monthly,Standard mitigation set
+25,Operational,Leading,SIM Activation Index,Leading,index,Quarterly,Risk Manager,>140,120-140,<120,174,Amber,→,Leading_Indicators.SIM_Activation_Index,Standard mitigation set
+26,Operational,Leading,Working Capital Days,Leading,days,Quarterly,Risk Manager,<30,30-40,>40,25,Amber,→,Leading_Indicators.Working_Capital_Days,Standard mitigation set
+27,Operational,Leading,Cedi-USD Stability,Leading,%_chg,Quarterly,Risk Manager,<10,10-20,>20,—,Amber,→,Macro_Context.Cedi_USD_YoY_Change,Standard mitigation set
+28,Operational,Leading,Inflation YoY,Leading,%,Quarterly,Risk Manager,<15,15-25,>25,5.4,Amber,→,Macro_Context.Inflation_YoY_Pct,Standard mitigation set

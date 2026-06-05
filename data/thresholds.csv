@@ -1,0 +1,29 @@
+KRI_Category,KRI_Name,Unit,Green_Threshold,Amber_Threshold,Red_Threshold,Direction,Indicator_Type,Source_Sheet,Source_Field
+Financial,Service Revenue Growth YoY,%,>25,15-25,<15,Higher_Better,Lagging,Annual,Service_Rev_Growth_Pct
+Financial,EBITDA Margin,%,>55,50-55,<50,Higher_Better,Lagging,Annual,EBITDA_Margin_Pct
+Financial,EBITDA Growth YoY,%,>25,15-25,<15,Higher_Better,Lagging,Annual,EBITDA_Growth_Pct
+Financial,PAT Growth YoY,%,>30,20-30,<20,Higher_Better,Lagging,Annual,PAT_Growth_Pct
+Financial,PAT Margin,%,>25,20-25,<20,Higher_Better,Lagging,Annual,PAT_Margin_Pct
+Financial,Cost vs Revenue Growth Ratio,%,<80,80-100,>100,Lower_Better,Lagging,Derived_Ratios,Cost_Revenue_Ratio
+Financial,Capex Intensity,%,20-25,15-20 or 25-30,<15 or >30,Range,Lagging,Annual,Capex_Intensity_Pct
+Financial,EPS Growth YoY,%,>30,20-30,<20,Higher_Better,Lagging,Annual,EPS_Growth_Pct
+Segment,Data Revenue Growth,%,>40,25-40,<25,Higher_Better,Lagging,Segments_Annual,Data_Growth_Pct
+Segment,Data Share of Revenue,%,>50,45-50,<45,Higher_Better,Lagging,Segments_Annual,Data_Share_Pct
+Segment,MoMo Revenue Growth,%,>35,20-35,<20,Higher_Better,Lagging,Segments_Annual,MoMo_Growth_Pct
+Segment,MoMo Share of Revenue,%,>24,20-24,<20,Higher_Better,Lagging,Segments_Annual,MoMo_Share_Pct
+Segment,Voice Revenue Growth,%,>5,-5 to 5,<-5,Higher_Better,Lagging,Segments_Annual,Voice_Growth_Pct
+Segment,Digital Revenue Growth,%,>50,30-50,<30,Higher_Better,Lagging,Segments_Annual,Digital_Growth_Pct
+Segment,Digital Share of Revenue,%,>2,1-2,<1,Higher_Better,Lagging,Segments_Annual,Digital_Share_Pct
+Operational,Subscriber Growth YoY,%,>5,2-5,<2,Higher_Better,Lagging,Operational_Annual,Subs_Growth_Pct
+Operational,Data Subscriber Growth,%,>10,5-10,<5,Higher_Better,Lagging,Operational_Annual,Data_Subs_Growth_Pct
+Operational,MoMo User Growth,%,>10,5-10,<5,Higher_Better,Lagging,Operational_Annual,MoMo_Growth_Pct
+Operational,Data Usage per User GB,GB,>10,7-10,<7,Higher_Better,Lagging,Operational_Annual,Data_Usage_GB_Annual
+Operational,4G Population Coverage,%,>95,90-95,<90,Higher_Better,Lagging,Operational_Annual,4G_Coverage_Pct
+Leading,CAC Trend,GHS,<70,70-80,>80,Lower_Better,Leading,Leading_Indicators,CAC_Proxy_GHS
+Leading,Network Utilization,%,<75,75-85,>85,Lower_Better,Leading,Leading_Indicators,Network_Utilization_Pct
+Leading,Data Session Failure,%,<2,2-5,>5,Lower_Better,Leading,Leading_Indicators,Data_Session_Failure_Pct
+Leading,MoMo Transactions per User,count,>60,40-60,<40,Higher_Better,Leading,Leading_Indicators,MoMo_Trans_Per_User_Monthly
+Leading,SIM Activation Index,index,>140,120-140,<120,Higher_Better,Leading,Leading_Indicators,SIM_Activation_Index
+Leading,Working Capital Days,days,<30,30-40,>40,Lower_Better,Leading,Leading_Indicators,Working_Capital_Days
+Leading,Cedi-USD Stability,%_chg,<10,10-20,>20,Lower_Better,Leading,Macro_Context,Cedi_USD_YoY_Change
+Leading,Inflation YoY,%,<15,15-25,>25,Lower_Better,Leading,Macro_Context,Inflation_YoY_Pct

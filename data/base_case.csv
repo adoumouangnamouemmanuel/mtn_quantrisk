@@ -1,0 +1,41 @@
+KPI_ID,Category,KPI,Type,FY25_Base_Value,Unit,Direction,Notes
+FIN01,Financial,Service revenue (GHSm),Lagging,24400,GHSm,higher,FY25 audited
+FIN02,Financial,EBITDA (GHSm),Lagging,14700,GHSm,higher,FY25 audited
+FIN03,Financial,EBITDA margin (%),Lagging,60.1,%,higher,FY25 — expanded from 57.1% in FY24
+FIN04,Financial,PAT (GHSm),Lagging,7800,GHSm,higher,FY25 audited profit after tax
+FIN05,Financial,PAT margin (%),Lagging,32,%,higher,FY25
+FIN06,Financial,Service revenue growth YoY (%),Lagging,36.2,%,higher,FY25 vs FY24 audited
+FIN07,Financial,EBITDA growth YoY (%),Lagging,43.5,%,higher,FY25 vs FY24
+FIN08,Financial,EPS (GHS),Lagging,0.5923,GHS,higher,FY25 audited
+FIN09,Financial,Dividend per share (GHS),Lagging,0.48,GHS,higher,FY25
+FIN10,Financial,Capex (GHSm),Leading,5545,GHSm,higher,FY25 — supporting infrastructure investment
+FIN11,Financial,Capex intensity (%),Leading,22.7,%,higher,Capex / revenue, FY25
+FIN12,Financial,Total assets (GHSm),Lagging,49500,GHSm,higher,FY25 balance sheet
+FIN13,Financial,Total opex (GHSm),Lagging,12100,GHSm,lower,FY25 — note 7.7% growth vs 36.2% rev growth
+SEG01,Strategic,Data revenue (GHSm),Lagging,12835,GHSm,higher,FY25 — 6.9% growth
+SEG02,Strategic,Data share of revenue (%),Lagging,52.6,%,higher,FY25 — strongest segment
+SEG03,Strategic,MoMo revenue (GHSm),Lagging,6000,GHSm,higher,FY25 — declined 7.5% (e-levy headwind eased)
+SEG04,Strategic,MoMo share of revenue (%),Lagging,24.6,%,higher,FY25
+SEG05,Strategic,Voice revenue (GHSm),Lagging,4020,GHSm,higher,FY25 — recovery vs FY24
+SEG06,Strategic,Digital revenue (GHSm),Leading,410,GHSm,higher,FY25 — declined post peak
+OPS01,Operational,Total subscribers (m),Lagging,31.2,m,higher,FY25 closing — 9.5% growth
+OPS02,Operational,Active data subscribers (m),Leading,19.9,m,higher,FY25 closing
+OPS03,Operational,Data penetration (%),Leading,63.8,%,higher,Data subs / total subs
+OPS04,Operational,Active MoMo users (m),Leading,19.3,m,higher,FY25 — 12.2% growth
+OPS05,Operational,Data usage per user (GB),Leading,14.5,GB,higher,FY25 — up from 9.8GB in FY24
+OPS06,Operational,4G population coverage (%),Leading,99.5,%,higher,Near-universal coverage
+OPS07,Operational,Network sites (count),Leading,8650,count,higher,FY25 — 8,650 sites
+OPS08,Operational,Average ARPU (GHS),Lagging,66.9,GHS,higher,FY25 — affected by FX appreciation
+OPS09,Operational,Subscriber growth YoY (%),Lagging,9.5,%,higher,Strongest in 5-year period
+LED01,Technology,Data session failure (%),Leading,1.7,%,lower,Q4 25 — improving trend
+LED02,Technology,Network utilization (%),Leading,82,%,lower,Q4 25 — capacity headroom
+LED03,Operational,CAC proxy (GHS),Leading,70,GHS,lower,Q4 25 — declining (good)
+LED04,Operational,MoMo transactions per user/mo,Leading,76,count,higher,Q4 25
+LED05,Operational,SIM activation index,Leading,174,index,higher,Indexed to 2020Q1 = 100
+LED06,Operational,Working capital days,Leading,25,days,lower,Q4 25
+EXT01,External,Inflation YoY (%),Leading,5.4,%,lower,FY25 — sharp drop from 23.8% to 5.4%
+EXT02,External,BoG policy rate (%),Leading,16,%,lower,FY25 year-end
+EXT03,External,Cedi/USD rate (avg),Lagging,11.6,GHS/USD,lower,FY25 — Cedi appreciated
+EXT04,External,Cedi YoY change vs USD (%),Lagging,21.6,%,higher,FY25 — +21.6% appreciation
+EXT05,External,Ghana GDP growth (%),Leading,6.5,%,higher,FY25 macro tailwind
+EXT06,External,Mobile penetration (%),Leading,151,%,higher,Market context
