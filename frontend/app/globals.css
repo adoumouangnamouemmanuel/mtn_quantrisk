@@ -1,20 +1,46 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-brand-bg: #0a0e1a;
-  --color-brand-panel: #111827;
-  --color-brand-panel-light: #1f2937;
-  --color-brand-yellow: #facc15;
-  --color-brand-yellow-hover: #eab308;
-  --color-brand-red: #ef4444;
-  --color-brand-red-light: rgba(239, 68, 68, 0.1);
-  --color-brand-text: #f3f4f6;
-  --color-brand-text-muted: #9ca3af;
-  --color-brand-border: #374151;
+  --color-surface: #000000;
+  --color-surface-container-low: #0a0a0a;
+  --color-surface-container: #111111;
+  --color-surface-container-high: #1a1a1a;
+  --color-mtn-yellow: #FFCC00;
+  --color-on-surface: #ffffff;
+  --color-on-surface-variant: #9ca3af;
+  --color-outline: #374151;
+  
+  --color-error: #ffb4ab;
+  --color-secondary: #adc6ff;
+  --color-tertiary: #c6f6ff;
+  --color-row-hover: #111111;
+
+  --font-dm-sans: var(--font-dm-sans), sans-serif;
+  --font-inter: var(--font-inter), sans-serif;
+  --font-space-mono: var(--font-space-mono), monospace;
+  --font-jetbrains-mono: var(--font-jetbrains-mono), monospace;
+  
+  --font-sans: var(--font-inter), sans-serif;
+  --font-mono: var(--font-space-mono), monospace;
 }
 
 body {
-  background-color: var(--color-brand-bg);
-  color: var(--color-brand-text);
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
   font-family: var(--font-inter), sans-serif;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--color-surface); 
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-surface-container-high); 
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline); 
 }
