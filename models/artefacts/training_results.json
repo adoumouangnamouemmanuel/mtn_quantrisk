@@ -1,0 +1,86 @@
+{
+  "Service_Rev_Growth_Pct": {
+    "model_file": "models\\artefacts\\revenue_growth.joblib",
+    "train_rows": 20,
+    "loo_mae": 0.0211,
+    "loo_r2": 0.9999,
+    "feature_importance": {
+      "Inflation_YoY_Pct": 0.03949308767914772,
+      "Policy_Rate_Pct": 0.013932301662862301,
+      "Cedi_USD_Avg": 0.22705017030239105,
+      "GDP_Growth_Pct": 0.008020319044589996,
+      "Mobile_Penetration_Pct": 0.3761679232120514,
+      "Data_Penetration_Pct": 0.33533620834350586
+    }
+  },
+  "EBITDA_Margin_Pct": {
+    "model_file": "models\\artefacts\\ebitda_margin.joblib",
+    "train_rows": 24,
+    "loo_mae": 0.0145,
+    "loo_r2": 0.9998,
+    "feature_importance": {
+      "Inflation_YoY_Pct": 0.38602501153945923,
+      "Policy_Rate_Pct": 0.19372877478599548,
+      "Cedi_USD_Avg": 0.04733898490667343,
+      "GDP_Growth_Pct": 0.31720635294914246,
+      "Mobile_Penetration_Pct": 0.05570089817047119,
+      "Data_Penetration_Pct": 0.0
+    }
+  },
+  "PAT_Margin_Pct": {
+    "model_file": "models\\artefacts\\pat_margin.joblib",
+    "train_rows": 24,
+    "loo_mae": 0.0155,
+    "loo_r2": 0.9999,
+    "feature_importance": {
+      "Inflation_YoY_Pct": 0.06443608552217484,
+      "Policy_Rate_Pct": 0.4692177474498749,
+      "Cedi_USD_Avg": 0.11253520846366882,
+      "GDP_Growth_Pct": 0.15576575696468353,
+      "Mobile_Penetration_Pct": 0.19513003528118134,
+      "Data_Penetration_Pct": 0.0029151909984648228
+    }
+  },
+  "MoMo_Revenue": {
+    "model_file": "models\\artefacts\\momo_revenue.joblib",
+    "train_rows": 24,
+    "loo_mae": 1.0331,
+    "loo_r2": 1.0,
+    "feature_importance": {
+      "Inflation_YoY_Pct": 0.0038016787730157375,
+      "Policy_Rate_Pct": 0.0510210283100605,
+      "Cedi_USD_Avg": 0.15633441507816315,
+      "GDP_Growth_Pct": 0.040172725915908813,
+      "Mobile_Penetration_Pct": 0.3605459928512573,
+      "Data_Penetration_Pct": 0.38812413811683655
+    }
+  },
+  "ARPU_GHS": {
+    "model_file": "models\\artefacts\\arpu.joblib",
+    "train_rows": 24,
+    "loo_mae": 5.7042,
+    "loo_r2": 0.8199,
+    "feature_importance": {
+      "Inflation_YoY_Pct": 0.008301745168864727,
+      "Policy_Rate_Pct": 0.022069649770855904,
+      "Cedi_USD_Avg": 0.08668961375951767,
+      "GDP_Growth_Pct": 0.01262648869305849,
+      "Mobile_Penetration_Pct": 0.3559722304344177,
+      "Data_Penetration_Pct": 0.514340341091156
+    }
+  },
+  "Data_Growth_Pct": {
+    "model_file": "models\\artefacts\\data_revenue_growth.joblib",
+    "train_rows": 20,
+    "loo_mae": 0.0349,
+    "loo_r2": 1.0,
+    "feature_importance": {
+      "Inflation_YoY_Pct": 0.2028970718383789,
+      "Policy_Rate_Pct": 0.0018539674347266555,
+      "Cedi_USD_Avg": 0.05844688042998314,
+      "GDP_Growth_Pct": 0.38178393244743347,
+      "Mobile_Penetration_Pct": 0.12156816571950912,
+      "Data_Penetration_Pct": 0.23344998061656952
+    }
+  }
+}
