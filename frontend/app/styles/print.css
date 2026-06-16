@@ -1,0 +1,43 @@
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    background-color: #121212 !important;
+    color: #E2E2E2 !important;
+  }
+
+  /* Force background colors on cards */
+  .bg-surface-container-low {
+    background-color: #1E1E1E !important;
+  }
+  .bg-surface-container {
+    background-color: #252525 !important;
+  }
+  .bg-surface-container-high {
+    background-color: #2C2C2C !important;
+  }
+
+  /* Prevent page breaks inside important components */
+  .card, .p-4, .p-6, tr {
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  .print-canvas-img {
+    display: block !important;
+    max-width: 100%;
+    height: auto;
+    page-break-inside: avoid;
+  }
+
+  /* Hide scrollbars for printing */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}

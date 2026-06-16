@@ -1,0 +1,5 @@
+npm warn exec The following package was not found and will be installed: depcheck@1.4.7
+Unused devDependencies
+* @tailwindcss/postcss
+* @types/react-dom
+* tailwindcss
