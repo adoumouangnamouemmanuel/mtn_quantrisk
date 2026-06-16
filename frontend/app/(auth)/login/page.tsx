@@ -4,7 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 import { Zap, Radio, Target, EyeOff, Key, Lock } from 'lucide-react';
 
+import { useRouter } from 'next/navigation';
+
 export default function LoginPage() {
+  const router = useRouter();
+
   return (
     <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden font-sans bg-surface">
       
@@ -64,7 +68,13 @@ export default function LoginPage() {
             Sign in to your risk intelligence workspace
           </p>
 
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <form 
+            className="space-y-6" 
+            onSubmit={(e) => {
+              e.preventDefault();
+              router.push('/dashboard');
+            }}
+          >
             <div>
               <label className="block text-xs font-mono uppercase tracking-widest text-on-surface-variant mb-2">
                 Work Email
@@ -94,11 +104,9 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Link href="/dashboard" passHref legacyBehavior>
-              <button type="submit" className="w-full bg-mtn-yellow text-black font-bold uppercase tracking-widest py-3.5 rounded mt-2 hover:bg-yellow-400 transition-colors">
-                Sign In
-              </button>
-            </Link>
+            <button type="submit" className="w-full bg-mtn-yellow text-black font-bold uppercase tracking-widest py-3.5 rounded mt-2 hover:bg-yellow-400 transition-colors">
+              Sign In
+            </button>
 
             <div className="flex items-center my-6">
               <hr className="flex-1 border-outline/50" />
