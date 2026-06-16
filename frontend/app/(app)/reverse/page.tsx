@@ -1,24 +1,69 @@
 "use client";
 
-import React from 'react';
-import { Card } from '@/components/ui/Card';
-import { ActivitySquare } from 'lucide-react';
+import React, { useState } from 'react';
+import { useAppState } from '@/stores/useAppState';
+import { TargetBuilderCard } from '@/components/reverse/TargetBuilderCard';
+import { SingleScenarioSolver } from '@/components/reverse/SingleScenarioSolver';
+import { CrossScenarioSweep } from '@/components/reverse/CrossScenarioSweep';
+import { TopDangerousScenariosCard } from '@/components/reverse/TopDangerousScenariosCard';
+import { reverseStress } from '@/lib/api';
+import { ReverseStressInput } from '@/lib/types';
 
-export default function ReversePlaceholder() {
+export default function ReversePage() {
+  const { state, dispatch } = useAppState();
+  const [isSolving, setIsSolving] = useState(false);
+
+  const handleSolve = async (input: ReverseStressInput) => {
+    setIsSolving(true);
+    try {
+      const result = await reverseStress(input);
+      dispatch({ type: 'SET_REVERSE_STRESS_RESULT', payload: result });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSolving(false);
+    }
+  };
+
+  const res = state.reverseStressResult;
+
   return (
-    <div className="flex items-center justify-center h-full min-h-[60vh] animate-in fade-in duration-500">
-      <Card className="max-w-md text-center p-8 border-dashed border-2 border-outline/50 bg-surface-container/30">
-        <div className="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-6">
-          <ActivitySquare className="w-8 h-8 text-error" />
+    <div className="flex flex-col h-full overflow-y-auto p-4 md:p-6 space-y-6 animate-in fade-in duration-500">
+      
+      {/* Target Builder */}
+      <TargetBuilderCard onSolve={handleSolve} isSolving={isSolving} />
+
+      {res ? (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-6">
+              <SingleScenarioSolver 
+                input={res.input}
+                result={res.singleScenarioResult} 
+                onSolveScenario={(scenarioId) => handleSolve({ ...res.input, scenarioId })} 
+              />
+            </div>
+            <div className="lg:col-span-6">
+              <CrossScenarioSweep 
+                result={res.crossScenarioRanking} 
+              />
+            </div>
+          </div>
+          
+          {res.crossScenarioRanking && res.crossScenarioRanking.length > 0 && (
+            <TopDangerousScenariosCard ranking={res.crossScenarioRanking} />
+          )}
+        </>
+      ) : (
+        <div className="flex-1 flex items-center justify-center border-2 border-dashed border-outline/20 rounded-xl p-12">
+          <div className="text-center">
+            <h3 className="font-sans text-xl font-bold text-white mb-2">Define an Unacceptable Outcome</h3>
+            <p className="font-sans text-on-surface-variant max-w-md">
+              The reverse stress solver will search across the severity parameter space to find the exact multiplier required to breach your defined target.
+            </p>
+          </div>
         </div>
-        <h2 className="text-2xl font-hero font-bold text-on-surface mb-2">Reverse Stress</h2>
-        <p className="text-on-surface-variant mb-6 font-sans">
-          This module is part of the Advanced Modeling suite (Batch 2). It will calculate the minimum shock required to breach regulatory and financial covenants.
-        </p>
-        <div className="inline-block px-3 py-1 bg-surface-container-high rounded-full border border-outline/30 text-xs font-mono uppercase tracking-widest text-outline">
-          Coming Soon
-        </div>
-      </Card>
+      )}
     </div>
   );
 }

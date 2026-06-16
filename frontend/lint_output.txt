@@ -1,0 +1,85 @@
+
+> frontend@0.1.0 lint
+> eslint
+
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\app\(app)\compare\page.tsx
+  76:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\app\(app)\scenarios\page.tsx
+  48:7  error    Error: Cannot access variable before it is declared
+
+`handleRun` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\app\(app)\scenarios\page.tsx:48:7
+  46 |   useEffect(() => {
+  47 |     if (state.activeScenario && !state.scenarioOutput && !isRunning) {
+> 48 |       handleRun();
+     |       ^^^^^^^^^ `handleRun` accessed before it is declared
+  49 |     }
+  50 |   }, [state.activeScenario, state.scenarioOutput]);
+  51 |
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\app\(app)\scenarios\page.tsx:52:3
+  50 |   }, [state.activeScenario, state.scenarioOutput]);
+  51 |
+> 52 |   const handleRun = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 53 |     if (!state.activeScenario) return;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 54 |     setIsRunning(true);
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 62 |     }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 63 |   };
+     | ^^^^^ `handleRun` is declared here
+  64 |
+  65 |   const active = state.activeScenario;
+  66 |   const output = state.scenarioOutput;  react-hooks/immutability
+  50:6  warning  React Hook useEffect has missing dependencies: 'handleRun' and 'isRunning'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\components\compare\ComparisonTable.tsx
+  44:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  87:29  warning  'i' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\components\reverse\CrossScenarioSweep.tsx
+    8:10  warning  'Chip' is defined but never used          @typescript-eslint/no-unused-vars
+  114:36  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\components\reverse\SingleScenarioSolver.tsx
+  9:26  warning  'MOCK_KPIS' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\components\scenarios\CalibrationAnchorCard.tsx
+  22:22  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\components\scenarios\ScenarioPicker.tsx
+  69:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\components\scenarios\ShapAttributionCard.tsx
+  46:52  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\components\scenarios\WaterfallChart.tsx
+  134:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\components\shell\Sidebar.tsx
+  14:9  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\lib\api.ts
+   4:10  warning  'ReverseOperator' is defined but never used  @typescript-eslint/no-unused-vars
+  61:37  warning  '_kpiId' is defined but never used           @typescript-eslint/no-unused-vars
+  61:52  warning  '_horizon' is defined but never used         @typescript-eslint/no-unused-vars
+  69:39  warning  '_kpiId' is defined but never used           @typescript-eslint/no-unused-vars
+  69:54  warning  '_iterations' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\nanad\projiis\MTN\mtn_quantrisk\frontend\lib\mockGenerators.ts
+    2:10  warning  'Scenario' is defined but never used                 @typescript-eslint/no-unused-vars
+  162:11  error    'kpiValue' is never reassigned. Use 'const' instead  prefer-const
+  162:11  warning  'kpiValue' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  181:27  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+✖ 24 problems (13 errors, 11 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

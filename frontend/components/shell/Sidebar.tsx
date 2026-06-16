@@ -11,7 +11,7 @@ import {
 interface NavItem {
   href: string;
   label: string;
-  icon: any;
+  icon: import('lucide-react').LucideIcon;
   disabled?: boolean;
 }
 

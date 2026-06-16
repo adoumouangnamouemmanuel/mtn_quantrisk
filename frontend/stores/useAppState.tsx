@@ -19,6 +19,7 @@ export interface AppState {
   briefs: BoardBrief[];
   pipelineHealth: PipelineHealth | null;
   globalLoading: boolean;
+  briefSlideover: { open: boolean; brief?: BoardBrief };
 }
 
 const initialState: AppState = {
@@ -34,6 +35,7 @@ const initialState: AppState = {
   briefs: [],
   pipelineHealth: null,
   globalLoading: false,
+  briefSlideover: { open: false },
 };
 
 type Action =
@@ -45,7 +47,12 @@ type Action =
   | { type: 'SET_PIPELINE_HEALTH'; payload: PipelineHealth | null }
   | { type: 'SET_FORECAST'; payload: ForecastPoint[] }
   | { type: 'SET_MONTE_CARLO'; payload: MonteCarloResult | null }
-  | { type: 'SET_BRIEFS'; payload: BoardBrief[] };
+  | { type: 'SET_BRIEFS'; payload: BoardBrief[] }
+  | { type: 'SET_COMPARISON_A'; payload: Scenario | null }
+  | { type: 'SET_COMPARISON_B'; payload: Scenario | null }
+  | { type: 'SET_REVERSE_STRESS_RESULT'; payload: ReverseStressResult }
+  | { type: 'OPEN_BRIEF_SLIDEOVER'; payload: { brief: BoardBrief } }
+  | { type: 'CLOSE_BRIEF_SLIDEOVER' };
 
 function appReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -58,6 +65,11 @@ function appReducer(state: AppState, action: Action): AppState {
     case 'SET_FORECAST': return { ...state, forecast: action.payload };
     case 'SET_MONTE_CARLO': return { ...state, monteCarloResult: action.payload };
     case 'SET_BRIEFS': return { ...state, briefs: action.payload };
+    case 'SET_COMPARISON_A': return { ...state, comparisonA: action.payload };
+    case 'SET_COMPARISON_B': return { ...state, comparisonB: action.payload };
+    case 'SET_REVERSE_STRESS_RESULT': return { ...state, reverseStressResult: action.payload };
+    case 'OPEN_BRIEF_SLIDEOVER': return { ...state, briefSlideover: { open: true, brief: action.payload.brief } };
+    case 'CLOSE_BRIEF_SLIDEOVER': return { ...state, briefSlideover: { open: false, brief: state.briefSlideover.brief } };
     default: return state;
   }
 }

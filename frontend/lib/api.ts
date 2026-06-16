@@ -1,5 +1,5 @@
 import {
-  Kpi, Scenario, ScenarioOutput, ReverseStressResult, 
+  Kpi, Scenario, ScenarioOutput, ReverseStressResult, ReverseStressInput,
   ForecastPoint, MonteCarloResult, BoardBrief, PipelineHealth,
   KpiId, ReverseOperator, MacroOverlays
 } from './types';
@@ -7,6 +7,7 @@ import {
   MOCK_KPIS, MOCK_SCENARIOS, MOCK_FORECAST, MOCK_MONTE_CARLO, 
   MOCK_BRIEFS, MOCK_PIPELINE_HEALTH 
 } from './mockData';
+import { mockRunScenario, mockReverseStress, mockGenerateBoardBrief } from './mockGenerators';
 
 const USE_MOCK_API = true;
 const DELAY_MS = 400;
@@ -41,32 +42,18 @@ export async function fetchScenarioById(id: string): Promise<Scenario> {
   throw new Error("Not implemented");
 }
 
-export async function runScenario(id: string, severityMultiplier: number, _macroOverlays: MacroOverlays): Promise<ScenarioOutput> {
+export async function runScenario(id: string, severityMultiplier: number, macroOverlays: MacroOverlays): Promise<ScenarioOutput> {
   if (USE_MOCK_API) {
     await delay(DELAY_MS * 2);
-    // Return a dummy scenario output for now since Batch 1 relies mostly on mock data
-    return {
-      scenarioId: id,
-      severityMultiplier,
-      results: [],
-      shapAttributions: [],
-      generatedAt: new Date().toISOString()
-    };
+    return mockRunScenario(id, severityMultiplier, macroOverlays);
   }
   throw new Error("Not implemented");
 }
 
-export async function reverseStress(kpiId: KpiId, threshold: number, operator: ReverseOperator, scenarioId?: string): Promise<ReverseStressResult> {
+export async function reverseStress(input: ReverseStressInput): Promise<ReverseStressResult> {
   if (USE_MOCK_API) {
     await delay(DELAY_MS * 2);
-    return {
-      kpiId, threshold, operator, scenarioId,
-      distanceToBreach: 10,
-      breachProbability: 0.05,
-      requiredSeverityMultiplier: 1.5,
-      criticalFeatures: [],
-      generatedAt: new Date().toISOString()
-    };
+    return mockReverseStress(input);
   }
   throw new Error("Not implemented");
 }
@@ -82,7 +69,7 @@ export async function fetchForecast(_kpiId: KpiId, _horizon: 7 | 30 | 90): Promi
 export async function fetchMonteCarlo(_kpiId: KpiId, _iterations: number): Promise<MonteCarloResult> {
   if (USE_MOCK_API) {
     await delay(DELAY_MS);
-    return MOCK_MONTE_CARLO[0];
+    return MOCK_MONTE_CARLO[0]!;
   }
   throw new Error("Not implemented");
 }
@@ -90,21 +77,7 @@ export async function fetchMonteCarlo(_kpiId: KpiId, _iterations: number): Promi
 export async function generateBoardBrief(scenarioIds: string[]): Promise<BoardBrief> {
   if (USE_MOCK_API) {
     await delay(DELAY_MS * 3);
-    const brief: BoardBrief = {
-      id: `B${Math.floor(Math.random() * 1000)}`,
-      title: "Newly Generated Brief",
-      scenarioIds,
-      status: 'Ready',
-      generatedAt: new Date().toISOString(),
-      severityScore: 4.5,
-      estimatedImpact: { currency: 'GHS', magnitude: 120, unit: 'M' },
-      executiveSummary: "Generated summary",
-      keyKpiImpacts: [],
-      calibrationNotes: "Generated notes",
-      recommendedActions: ["Action 1"],
-      keyEntities: ["BoG"]
-    };
-    return brief;
+    return mockGenerateBoardBrief(scenarioIds);
   }
   throw new Error("Not implemented");
 }

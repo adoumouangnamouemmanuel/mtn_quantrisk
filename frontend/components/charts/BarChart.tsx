@@ -9,10 +9,10 @@ interface BarChartProps {
     labels: string[];
     datasets: Array<{
       label: string;
-      data: number[];
+      data: Array<number | [number, number]>;
       backgroundColor?: string | string[];
       borderColor?: string | string[];
-      borderWidth?: number;
+      borderWidth?: number | number[];
       borderRadius?: number;
     }>;
   };

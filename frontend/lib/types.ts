@@ -106,18 +106,45 @@ export interface PipelineHealth {
   }>;
 }
 
-export type ReverseOperator = '>' | '<' | '>=' | '<=' | '==';
+export type ReverseOperator = 'lt' | 'gt' | 'dropsBy' | 'risesAbove';
+
+export interface ReverseStressInput {
+  kpiId: KpiId;
+  operator: ReverseOperator;
+  threshold: number;
+  scenarioId?: string; // optional: solve for one scenario; absent = solve across all 56
+}
 
 export interface ReverseStressResult {
-  kpiId: KpiId;
-  threshold: number;
-  operator: ReverseOperator;
-  scenarioId?: string;
-  distanceToBreach: number;
-  breachProbability: number;
-  requiredSeverityMultiplier: number;
-  criticalFeatures: Array<{ feature: string; requiredDelta: number }>;
+  input: ReverseStressInput;
+  singleScenarioResult?: {
+    scenarioId: string;
+    requiredSeverityMultiplier: number;
+    breachKpiValue: number;
+    binarySearchTrajectory: Array<{ iteration: number; severity: number; kpiValue: number }>;
+  };
+  crossScenarioRanking?: Array<{
+    scenarioId: string;
+    scenarioName: string;
+    pillar: PillarId;
+    requiredSeverityMultiplier: number;
+    breachKpiValue: number;
+  }>;
   generatedAt: string;
 }
 
-export type MacroOverlays = Record<string, number>;
+export interface MacroOverlays {
+  cediShockPct: number;       // -50 to +50
+  inflationOverlayPp: number; // -10 to +30
+  policyRateOverlayPp: number; // -10 to +15
+}
+
+export interface ComparisonRow {
+  kpiId: KpiId;
+  baseValue: number;
+  scenarioAValue: number;
+  scenarioBValue: number;
+  deltaA: number;
+  deltaB: number;
+  worseOf: 'A' | 'B' | 'tie';
+}

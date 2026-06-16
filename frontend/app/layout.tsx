@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, DM_Sans, Space_Mono, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import "./styles/print.css";
 import Script from "next/script";
 
 const inter = Inter({
