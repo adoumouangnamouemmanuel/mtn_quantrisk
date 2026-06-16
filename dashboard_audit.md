@@ -37,4 +37,4 @@ The final audit and hardening pass focused on:
 3. **Design System Enforcement:** Ensuring no ad-hoc hex codes were used, strictly binding the UI to the tokens defined in `lib/theme.ts` (mapped directly from `DESIGN.md`).
 
 ## Conclusion
-Rebuilding the dashboard was an essential architectural investment. The MTN QuantRisk Intelligence Platform is now a robust, scalable, and maintainable application ready for the June 7 deliverable and capable of supporting future advanced modeling capabilities.
+Rebuilding the dashboard was an essential architectural investment. The MTN QuantRisk Intelligence Platform is now a robust, scalable, and maintainable application ready and capable of supporting future advanced modeling capabilities.
