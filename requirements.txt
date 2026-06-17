@@ -1,0 +1,9 @@
+# PDF pipeline dependencies (see docs/mtn/mtn.md)
+pdfplumber>=0.11.0
+camelot-py[cv]>=0.11.0
+pandas>=2.0.0
+pytesseract>=0.3.10
+pymupdf>=1.24.0
+
+# Testing
+pytest>=8.0.0
