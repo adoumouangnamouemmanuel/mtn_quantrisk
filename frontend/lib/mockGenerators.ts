@@ -75,10 +75,13 @@ function decomposeDelta(delta: number, driverNames: string[], hash: number) {
   const weights = driverNames.map((_, i) => Math.abs((hash % (i + 3)) + 1));
   const totalWeight = weights.reduce((a, b) => a + b, 0);
   const contributions = driverNames.map((name, i) => {
-    return { name, contribution: delta * (weights[i] / totalWeight) };
+    return { name, contribution: delta * ((weights[i] || 0) / totalWeight) };
   });
   const sumSoFar = contributions.slice(0, -1).reduce((a, b) => a + b.contribution, 0);
-  contributions[contributions.length - 1].contribution = delta - sumSoFar;
+  if (contributions.length > 0) {
+    const lastEntry = contributions[contributions.length - 1];
+    if (lastEntry) lastEntry.contribution = delta - sumSoFar;
+  }
   return contributions;
 }
 
@@ -298,7 +301,7 @@ export function mockGenerateBoardBrief(scenarioIds: string[]): BoardBrief {
   const hash = hashCode(s1?.id || 'A');
   const execSummary = isComparative 
     ? `Scenario A (${s1?.name}) presents a primary risk to operational stability, whereas Scenario B (${s2?.name}) drives immediate financial compression. A unified mitigation strategy must balance CapEx defense with short-term liquidity reserves.`
-    : templates[hash % templates.length];
+    : (templates[hash % templates.length] || templates[0] || '');
 
   return {
     id: `B${Math.floor(Math.random() * 1000)}`,
