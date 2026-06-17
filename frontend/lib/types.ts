@@ -58,6 +58,10 @@ export interface ScenarioOutput {
     feature: string;
     contribution: number;   // SHAP value, can be negative
   }>;
+  waterfallDrivers?: {
+    FIN01: Array<{ name: string; contribution: number }>;
+    FIN03: Array<{ name: string; contribution: number }>;
+  };
   generatedAt: string;
 }
 

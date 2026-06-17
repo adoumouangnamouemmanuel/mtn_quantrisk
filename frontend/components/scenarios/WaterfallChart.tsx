@@ -11,17 +11,17 @@ interface WaterfallChartProps {
   title: string;
   kpiId: string;
   result: { baseValue: number; scenarioValue: number };
-  attributions: Array<{ feature: string; contribution: number }>;
+  drivers: Array<{ name: string; contribution: number }>;
 }
 
-export function WaterfallChart({ title, kpiId, result, attributions }: WaterfallChartProps) {
+export function WaterfallChart({ title, kpiId, result, drivers }: WaterfallChartProps) {
   const [viewAsTable, setViewAsTable] = useState(false);
 
   const { chartData, tableData } = useMemo(() => {
     // For a waterfall, we need [start, end] for each bar
     const labels = ['Base'];
     const data: Array<number | [number, number]> = [[0, result.baseValue]];
-    const bgColors = [ThemeTokens.colors.surfaceContainerHigh]; // blue/yellow depending on theme
+    const bgColors = [ThemeTokens.colors.surfaceContainerHigh]; // Base color
 
     const tData = [
       { label: 'Base', start: 0, end: result.baseValue, delta: result.baseValue }
@@ -29,32 +29,13 @@ export function WaterfallChart({ title, kpiId, result, attributions }: Waterfall
 
     let current = result.baseValue;
     
-    // Top 3 attributions for simplicity in the waterfall, combine rest into "Other"
-    const top3 = attributions.slice(0, 3);
-    const otherSum = attributions.slice(3).reduce((acc, curr) => acc + curr.contribution, 0);
-    
-    const steps = [...top3];
-    if (otherSum !== 0) {
-      steps.push({ feature: 'Other Factors', contribution: otherSum });
-    }
-
-    // Since SHAP values might not exactly sum to the true delta (XGBoost vs base),
-    // we calculate an adjustment to make the waterfall bridge perfectly to scenarioValue.
-    const expectedDelta = result.scenarioValue - result.baseValue;
-    const shapSum = steps.reduce((sum, s) => sum + s.contribution, 0);
-    const adjustment = expectedDelta - shapSum;
-
-    if (Math.abs(adjustment) > 0.1) {
-      steps.push({ feature: 'Residual Impact', contribution: adjustment });
-    }
-
-    steps.forEach(step => {
-      labels.push(step.feature);
+    drivers.forEach(step => {
+      labels.push(step.name);
       data.push([current, current + step.contribution]);
       bgColors.push(step.contribution >= 0 ? ThemeTokens.colors.mtnYellow : ThemeTokens.colors.error);
       
       tData.push({
-        label: step.feature,
+        label: step.name,
         start: current,
         end: current + step.contribution,
         delta: step.contribution
@@ -65,7 +46,7 @@ export function WaterfallChart({ title, kpiId, result, attributions }: Waterfall
 
     labels.push('Scenario');
     data.push([0, result.scenarioValue]);
-    bgColors.push(ThemeTokens.colors.surfaceContainerHigh);
+    bgColors.push(ThemeTokens.colors.surfaceContainerHigh); // End color
     
     tData.push({ label: 'Scenario', start: 0, end: result.scenarioValue, delta: result.scenarioValue });
 
@@ -81,12 +62,12 @@ export function WaterfallChart({ title, kpiId, result, attributions }: Waterfall
       },
       tableData: tData
     };
-  }, [result, attributions, kpiId]);
+  }, [result, drivers, kpiId]);
 
   return (
     <Card className="p-4 bg-surface-container-low flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="font-sans text-sm font-bold text-white">{title}</h3>
+        <h3 className="font-sans text-sm font-bold text-white uppercase tracking-wider">{title}</h3>
         <button 
           onClick={() => setViewAsTable(!viewAsTable)}
           className="text-on-surface-variant hover:text-white transition-colors"
@@ -114,7 +95,7 @@ export function WaterfallChart({ title, kpiId, result, attributions }: Waterfall
                   <tr key={i} className="border-b border-outline/10 hover:bg-surface-container transition-colors">
                     <td className="py-2">{row.label}</td>
                     <td className="py-2 text-right text-on-surface-variant">{formatNumber(row.start)}</td>
-                    <td className={`py-2 text-right ${row.delta < 0 ? 'text-error' : row.delta > 0 && i !== 0 && i !== tableData.length - 1 ? 'text-mtn-yellow' : ''}`}>
+                    <td className={`py-2 text-right ${row.delta < 0 && i !== 0 && i !== tableData.length - 1 ? 'text-error' : row.delta > 0 && i !== 0 && i !== tableData.length - 1 ? 'text-mtn-yellow' : ''}`}>
                       {row.delta > 0 && i !== 0 && i !== tableData.length - 1 ? '+' : ''}{formatNumber(row.delta)}
                     </td>
                     <td className="py-2 text-right">{formatNumber(row.end)}</td>

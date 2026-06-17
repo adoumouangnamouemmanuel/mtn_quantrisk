@@ -6180,3 +6180,33 @@ export const MOCK_MONTHLY: Partial<Record<KpiId, Array<{month: string; value: nu
   ]
 };
 
+export function validateMocks() {
+  if (process.env.NODE_ENV !== 'development') return;
+  
+  let warnings = 0;
+  
+  MOCK_SCENARIOS.forEach(scenario => {
+    const fin03Impact = scenario.kpiImpacts.find(i => i.kpiId === 'FIN03');
+    if (fin03Impact) {
+      const isCompound = scenario.pillar === 'G' || ['S11', 'S13', 'S14', 'S32', 'S56'].includes(scenario.id);
+      
+      // We check for compression worse than -2pp for non-compound, and -8pp for compound
+      if (!isCompound && fin03Impact.type === 'delta' && fin03Impact.value < -2.0) {
+        console.warn(`[Mock Validation] Scenario ${scenario.id} (${scenario.name}) violates FIN03 compression cap: ${fin03Impact.value}pp < -2.0pp`);
+        warnings++;
+      }
+      if (isCompound && fin03Impact.type === 'delta' && fin03Impact.value < -8.0) {
+        console.warn(`[Mock Validation] Scenario ${scenario.id} (${scenario.name}) violates FIN03 compound compression cap: ${fin03Impact.value}pp < -8.0pp`);
+        warnings++;
+      }
+    }
+  });
+  
+  if (warnings === 0) {
+    console.log("[Mock Validation] All mock scenarios passed elasticity rules.");
+  }
+}
+
+if (process.env.NODE_ENV === 'development') {
+  validateMocks();
+}

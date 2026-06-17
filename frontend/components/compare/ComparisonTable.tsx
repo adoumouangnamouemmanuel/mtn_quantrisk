@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { ScenarioOutput, Kpi, ComparisonRow } from '@/lib/types';
 import { formatNumber } from '@/lib/format';
-import { ArrowDownRight, ArrowUpRight, ArrowRight } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, ArrowRight, ArrowDown, ArrowUp } from 'lucide-react';
 
 interface ComparisonTableProps {
   kpis: Kpi[];
@@ -37,9 +37,29 @@ function DeltaCell({ deltaPct }: { deltaPct: number }) {
   );
 }
 
+type SortField = 'kpiId' | 'deltaA' | 'deltaB' | 'worseOf';
+type SortDirection = 'asc' | 'desc';
+
 export function ComparisonTable({ kpis, outputA, outputB }: ComparisonTableProps) {
+  const [sortField, setSortField] = useState<SortField>('kpiId');
+  const [sortDir, setSortDir] = useState<SortDirection>('asc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) return null;
+    return sortDir === 'asc' ? <ArrowUp className="w-3 h-3 ml-1 inline" /> : <ArrowDown className="w-3 h-3 ml-1 inline" />;
+  };
+
   const rows: ComparisonRow[] = useMemo(() => {
-    return ANCHOR_KPIS.map(kpiId => {
+    const data = ANCHOR_KPIS.map(kpiId => {
       const kpi = kpis.find(k => k.id === kpiId);
       if (!kpi) return null;
 
@@ -50,9 +70,6 @@ export function ComparisonTable({ kpis, outputA, outputB }: ComparisonTableProps
       const deltaB = resB ? resB.deltaPct : 0;
 
       let worseOf: 'A' | 'B' | 'tie' = 'tie';
-      // Lower is worse for these KPIs generally (revenue, margin). 
-      // If a KPI like "churn" was here, higher would be worse.
-      // We assume negative delta is worse for all anchor KPIs.
       if (deltaA < deltaB - 0.1) worseOf = 'A';
       else if (deltaB < deltaA - 0.1) worseOf = 'B';
 
@@ -66,7 +83,21 @@ export function ComparisonTable({ kpis, outputA, outputB }: ComparisonTableProps
         worseOf
       };
     }).filter((x): x is ComparisonRow => x !== null);
-  }, [kpis, outputA, outputB]);
+
+    return data.sort((a, b) => {
+      let comparison = 0;
+      if (sortField === 'kpiId') {
+        comparison = a.kpiId.localeCompare(b.kpiId);
+      } else if (sortField === 'deltaA') {
+        comparison = a.deltaA - b.deltaA;
+      } else if (sortField === 'deltaB') {
+        comparison = a.deltaB - b.deltaB;
+      } else if (sortField === 'worseOf') {
+        comparison = a.worseOf.localeCompare(b.worseOf);
+      }
+      return sortDir === 'asc' ? comparison : -comparison;
+    });
+  }, [kpis, outputA, outputB, sortField, sortDir]);
 
   return (
     <Card className="bg-surface-container-low overflow-hidden">
@@ -74,13 +105,33 @@ export function ComparisonTable({ kpis, outputA, outputB }: ComparisonTableProps
         <table className="w-full text-left border-collapse min-w-[600px]">
           <thead>
             <tr className="bg-surface-container border-b border-outline/20">
-              <th className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant sticky left-0 bg-surface-container z-10">KPI</th>
+              <th 
+                className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant sticky left-0 bg-surface-container z-10 cursor-pointer hover:text-white transition-colors select-none"
+                onClick={() => handleSort('kpiId')}
+              >
+                KPI {renderSortIcon('kpiId')}
+              </th>
               <th className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant text-right">BASE</th>
               <th className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant text-right">SCENARIO A</th>
-              <th className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant text-right">Δ A</th>
+              <th 
+                className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant text-right cursor-pointer hover:text-white transition-colors select-none"
+                onClick={() => handleSort('deltaA')}
+              >
+                Δ A {renderSortIcon('deltaA')}
+              </th>
               <th className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant text-right">SCENARIO B</th>
-              <th className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant text-right">Δ B</th>
-              <th className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant text-center">WORSE OF</th>
+              <th 
+                className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant text-right cursor-pointer hover:text-white transition-colors select-none"
+                onClick={() => handleSort('deltaB')}
+              >
+                Δ B {renderSortIcon('deltaB')}
+              </th>
+              <th 
+                className="p-4 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant text-center cursor-pointer hover:text-white transition-colors select-none"
+                onClick={() => handleSort('worseOf')}
+              >
+                WORSE OF {renderSortIcon('worseOf')}
+              </th>
             </tr>
           </thead>
           <tbody className="font-mono text-sm text-white">
