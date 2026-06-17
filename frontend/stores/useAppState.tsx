@@ -20,6 +20,7 @@ export interface AppState {
   pipelineHealth: PipelineHealth | null;
   globalLoading: boolean;
   briefSlideover: { open: boolean; brief?: BoardBrief };
+  activeForecastKpi: KpiId;
 }
 
 const initialState: AppState = {
@@ -36,6 +37,7 @@ const initialState: AppState = {
   pipelineHealth: null,
   globalLoading: false,
   briefSlideover: { open: false },
+  activeForecastKpi: 'FIN01',
 };
 
 type Action =
@@ -52,7 +54,8 @@ type Action =
   | { type: 'SET_COMPARISON_B'; payload: Scenario | null }
   | { type: 'SET_REVERSE_STRESS_RESULT'; payload: ReverseStressResult }
   | { type: 'OPEN_BRIEF_SLIDEOVER'; payload: { brief: BoardBrief } }
-  | { type: 'CLOSE_BRIEF_SLIDEOVER' };
+  | { type: 'CLOSE_BRIEF_SLIDEOVER' }
+  | { type: 'SET_ACTIVE_FORECAST_KPI'; payload: KpiId };
 
 function appReducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -70,6 +73,7 @@ function appReducer(state: AppState, action: Action): AppState {
     case 'SET_REVERSE_STRESS_RESULT': return { ...state, reverseStressResult: action.payload };
     case 'OPEN_BRIEF_SLIDEOVER': return { ...state, briefSlideover: { open: true, brief: action.payload.brief } };
     case 'CLOSE_BRIEF_SLIDEOVER': return { ...state, briefSlideover: { open: false, brief: state.briefSlideover.brief } };
+    case 'SET_ACTIVE_FORECAST_KPI': return { ...state, activeForecastKpi: action.payload };
     default: return state;
   }
 }

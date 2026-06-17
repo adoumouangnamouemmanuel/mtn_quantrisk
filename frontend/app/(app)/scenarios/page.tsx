@@ -7,7 +7,6 @@ import { fetchScenarioById, runScenario } from '@/lib/api';
 import { MacroOverlays } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 
-// Will import components later once they are built
 import { ScenarioPicker } from '@/components/scenarios/ScenarioPicker';
 import { SeveritySlider } from '@/components/scenarios/SeveritySlider';
 import { MacroOverlaysPanel } from '@/components/scenarios/MacroOverlays';
@@ -19,7 +18,7 @@ import { CalibrationAnchorCard } from '@/components/scenarios/CalibrationAnchorC
 import { BoardBriefSlideOver } from '@/components/scenarios/BoardBriefSlideOver';
 import { PillarBadge } from '@/components/ui/PillarBadge';
 import { Chip } from '@/components/ui/Chip';
-import { RotateCw, Download, GitCompare } from 'lucide-react';
+import { Download, GitCompare, ExternalLink, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function ScenariosPage() {
@@ -31,6 +30,8 @@ export default function ScenariosPage() {
   const [severity, setSeverity] = useState(1.0);
   const [overlays, setOverlays] = useState<MacroOverlays>({ cediShockPct: 0, inflationOverlayPp: 0, policyRateOverlayPp: 0 });
   const [isRunning, setIsRunning] = useState(false);
+  const [runSuccess, setRunSuccess] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
   
   // Hydrate active scenario on mount
   useEffect(() => {
@@ -38,6 +39,8 @@ export default function ScenariosPage() {
       fetchScenarioById(id).then(scen => {
         dispatch({ type: 'SET_ACTIVE_SCENARIO', payload: scen });
         setSeverity(1.0);
+        setRunSuccess(false);
+        setRunError(null);
       }).catch(console.error);
     }
   }, [id, state.activeScenario, dispatch]);
@@ -45,11 +48,16 @@ export default function ScenariosPage() {
   const handleRun = async () => {
     if (!state.activeScenario) return;
     setIsRunning(true);
+    setRunSuccess(false);
+    setRunError(null);
     try {
       const output = await runScenario(state.activeScenario.id, severity, overlays);
       dispatch({ type: 'SET_SCENARIO_OUTPUT', payload: output });
+      setRunSuccess(true);
+      setTimeout(() => setRunSuccess(false), 2500);
     } catch (e) {
       console.error(e);
+      setRunError("Simulation failed. Please check network logs.");
     } finally {
       setIsRunning(false);
     }
@@ -70,14 +78,15 @@ export default function ScenariosPage() {
     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-full animate-in fade-in duration-500">
       
       {/* Left Column: Picker */}
-      <div className="md:col-span-3 bg-surface-container-low border-r border-outline/20 p-4 h-full overflow-y-auto hidden md:block">
+      <div className="md:col-span-3 bg-surface-container-low border-b md:border-b-0 md:border-r border-outline/20 p-4 max-h-[300px] md:max-h-none overflow-y-auto">
         <ScenarioPicker 
           activeId={active?.id} 
           onSelect={(scen) => {
             dispatch({ type: 'SET_ACTIVE_SCENARIO', payload: scen });
             setSeverity(1.0);
             dispatch({ type: 'SET_SCENARIO_OUTPUT', payload: null });
-            // remove id from URL to cleanly swap
+            setRunSuccess(false);
+            setRunError(null);
             router.push('/scenarios');
           }} 
         />
@@ -106,10 +115,6 @@ export default function ScenariosPage() {
                     Last Run: {new Date(output.generatedAt).toLocaleTimeString()}
                   </div>
                 )}
-                <Button variant="ghost" size="sm" onClick={handleRun} disabled={isRunning} className="text-mtn-yellow">
-                  <RotateCw className={`w-4 h-4 mr-2 ${isRunning ? 'animate-spin' : ''}`} />
-                  RERUN
-                </Button>
               </div>
             </div>
 
@@ -122,17 +127,17 @@ export default function ScenariosPage() {
             {/* Run Action */}
             <div className="relative">
               <Button 
-                variant="primary" 
+                variant={runSuccess ? 'secondary' : 'primary'} 
                 fullWidth 
-                className="py-4 text-sm font-mono tracking-widest font-bold"
+                className={`py-4 text-sm font-mono tracking-widest font-bold transition-all duration-300 ${runSuccess ? 'bg-success text-black border-success hover:bg-success/90' : ''} ${runError ? 'bg-error text-white border-error' : ''}`}
                 onClick={handleRun}
                 disabled={isRunning}
               >
-                {isRunning ? 'RUNNING...' : 'RUN SCENARIO'}
+                {isRunning ? 'RUNNING SIMULATION...' : runSuccess ? <span className="flex items-center justify-center"><CheckCircle className="w-4 h-4 mr-2" /> CALIBRATED</span> : runError ? 'RUN FAILED' : 'RUN SCENARIO'}
               </Button>
               {isRunning && (
                 <div className="absolute bottom-0 left-0 h-1 bg-on-surface w-full overflow-hidden rounded-b">
-                  <div className="h-full bg-mtn-yellow animate-progress origin-left" style={{ animation: "progress 2s infinite ease-in-out" }}></div>
+                  <div className="h-full bg-mtn-yellow animate-[progress_1s_ease-in-out_infinite] origin-left"></div>
                 </div>
               )}
             </div>
@@ -145,13 +150,13 @@ export default function ScenariosPage() {
                   title="REVENUE WATERFALL — Base → Scenario" 
                   kpiId="FIN01" 
                   result={output.results.find(r => r.kpiId === 'FIN01')!} 
-                  attributions={output.shapAttributions} 
+                  drivers={output.waterfallDrivers?.FIN01 || []}
                 />
                 <WaterfallChart 
-                  title="EBITDA WATERFALL — Base → Scenario" 
-                  kpiId="FIN02" 
-                  result={output.results.find(r => r.kpiId === 'FIN02')!} 
-                  attributions={output.shapAttributions} 
+                  title="EBITDA MARGIN WATERFALL — Base → Scenario" 
+                  kpiId="FIN03" 
+                  result={output.results.find(r => r.kpiId === 'FIN03')!} 
+                  drivers={output.waterfallDrivers?.FIN03 || []}
                 />
                 <ShapAttributionCard attributions={output.shapAttributions} />
               </div>
@@ -161,7 +166,7 @@ export default function ScenariosPage() {
       </div>
 
       {/* Right Column: Context & Actions */}
-      <div className="md:col-span-3 bg-surface-container-low border-l border-outline/20 p-4 h-full overflow-y-auto hidden md:block">
+      <div className="md:col-span-3 bg-surface-container-low border-t md:border-t-0 md:border-l border-outline/20 p-4 max-h-[400px] md:max-h-none overflow-y-auto">
         {active ? (
           <div className="space-y-6">
             <ScenarioMetadataCard scenario={active} />
@@ -179,9 +184,6 @@ export default function ScenariosPage() {
               >
                 Generate Board Brief
               </Button>
-              <Button variant="ghost" className="w-full text-xs font-mono uppercase tracking-widest" onClick={() => window.print()}>
-                <Download className="w-4 h-4 mr-2" /> Export to PDF
-              </Button>
               <Button 
                 variant="ghost" 
                 className="w-full text-xs font-mono uppercase tracking-widest"
@@ -191,6 +193,12 @@ export default function ScenariosPage() {
                 }}
               >
                 <GitCompare className="w-4 h-4 mr-2" /> Add to Compare
+              </Button>
+              <Button variant="ghost" className="w-full text-xs font-mono uppercase tracking-widest" onClick={() => window.print()}>
+                <Download className="w-4 h-4 mr-2" /> Export to PDF
+              </Button>
+              <Button variant="ghost" className="w-full text-xs font-mono uppercase tracking-widest text-on-surface-variant hover:text-white" onClick={() => window.open(window.location.href, '_blank')}>
+                <ExternalLink className="w-4 h-4 mr-2" /> Open Full View
               </Button>
             </div>
           </div>
