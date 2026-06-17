@@ -65,6 +65,23 @@ class RunScenarioRequest(BaseModel):
     macroOverlays: dict = {}
 
 
+class KpiImpactInput(BaseModel):
+    kpiId: str
+    type: Literal['pct', 'delta', 'abs']
+    value: float
+
+
+class ScenarioMutateInput(BaseModel):
+    name: str
+    pillar: PillarId
+    type: ScenarioType
+    severity: int
+    plausibility: int
+    description: str
+    kpiImpacts: List[KpiImpactInput]
+    calibrationAnchor: Optional[str] = ""
+
+
 class ForecastPoint(BaseModel):
     date: str
     median: float

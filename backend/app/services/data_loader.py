@@ -87,6 +87,12 @@ def load_scenario_meta() -> pd.DataFrame:
     return df.drop_duplicates(subset=["Scenario ID"])
 
 
+def clear_scenario_cache() -> None:
+    """Invalidate lru_cache for scenario CSVs after a write."""
+    load_scenario_details.cache_clear()
+    load_scenario_meta.cache_clear()
+
+
 def get_kpi_status(value: float, lower: float | None, upper: float | None, kpi_id: str) -> str:
     """Compute Safe/Watch/Warning/Critical from value vs thresholds."""
     # For external KPIs (inflation, rate, FX), higher = worse

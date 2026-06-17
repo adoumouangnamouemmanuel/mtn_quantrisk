@@ -2,8 +2,11 @@ from fastapi import APIRouter, HTTPException
 from datetime import datetime, timezone, timedelta
 import random
 
-from ..schemas import RunScenarioRequest, ReverseStressInput
-from ..services.scenario_service import get_all_kpis, get_all_scenarios, get_scenario_by_id, apply_scenario
+from ..schemas import RunScenarioRequest, ReverseStressInput, ScenarioMutateInput
+from ..services.scenario_service import (
+    get_all_kpis, get_all_scenarios, get_scenario_by_id, apply_scenario,
+    create_scenario, update_scenario, delete_scenario,
+)
 from ..services.reverse_service import run_reverse_stress
 from ..services.history_service import get_quarterly, get_monthly
 
@@ -30,6 +33,25 @@ def get_scenario(scenario_id: str):
     if not sc:
         raise HTTPException(status_code=404, detail=f"Scenario {scenario_id} not found")
     return sc
+
+
+@router.post("/scenarios", status_code=201)
+def create_scenario_route(body: ScenarioMutateInput):
+    return create_scenario(body.model_dump())
+
+
+@router.put("/scenarios/{scenario_id}")
+def update_scenario_route(scenario_id: str, body: ScenarioMutateInput):
+    result = update_scenario(scenario_id, body.model_dump())
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Scenario {scenario_id} not found")
+    return result
+
+
+@router.delete("/scenarios/{scenario_id}", status_code=204)
+def delete_scenario_route(scenario_id: str):
+    if not delete_scenario(scenario_id):
+        raise HTTPException(status_code=404, detail=f"Scenario {scenario_id} not found")
 
 
 @router.post("/scenarios/{scenario_id}/run")

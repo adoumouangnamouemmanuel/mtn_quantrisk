@@ -7,7 +7,8 @@ import math
 from datetime import datetime, timezone
 from .data_loader import (
     load_base_case, load_scenario_details, load_scenario_meta,
-    KPI_META, FRONTEND_KPIS, PILLAR_MAP, get_kpi_status
+    KPI_META, FRONTEND_KPIS, PILLAR_MAP, get_kpi_status,
+    SCENARIO_DETAIL_CSV, SCENARIO_META_CSV, clear_scenario_cache,
 )
 
 # Default macro values used for SHAP explanation calls
@@ -233,3 +234,144 @@ def _get_shap_attributions(sc_id: str, severity: float) -> list:
         ("Data_Penetration_Pct",   0.04),
     ]
     return [{"feature": f, "contribution": round(v, 5)} for f, v in features]
+
+
+# ── CRUD helpers ───────────────────────────────────────────────────────────────
+
+_PILLAR_ID_TO_NAME = {
+    "A": "Macro & FX",
+    "B": "Regulatory",
+    "C": "Tech & Cyber",
+    "D": "Competitive",
+    "E": "Operational & Climate",
+    "F": "Upside",
+    "G": "Tail Risk",
+}
+
+
+def _read_raw_detail():
+    import pandas as pd
+    df = pd.read_csv(SCENARIO_DETAIL_CSV, on_bad_lines="skip", encoding="utf-8-sig")
+    df.columns = [c.strip().replace(" ", "_") for c in df.columns]
+    df["Scenario_ID"] = df["Scenario_ID"].astype(str).str.strip()
+    return df
+
+
+def _read_raw_meta():
+    import pandas as pd
+    df = pd.read_csv(SCENARIO_META_CSV, on_bad_lines="skip", encoding="utf-8-sig")
+    df.columns = [c.strip() for c in df.columns]
+    df["Scenario ID"] = df["Scenario ID"].astype(str).str.strip()
+    return df
+
+
+def _next_scenario_id() -> str:
+    df = _read_raw_detail()
+    ids = df["Scenario_ID"].astype(str).tolist()
+    nums = [int(i[1:]) for i in ids if len(i) > 1 and i[0] == "S" and i[1:].isdigit()]
+    return f"S{max(nums, default=87) + 1}"
+
+
+def _detail_rows_for(sc_id: str, data: dict) -> list:
+    impacts = data.get("kpiImpacts", [])
+    if not impacts:
+        impacts = [{"kpiId": "FIN01", "type": "pct", "value": 0.0}]
+    rows = []
+    for imp in impacts:
+        rows.append({
+            "Scenario_ID":       sc_id,
+            "Scenario_Name":     data["name"],
+            "KPI_ID":            imp["kpiId"],
+            "Impact_Type":       imp["type"],
+            "Impact_Value":      float(imp["value"]),
+            "Severity":          int(data.get("severity", 3)),
+            "Plausibility":      int(data.get("plausibility", 3)),
+            "Recovery_Qtrs":     4,
+            "Mitigation_Lever":  "",
+            "Calibration_Source": data.get("calibrationAnchor", ""),
+            "Description":       data.get("description", ""),
+            "Type":              data.get("type", "Stress"),
+        })
+    return rows
+
+
+def _meta_row_for(sc_id: str, data: dict) -> dict:
+    pillar_name = _PILLAR_ID_TO_NAME.get(data.get("pillar", "A"), "Macro & FX")
+    return {
+        "Scenario ID":      sc_id,
+        "Pillar":           pillar_name,
+        "Name":             data["name"],
+        "Type":             data.get("type", "Stress"),
+        "Trigger Phrase(s)": data.get("description", ""),
+    }
+
+
+def create_scenario(data: dict) -> dict:
+    import pandas as pd
+    sc_id = _next_scenario_id()
+
+    detail_df = _read_raw_detail()
+    new_rows = pd.DataFrame(_detail_rows_for(sc_id, data))
+    for col in detail_df.columns:
+        if col not in new_rows.columns:
+            new_rows[col] = ""
+    new_rows = new_rows.reindex(columns=detail_df.columns)
+    detail_df = pd.concat([detail_df, new_rows], ignore_index=True)
+    detail_df.to_csv(SCENARIO_DETAIL_CSV, index=False, encoding="utf-8-sig")
+
+    meta_df = _read_raw_meta()
+    new_meta = pd.DataFrame([_meta_row_for(sc_id, data)])
+    for col in meta_df.columns:
+        if col not in new_meta.columns:
+            new_meta[col] = ""
+    new_meta = new_meta.reindex(columns=meta_df.columns)
+    meta_df = pd.concat([meta_df, new_meta], ignore_index=True)
+    meta_df.to_csv(SCENARIO_META_CSV, index=False, encoding="utf-8-sig")
+
+    clear_scenario_cache()
+    return _build_scenario_obj(sc_id, load_scenario_details(), load_scenario_meta())
+
+
+def update_scenario(sc_id: str, data: dict) -> dict | None:
+    import pandas as pd
+    detail_df = _read_raw_detail()
+    if not (detail_df["Scenario_ID"] == sc_id).any():
+        return None
+
+    detail_df = detail_df[detail_df["Scenario_ID"] != sc_id].copy()
+    new_rows = pd.DataFrame(_detail_rows_for(sc_id, data))
+    for col in detail_df.columns:
+        if col not in new_rows.columns:
+            new_rows[col] = ""
+    new_rows = new_rows.reindex(columns=detail_df.columns)
+    detail_df = pd.concat([detail_df, new_rows], ignore_index=True)
+    detail_df.to_csv(SCENARIO_DETAIL_CSV, index=False, encoding="utf-8-sig")
+
+    meta_df = _read_raw_meta()
+    meta_df = meta_df[meta_df["Scenario ID"] != sc_id].copy()
+    new_meta = pd.DataFrame([_meta_row_for(sc_id, data)])
+    for col in meta_df.columns:
+        if col not in new_meta.columns:
+            new_meta[col] = ""
+    new_meta = new_meta.reindex(columns=meta_df.columns)
+    meta_df = pd.concat([meta_df, new_meta], ignore_index=True)
+    meta_df.to_csv(SCENARIO_META_CSV, index=False, encoding="utf-8-sig")
+
+    clear_scenario_cache()
+    return _build_scenario_obj(sc_id, load_scenario_details(), load_scenario_meta())
+
+
+def delete_scenario(sc_id: str) -> bool:
+    detail_df = _read_raw_detail()
+    if not (detail_df["Scenario_ID"] == sc_id).any():
+        return False
+
+    detail_df = detail_df[detail_df["Scenario_ID"] != sc_id]
+    detail_df.to_csv(SCENARIO_DETAIL_CSV, index=False, encoding="utf-8-sig")
+
+    meta_df = _read_raw_meta()
+    meta_df = meta_df[meta_df["Scenario ID"] != sc_id]
+    meta_df.to_csv(SCENARIO_META_CSV, index=False, encoding="utf-8-sig")
+
+    clear_scenario_cache()
+    return True
