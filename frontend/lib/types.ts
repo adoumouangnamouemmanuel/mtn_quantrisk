@@ -149,6 +149,17 @@ export interface MonthlyPoint {
   value: number;
 }
 
+export interface ScenarioFormData {
+  name: string;
+  pillar: PillarId;
+  type: ScenarioType;
+  severity: number;
+  plausibility: number;
+  description: string;
+  kpiImpacts: { kpiId: string; type: 'pct' | 'delta' | 'abs'; value: number }[];
+  calibrationAnchor?: string;
+}
+
 export interface ComparisonRow {
   kpiId: KpiId;
   baseValue: number;

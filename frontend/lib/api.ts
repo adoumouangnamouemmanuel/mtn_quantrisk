@@ -2,7 +2,7 @@ import type {
   Kpi, Scenario, ScenarioOutput, ReverseStressResult, ReverseStressInput,
   ForecastPoint, MonteCarloResult, BoardBrief, PipelineHealth,
   QuarterlyPoint, MonthlyPoint,
-  KpiId, MacroOverlays
+  KpiId, MacroOverlays, ScenarioFormData,
 } from './types';
 import {
   MOCK_MONTE_CARLO,
@@ -109,6 +109,24 @@ export async function fetchQuarterly(kpiId: KpiId): Promise<QuarterlyPoint[]> {
 
 export async function fetchMonthly(kpiId: KpiId, nMonths: number = 36): Promise<MonthlyPoint[]> {
   return apiFetch<MonthlyPoint[]>(`/api/monthly/${kpiId}?n_months=${nMonths}`);
+}
+
+export async function createScenario(data: ScenarioFormData): Promise<Scenario> {
+  return apiFetch<Scenario>('/api/scenarios', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateScenario(id: string, data: ScenarioFormData): Promise<Scenario> {
+  return apiFetch<Scenario>(`/api/scenarios/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteScenario(id: string): Promise<void> {
+  await apiFetch<void>(`/api/scenarios/${id}`, { method: 'DELETE' });
 }
 
 export async function fetchPipelineHealth(): Promise<PipelineHealth> {
