@@ -73,7 +73,7 @@ def reverse_stress(body: ReverseStressInput):
 # ── Forecast (generated — no time-series ML model yet) ────────────────────────
 
 @router.get("/forecast/{kpi_id}")
-@router.get("/forecast/{kpi_id}")
+# changes by Chidima @router.get("/forecast/{kpi_id}")
 def get_forecast(kpi_id: str, horizon: int = 90):
     """
     Return a daily forecast for the given KPI for the next `horizon` days.
