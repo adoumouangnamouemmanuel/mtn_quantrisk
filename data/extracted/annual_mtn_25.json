@@ -1,0 +1,1983 @@
+[
+  {
+    "page": 11,
+    "table_index": 0,
+    "rows": 2,
+    "cols": 4,
+    "headers": [
+      "",
+      "_1",
+      "_2",
+      "n"
+    ],
+    "preview": {
+      "": {
+        "0": "the going concern status of the Group and Company is",
+        "1": "contained on page"
+      },
+      "_1": {
+        "0": NaN,
+        "1": "11"
+      },
+      "_2": {
+        "0": NaN,
+        "1": "o"
+      },
+      "n": {
+        "0": null,
+        "1": null
+      }
+    },
+    "data": [
+      {
+        "": "the going concern status of the Group and Company is",
+        "_1": NaN,
+        "_2": NaN,
+        "n": null
+      },
+      {
+        "": "contained on page",
+        "_1": "11",
+        "_2": "o",
+        "n": null
+      }
+    ]
+  },
+  {
+    "page": 16,
+    "table_index": 0,
+    "rows": 5,
+    "cols": 1,
+    "headers": [
+      "The amount we set as materiality represents a"
+    ],
+    "preview": {
+      "The amount we set as materiality represents a": {
+        "0": "quantitative threshold used to evaluate the effect of",
+        "1": "misstatements to the financial statements as a whole",
+        "2": "based on our professional judgment. Qualitative factors"
+      }
+    },
+    "data": [
+      {
+        "The amount we set as materiality represents a": "quantitative threshold used to evaluate the effect of"
+      },
+      {
+        "The amount we set as materiality represents a": "misstatements to the financial statements as a whole"
+      },
+      {
+        "The amount we set as materiality represents a": "based on our professional judgment. Qualitative factors"
+      },
+      {
+        "The amount we set as materiality represents a": "are also considered in making final determinations"
+      },
+      {
+        "The amount we set as materiality represents a": "regarding what is material to the financial statements"
+      }
+    ]
+  },
+  {
+    "page": 16,
+    "table_index": 2,
+    "rows": 10,
+    "cols": 2,
+    "headers": [
+      "",
+      "of adjusted earnings"
+    ],
+    "preview": {
+      "": {
+        "0": "before interest, tax, depreciation and amortisation",
+        "1": "('EBITDA'). We have identified adjusted EBITDA as the",
+        "2": "most appropriate basis as we believe that for profit"
+      },
+      "of adjusted earnings": {
+        "0": null,
+        "1": null,
+        "2": null
+      }
+    },
+    "data": [
+      {
+        "": "before interest, tax, depreciation and amortisation",
+        "of adjusted earnings": null
+      },
+      {
+        "": "('EBITDA'). We have identified adjusted EBITDA as the",
+        "of adjusted earnings": null
+      },
+      {
+        "": "most appropriate basis as we believe that for profit",
+        "of adjusted earnings": null
+      },
+      {
+        "": "companies are evaluated by users on their ability to",
+        "of adjusted earnings": null
+      },
+      {
+        "": "generate earnings. Profit before tax (\u2018PBT\u2019) and earnings",
+        "of adjusted earnings": null
+      },
+      {
+        "": "before interest and tax (\u2018EBIT\u2019) were considered as bases,",
+        "of adjusted earnings": null
+      },
+      {
+        "": "however these bases are not relevant as the Group's",
+        "of adjusted earnings": null
+      },
+      {
+        "": "communications to the market continues to be focused on",
+        "of adjusted earnings": null
+      },
+      {
+        "": "EBITDA. Our review of information provided to users by",
+        "of adjusted earnings": null
+      },
+      {
+        "": "the entity and analysts confirms our view.",
+        "of adjusted earnings": null
+      }
+    ]
+  },
+  {
+    "page": 16,
+    "table_index": 3,
+    "rows": 10,
+    "cols": 7,
+    "headers": [
+      "Company final materiality:",
+      "",
+      "_1",
+      "_2",
+      "_3",
+      "_4",
+      "_5"
+    ],
+    "preview": {
+      "Company final materiality:": {
+        "0": "We determined materiality for the Company to be",
+        "1": NaN,
+        "2": "identified"
+      },
+      "": {
+        "0": NaN,
+        "1": NaN,
+        "2": "total assets"
+      },
+      "_1": {
+        "0": NaN,
+        "1": ", which",
+        "2": NaN
+      },
+      "_2": {
+        "0": NaN,
+        "1": "is 1%",
+        "2": "as the most appropriate basis due"
+      },
+      "_3": {
+        "0": NaN,
+        "1": "of",
+        "2": NaN
+      },
+      "_4": {
+        "0": NaN,
+        "1": "total assets",
+        "2": NaN
+      },
+      "_5": {
+        "0": NaN,
+        "1": ". We have",
+        "2": NaN
+      }
+    },
+    "data": [
+      {
+        "Company final materiality:": "We determined materiality for the Company to be",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN
+      },
+      {
+        "Company final materiality:": NaN,
+        "": NaN,
+        "_1": ", which",
+        "_2": "is 1%",
+        "_3": "of",
+        "_4": "total assets",
+        "_5": ". We have"
+      },
+      {
+        "Company final materiality:": "identified",
+        "": "total assets",
+        "_1": NaN,
+        "_2": "as the most appropriate basis due",
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN
+      },
+      {
+        "Company final materiality:": "to the nature of the",
+        "": NaN,
+        "_1": NaN,
+        "_2": "standalone",
+        "_3": NaN,
+        "_4": "Company which is the",
+        "_5": NaN
+      },
+      {
+        "Company final materiality:": "basis against which the performance of the Company is",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN
+      },
+      {
+        "Company final materiality:": "most commonly measured by users, and is a generally",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN
+      },
+      {
+        "Company final materiality:": "accepted basis in companies evaluated by users for",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN
+      },
+      {
+        "Company final materiality:": "capital growth as well as the performance of investments.",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN
+      },
+      {
+        "Company final materiality:": "Our review of information provided to users by the entity",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN
+      },
+      {
+        "Company final materiality:": "and analysts confirms our view.",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN
+      }
+    ]
+  },
+  {
+    "page": 22,
+    "table_index": 0,
+    "rows": 3,
+    "cols": 1,
+    "headers": [
+      "853 (233)"
+    ],
+    "preview": {
+      "853 (233)": {
+        "0": "1 168 (319)\n(315) 86",
+        "1": "5 607 5 643",
+        "2": "5 607 5 516\n\u2013 127"
+      }
+    },
+    "data": [
+      {
+        "853 (233)": "1 168 (319)\n(315) 86"
+      },
+      {
+        "853 (233)": "5 607 5 643"
+      },
+      {
+        "853 (233)": "5 607 5 516\n\u2013 127"
+      }
+    ]
+  },
+  {
+    "page": 33,
+    "table_index": 1,
+    "rows": 3,
+    "cols": 5,
+    "headers": [
+      "",
+      "6 620",
+      "_1",
+      "4",
+      "580"
+    ],
+    "preview": {
+      "": {
+        "0": "",
+        "1": "",
+        "2": "(1 758) (12 226)"
+      },
+      "6 620": {
+        "0": "1 336",
+        "1": NaN,
+        "2": NaN
+      },
+      "_1": {
+        "0": NaN,
+        "1": "938",
+        "2": NaN
+      },
+      "4": {
+        "0": "3",
+        "1": "",
+        "2": NaN
+      },
+      "580": {
+        "0": "071",
+        "1": "276",
+        "2": NaN
+      }
+    },
+    "data": [
+      {
+        "": "",
+        "6 620": "1 336",
+        "_1": NaN,
+        "4": "3",
+        "580": "071"
+      },
+      {
+        "": "",
+        "6 620": NaN,
+        "_1": "938",
+        "4": "",
+        "580": "276"
+      },
+      {
+        "": "(1 758) (12 226)",
+        "6 620": NaN,
+        "_1": NaN,
+        "4": NaN,
+        "580": NaN
+      }
+    ]
+  },
+  {
+    "page": 33,
+    "table_index": 2,
+    "rows": 3,
+    "cols": 4,
+    "headers": [
+      "",
+      "1 December 2025.",
+      "_1",
+      "_2"
+    ],
+    "preview": {
+      "": {
+        "0": "S",
+        "1": NaN,
+        "2": ""
+      },
+      "1 December 2025.": {
+        "0": "ignificant increase in the share of results of associates and joint ventures after tax is primarily driven by the impact of increased inflation rates i",
+        "1": "ran",
+        "2": "Decrease in profit after tax is due to the impairment of MTN Sudan\u2019s hyperinflated non-current assets, refer to note"
+      },
+      "_1": {
+        "0": NaN,
+        "1": "cell",
+        "2": NaN
+      },
+      "_2": {
+        "0": NaN,
+        "1": NaN,
+        "2": "5.3."
+      }
+    },
+    "data": [
+      {
+        "": "S",
+        "1 December 2025.": "ignificant increase in the share of results of associates and joint ventures after tax is primarily driven by the impact of increased inflation rates i",
+        "_1": NaN,
+        "_2": NaN
+      },
+      {
+        "": NaN,
+        "1 December 2025.": "ran",
+        "_1": "cell",
+        "_2": NaN
+      },
+      {
+        "": "",
+        "1 December 2025.": "Decrease in profit after tax is due to the impairment of MTN Sudan\u2019s hyperinflated non-current assets, refer to note",
+        "_1": NaN,
+        "_2": "5.3."
+      }
+    ]
+  },
+  {
+    "page": 39,
+    "table_index": 4,
+    "rows": 2,
+    "cols": 4,
+    "headers": [
+      "",
+      "Afghanistan",
+      "segment analysis has been included until the sale was concluded in the prior year on 21 February 2024. Refer to note",
+      "9.4.1.1"
+    ],
+    "preview": {
+      "": {
+        "0": "2",
+        "1": NaN
+      },
+      "Afghanistan": {
+        "0": NaN,
+        "1": "to equity accounting for joint ventures."
+      },
+      "segment analysis has been included until the sale was concluded in the prior year on 21 February 2024. Refer to note": {
+        "0": null,
+        "1": null
+      },
+      "9.4.1.1": {
+        "0": null,
+        "1": null
+      }
+    },
+    "data": [
+      {
+        "": "2",
+        "Afghanistan": NaN,
+        "segment analysis has been included until the sale was concluded in the prior year on 21 February 2024. Refer to note": null,
+        "9.4.1.1": null
+      },
+      {
+        "": NaN,
+        "Afghanistan": "to equity accounting for joint ventures.",
+        "segment analysis has been included until the sale was concluded in the prior year on 21 February 2024. Refer to note": null,
+        "9.4.1.1": null
+      }
+    ]
+  },
+  {
+    "page": 41,
+    "table_index": 3,
+    "rows": 2,
+    "cols": 4,
+    "headers": [
+      "Afghanistan",
+      "capital expenditure has been included until the sale was concluded in the prior year",
+      "on 21 February 2024. Refer to note",
+      "9.4.1.1."
+    ],
+    "preview": {
+      "Afghanistan": {
+        "0": "Irancell proportionate results are included in the segment analysis as reviewed by the CODM. This is, however, excluded from these reported results due",
+        "1": "to equity accounting for joint ventures"
+      },
+      "capital expenditure has been included until the sale was concluded in the prior year": {
+        "0": null,
+        "1": null
+      },
+      "on 21 February 2024. Refer to note": {
+        "0": null,
+        "1": null
+      },
+      "9.4.1.1.": {
+        "0": null,
+        "1": null
+      }
+    },
+    "data": [
+      {
+        "Afghanistan": "Irancell proportionate results are included in the segment analysis as reviewed by the CODM. This is, however, excluded from these reported results due",
+        "capital expenditure has been included until the sale was concluded in the prior year": null,
+        "on 21 February 2024. Refer to note": null,
+        "9.4.1.1.": null
+      },
+      {
+        "Afghanistan": "to equity accounting for joint ventures",
+        "capital expenditure has been included until the sale was concluded in the prior year": null,
+        "on 21 February 2024. Refer to note": null,
+        "9.4.1.1.": null
+      }
+    ]
+  },
+  {
+    "page": 41,
+    "table_index": 4,
+    "rows": 2,
+    "cols": 1,
+    "headers": [
+      "451 69 136 19\n1 003 88 139 144\n5 166 1 475 520 757"
+    ],
+    "preview": {
+      "451 69 136 19\n1 003 88 139 144\n5 166 1 475 520 757": {
+        "0": "6 620 1 632 795 920",
+        "1": "317 378 33 9"
+      }
+    },
+    "data": [
+      {
+        "451 69 136 19\n1 003 88 139 144\n5 166 1 475 520 757": "6 620 1 632 795 920"
+      },
+      {
+        "451 69 136 19\n1 003 88 139 144\n5 166 1 475 520 757": "317 378 33 9"
+      }
+    ]
+  },
+  {
+    "page": 41,
+    "table_index": 5,
+    "rows": 2,
+    "cols": 1,
+    "headers": [
+      "Sudan 748 216 335 18\nSouth Sudan (included in other SEA) 1 202 211 162 145\nGhana1 2 630 470 253 408"
+    ],
+    "preview": {
+      "Sudan 748 216 335 18\nSouth Sudan (included in other SEA) 1 202 211 162 145\nGhana1 2 630 470 253 408": {
+        "0": "4 580 897 750 571",
+        "1": "Major joint venture \u2013 Irancell 1 688 (360) (259) (70)"
+      }
+    },
+    "data": [
+      {
+        "Sudan 748 216 335 18\nSouth Sudan (included in other SEA) 1 202 211 162 145\nGhana1 2 630 470 253 408": "4 580 897 750 571"
+      },
+      {
+        "Sudan 748 216 335 18\nSouth Sudan (included in other SEA) 1 202 211 162 145\nGhana1 2 630 470 253 408": "Major joint venture \u2013 Irancell 1 688 (360) (259) (70)"
+      }
+    ]
+  },
+  {
+    "page": 45,
+    "table_index": 3,
+    "rows": 3,
+    "cols": 28,
+    "headers": [
+      "",
+      "T",
+      "he",
+      "impairment and write-down of trade receivables and contract assets",
+      "_1",
+      "_2",
+      "_3",
+      "_4",
+      "_5",
+      "_6",
+      "_7",
+      "_8",
+      "_9",
+      "_10",
+      "include",
+      "amounts disclosed in not",
+      "_11",
+      "_12",
+      "_13",
+      "_14",
+      "e",
+      "4.2",
+      ". I",
+      "n",
+      "2025,",
+      "a",
+      "reversal",
+      "of impairment"
+    ],
+    "preview": {
+      "": {
+        "0": NaN,
+        "1": "2",
+        "2": NaN
+      },
+      "T": {
+        "0": "amounting to",
+        "1": "The",
+        "2": "R225 million"
+      },
+      "he": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "impairment and write-down of trade receivables and contract assets": {
+        "0": NaN,
+        "1": "increase in provisions excludes the",
+        "2": NaN
+      },
+      "_1": {
+        "0": NaN,
+        "1": NaN,
+        "2": "("
+      },
+      "_2": {
+        "0": "R146",
+        "1": NaN,
+        "2": "2024:"
+      },
+      "_3": {
+        "0": "milli",
+        "1": NaN,
+        "2": "R30 million)"
+      },
+      "_4": {
+        "0": "on related to contract assets was included in this amount.",
+        "1": NaN,
+        "2": NaN
+      },
+      "_5": {
+        "0": NaN,
+        "1": NaN,
+        "2": "included in staff cost"
+      },
+      "_6": {
+        "0": NaN,
+        "1": "increase",
+        "2": NaN
+      },
+      "_7": {
+        "0": NaN,
+        "1": "in bonus",
+        "2": NaN
+      },
+      "_8": {
+        "0": NaN,
+        "1": "provision",
+        "2": NaN
+      },
+      "_9": {
+        "0": NaN,
+        "1": "of",
+        "2": NaN
+      },
+      "_10": {
+        "0": NaN,
+        "1": "R1 975 million",
+        "2": NaN
+      },
+      "include": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "amounts disclosed in not": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "_11": {
+        "0": NaN,
+        "1": "(",
+        "2": NaN
+      },
+      "_12": {
+        "0": NaN,
+        "1": "2024",
+        "2": NaN
+      },
+      "_13": {
+        "0": NaN,
+        "1": ":",
+        "2": NaN
+      },
+      "_14": {
+        "0": NaN,
+        "1": "R1 780 million",
+        "2": NaN
+      },
+      "e": {
+        "0": NaN,
+        "1": ") and in long service awards provision of",
+        "2": NaN
+      },
+      "4.2": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      ". I": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "n": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "2025,": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "a": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "reversal": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "of impairment": {
+        "0": null,
+        "1": null,
+        "2": null
+      }
+    },
+    "data": [
+      {
+        "": NaN,
+        "T": "amounting to",
+        "he": null,
+        "impairment and write-down of trade receivables and contract assets": NaN,
+        "_1": NaN,
+        "_2": "R146",
+        "_3": "milli",
+        "_4": "on related to contract assets was included in this amount.",
+        "_5": NaN,
+        "_6": NaN,
+        "_7": NaN,
+        "_8": NaN,
+        "_9": NaN,
+        "_10": NaN,
+        "include": null,
+        "amounts disclosed in not": null,
+        "_11": NaN,
+        "_12": NaN,
+        "_13": NaN,
+        "_14": NaN,
+        "e": NaN,
+        "4.2": null,
+        ". I": null,
+        "n": null,
+        "2025,": null,
+        "a": null,
+        "reversal": null,
+        "of impairment": null
+      },
+      {
+        "": "2",
+        "T": "The",
+        "he": null,
+        "impairment and write-down of trade receivables and contract assets": "increase in provisions excludes the",
+        "_1": NaN,
+        "_2": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN,
+        "_6": "increase",
+        "_7": "in bonus",
+        "_8": "provision",
+        "_9": "of",
+        "_10": "R1 975 million",
+        "include": null,
+        "amounts disclosed in not": null,
+        "_11": "(",
+        "_12": "2024",
+        "_13": ":",
+        "_14": "R1 780 million",
+        "e": ") and in long service awards provision of",
+        "4.2": null,
+        ". I": null,
+        "n": null,
+        "2025,": null,
+        "a": null,
+        "reversal": null,
+        "of impairment": null
+      },
+      {
+        "": NaN,
+        "T": "R225 million",
+        "he": null,
+        "impairment and write-down of trade receivables and contract assets": NaN,
+        "_1": "(",
+        "_2": "2024:",
+        "_3": "R30 million)",
+        "_4": NaN,
+        "_5": "included in staff cost",
+        "_6": NaN,
+        "_7": NaN,
+        "_8": NaN,
+        "_9": NaN,
+        "_10": NaN,
+        "include": null,
+        "amounts disclosed in not": null,
+        "_11": NaN,
+        "_12": NaN,
+        "_13": NaN,
+        "_14": NaN,
+        "e": NaN,
+        "4.2": null,
+        ". I": null,
+        "n": null,
+        "2025,": null,
+        "a": null,
+        "reversal": null,
+        "of impairment": null
+      }
+    ]
+  },
+  {
+    "page": 82,
+    "table_index": 0,
+    "rows": 4,
+    "cols": 1,
+    "headers": [
+      "Amortised\ncost FVTPL\nRm Rm"
+    ],
+    "preview": {
+      "Amortised\ncost FVTPL\nRm Rm": {
+        "0": "\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013",
+        "1": "\u2013 \u2013",
+        "2": "52 619 \u2013\n\u2013 1 233\n66 010 \u2013\n56 478 \u2013\n92 554 \u2013\n\u2013 625\n9 209 \u2013\n17 755 \u2013\n\u2013 41\n1 363 \u2013"
+      }
+    },
+    "data": [
+      {
+        "Amortised\ncost FVTPL\nRm Rm": "\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013"
+      },
+      {
+        "Amortised\ncost FVTPL\nRm Rm": "\u2013 \u2013"
+      },
+      {
+        "Amortised\ncost FVTPL\nRm Rm": "52 619 \u2013\n\u2013 1 233\n66 010 \u2013\n56 478 \u2013\n92 554 \u2013\n\u2013 625\n9 209 \u2013\n17 755 \u2013\n\u2013 41\n1 363 \u2013"
+      },
+      {
+        "Amortised\ncost FVTPL\nRm Rm": "295 988 1 899"
+      }
+    ]
+  },
+  {
+    "page": 83,
+    "table_index": 0,
+    "rows": 4,
+    "cols": 1,
+    "headers": [
+      "Amortised\ncost FVTPL\nRm Rm"
+    ],
+    "preview": {
+      "Amortised\ncost FVTPL\nRm Rm": {
+        "0": "\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013",
+        "1": "\u2013 \u2013",
+        "2": "66 736 \u2013\n\u2013 \u2013\n\u2013 1 476\n67 725 \u2013\n51 992 \u2013\n60 844 \u2013\n\u2013 736\n9 002 \u2013\n12 626 \u2013\n\u2013 59\n1 240 \u2013"
+      }
+    },
+    "data": [
+      {
+        "Amortised\ncost FVTPL\nRm Rm": "\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013\n\u2013 \u2013"
+      },
+      {
+        "Amortised\ncost FVTPL\nRm Rm": "\u2013 \u2013"
+      },
+      {
+        "Amortised\ncost FVTPL\nRm Rm": "66 736 \u2013\n\u2013 \u2013\n\u2013 1 476\n67 725 \u2013\n51 992 \u2013\n60 844 \u2013\n\u2013 736\n9 002 \u2013\n12 626 \u2013\n\u2013 59\n1 240 \u2013"
+      },
+      {
+        "Amortised\ncost FVTPL\nRm Rm": "270 165 2 271"
+      }
+    ]
+  },
+  {
+    "page": 85,
+    "table_index": 0,
+    "rows": 8,
+    "cols": 2,
+    "headers": [
+      "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738",
+      ""
+    ],
+    "preview": {
+      "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738": {
+        "0": "11 286 \u2013 2 160 13 446",
+        "1": "\u2013 41 \u2013 41\n\u2013 \u2013 1 858 1 858",
+        "2": NaN
+      },
+      "": {
+        "0": NaN,
+        "1": NaN,
+        "2": "858"
+      }
+    },
+    "data": [
+      {
+        "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738": "11 286 \u2013 2 160 13 446",
+        "": NaN
+      },
+      {
+        "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738": "\u2013 41 \u2013 41\n\u2013 \u2013 1 858 1 858",
+        "": NaN
+      },
+      {
+        "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738": NaN,
+        "": "858"
+      },
+      {
+        "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738": "\u2013 41 1 858 1 899",
+        "": NaN
+      },
+      {
+        "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738": "4 702 \u2013 \u2013 4 702\n\u2013 \u2013 347 347\n\u2013 \u2013 1 699 1 699\n298 \u2013 \u2013 298",
+        "": NaN
+      },
+      {
+        "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738": "5 000 \u2013 2 046 7 046",
+        "": NaN
+      },
+      {
+        "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738": "\u2013 59 \u2013 59\n\u2013 \u2013 2 578 2 578",
+        "": NaN
+      },
+      {
+        "10 530 \u2013 \u2013 10 530\n\u2013 \u2013 560 560\n18 18\n\u2013 \u2013 1 600 1 600\n738 \u2013 \u2013 738": "\u2013 59 2 578 2 637",
+        "": NaN
+      }
+    ]
+  },
+  {
+    "page": 88,
+    "table_index": 0,
+    "rows": 5,
+    "cols": 1,
+    "headers": [
+      "MoMo deposits are balances that are held with banks for and on behalf of MoMo customers. Regulations in certain"
+    ],
+    "preview": {
+      "MoMo deposits are balances that are held with banks for and on behalf of MoMo customers. Regulations in certain": {
+        "0": "jurisdictions specify the types of permissible liquid instruments that these deposits may be invested in. MoMo",
+        "1": "deposits are spread among approved, reputable financial institutions based on internal risk assessments or guidance",
+        "2": "provided by regulators, to manage the concentration of credit risk to a single counterparty. Many risk mitigations are"
+      }
+    },
+    "data": [
+      {
+        "MoMo deposits are balances that are held with banks for and on behalf of MoMo customers. Regulations in certain": "jurisdictions specify the types of permissible liquid instruments that these deposits may be invested in. MoMo"
+      },
+      {
+        "MoMo deposits are balances that are held with banks for and on behalf of MoMo customers. Regulations in certain": "deposits are spread among approved, reputable financial institutions based on internal risk assessments or guidance"
+      },
+      {
+        "MoMo deposits are balances that are held with banks for and on behalf of MoMo customers. Regulations in certain": "provided by regulators, to manage the concentration of credit risk to a single counterparty. Many risk mitigations are"
+      },
+      {
+        "MoMo deposits are balances that are held with banks for and on behalf of MoMo customers. Regulations in certain": "in place and banks are also obliged to pay insurance premiums to protect MoMo customer deposits (or a portion"
+      },
+      {
+        "MoMo deposits are balances that are held with banks for and on behalf of MoMo customers. Regulations in certain": "thereof) in the event of bank failure."
+      }
+    ]
+  },
+  {
+    "page": 88,
+    "table_index": 1,
+    "rows": 3,
+    "cols": 3,
+    "headers": [
+      "As a result of the uncertain and evolving legal and regulatory environment, the assessment of which party in a MoMo",
+      "",
+      "_1"
+    ],
+    "preview": {
+      "As a result of the uncertain and evolving legal and regulatory environment, the assessment of which party in a MoMo": {
+        "0": "arrangement is exposed to a bank credit risk event",
+        "1": "interpretations that are largely untested in the respective markets. Consequently, the assessment of the",
+        "2": "credit risk exposure with regards to MoMo remains subject to legal and regulatory developments."
+      },
+      "": {
+        "0": ",",
+        "1": NaN,
+        "2": NaN
+      },
+      "_1": {
+        "0": "has become increasingly complex and dependent on legal",
+        "1": NaN,
+        "2": NaN
+      }
+    },
+    "data": [
+      {
+        "As a result of the uncertain and evolving legal and regulatory environment, the assessment of which party in a MoMo": "arrangement is exposed to a bank credit risk event",
+        "": ",",
+        "_1": "has become increasingly complex and dependent on legal"
+      },
+      {
+        "As a result of the uncertain and evolving legal and regulatory environment, the assessment of which party in a MoMo": "interpretations that are largely untested in the respective markets. Consequently, the assessment of the",
+        "": NaN,
+        "_1": NaN
+      },
+      {
+        "As a result of the uncertain and evolving legal and regulatory environment, the assessment of which party in a MoMo": "credit risk exposure with regards to MoMo remains subject to legal and regulatory developments.",
+        "": NaN,
+        "_1": NaN
+      }
+    ]
+  },
+  {
+    "page": 88,
+    "table_index": 2,
+    "rows": 3,
+    "cols": 1,
+    "headers": [
+      "The treatment of MoMo in the financial statements is not, and should not be construed as a waiver by members of"
+    ],
+    "preview": {
+      "The treatment of MoMo in the financial statements is not, and should not be construed as a waiver by members of": {
+        "0": "the Group of any legal, contractual or statutory rights, remedies and defences they may have, or as an admission of",
+        "1": "liability enforceable against any of them in law or otherwise. The legal, contractual and statutory rights, remedies and",
+        "2": "defences of members of the Group are reserved."
+      }
+    },
+    "data": [
+      {
+        "The treatment of MoMo in the financial statements is not, and should not be construed as a waiver by members of": "the Group of any legal, contractual or statutory rights, remedies and defences they may have, or as an admission of"
+      },
+      {
+        "The treatment of MoMo in the financial statements is not, and should not be construed as a waiver by members of": "liability enforceable against any of them in law or otherwise. The legal, contractual and statutory rights, remedies and"
+      },
+      {
+        "The treatment of MoMo in the financial statements is not, and should not be construed as a waiver by members of": "defences of members of the Group are reserved."
+      }
+    ]
+  },
+  {
+    "page": 93,
+    "table_index": 0,
+    "rows": 2,
+    "cols": 3,
+    "headers": [
+      "26 671\n7 998\n92 554\n42 625",
+      "",
+      "26 671"
+    ],
+    "preview": {
+      "26 671\n7 998\n92 554\n42 625": {
+        "0": NaN,
+        "1": ""
+      },
+      "": {
+        "0": NaN,
+        "1": "169 848"
+      },
+      "26 671": {
+        "0": "42 625",
+        "1": NaN
+      }
+    },
+    "data": [
+      {
+        "26 671\n7 998\n92 554\n42 625": NaN,
+        "": NaN,
+        "26 671": "42 625"
+      },
+      {
+        "26 671\n7 998\n92 554\n42 625": "",
+        "": "169 848",
+        "26 671": NaN
+      }
+    ]
+  },
+  {
+    "page": 97,
+    "table_index": 0,
+    "rows": 4,
+    "cols": 9,
+    "headers": [
+      "",
+      "_1",
+      "_2",
+      "N",
+      "et interest comprises finance costs less finance income",
+      "_3",
+      "_4",
+      "_5",
+      "_6"
+    ],
+    "preview": {
+      "": {
+        "0": "and an add back of lease liability finance costs per",
+        "1": "reduced by an approximation of lease expenses (calculated as the aggregate of capital repayments and interest paid",
+        "2": "on lease liabilities) which would have been recognised had the lease liabilities not been capitalised, to arrive at capital"
+      },
+      "_1": {
+        "0": "no",
+        "1": NaN,
+        "2": NaN
+      },
+      "_2": {
+        "0": "tes",
+        "1": NaN,
+        "2": NaN
+      },
+      "N": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "et interest comprises finance costs less finance income": {
+        "0": "2.4",
+        "1": NaN,
+        "2": NaN
+      },
+      "_3": {
+        "0": "and",
+        "1": NaN,
+        "2": NaN
+      },
+      "_4": {
+        "0": "6.5",
+        "1": NaN,
+        "2": NaN
+      },
+      "_5": {
+        "0": ". CODM EBITDA as defined in note 2",
+        "1": NaN,
+        "2": NaN
+      },
+      "_6": {
+        "0": ".1, is",
+        "1": NaN,
+        "2": NaN
+      }
+    },
+    "data": [
+      {
+        "": "and an add back of lease liability finance costs per",
+        "_1": "no",
+        "_2": "tes",
+        "N": null,
+        "et interest comprises finance costs less finance income": "2.4",
+        "_3": "and",
+        "_4": "6.5",
+        "_5": ". CODM EBITDA as defined in note 2",
+        "_6": ".1, is"
+      },
+      {
+        "": "reduced by an approximation of lease expenses (calculated as the aggregate of capital repayments and interest paid",
+        "_1": NaN,
+        "_2": NaN,
+        "N": null,
+        "et interest comprises finance costs less finance income": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN,
+        "_6": NaN
+      },
+      {
+        "": "on lease liabilities) which would have been recognised had the lease liabilities not been capitalised, to arrive at capital",
+        "_1": NaN,
+        "_2": NaN,
+        "N": null,
+        "et interest comprises finance costs less finance income": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN,
+        "_6": NaN
+      },
+      {
+        "": "management EBITDA.",
+        "_1": NaN,
+        "_2": NaN,
+        "N": null,
+        "et interest comprises finance costs less finance income": NaN,
+        "_3": NaN,
+        "_4": NaN,
+        "_5": NaN,
+        "_6": NaN
+      }
+    ]
+  },
+  {
+    "page": 109,
+    "table_index": 0,
+    "rows": 3,
+    "cols": 3,
+    "headers": [
+      "MTN Group",
+      "",
+      "_1"
+    ],
+    "preview": {
+      "MTN Group": {
+        "0": "HOLDING COMPANIES",
+        "1": "Mobile Telephone Networks\nHoldings Limited\nSouth Africa",
+        "2": "100%"
+      },
+      "": {
+        "0": NaN,
+        "1": "MTN International\nProprietary Limited\nSouth Africa",
+        "2": "100%"
+      },
+      "_1": {
+        "0": "MANAGEMENT SERVICES",
+        "1": "MTN Group Management Services\nProprietary Limited\nSouth Africa",
+        "2": "100%"
+      }
+    },
+    "data": [
+      {
+        "MTN Group": "HOLDING COMPANIES",
+        "": NaN,
+        "_1": "MANAGEMENT SERVICES"
+      },
+      {
+        "MTN Group": "Mobile Telephone Networks\nHoldings Limited\nSouth Africa",
+        "": "MTN International\nProprietary Limited\nSouth Africa",
+        "_1": "MTN Group Management Services\nProprietary Limited\nSouth Africa"
+      },
+      {
+        "MTN Group": "100%",
+        "": "100%",
+        "_1": "100%"
+      }
+    ]
+  },
+  {
+    "page": 109,
+    "table_index": 1,
+    "rows": 2,
+    "cols": 2,
+    "headers": [
+      "TELECOMMUNICATIONS/ISP",
+      "HOLDING COMPANY"
+    ],
+    "preview": {
+      "TELECOMMUNICATIONS/ISP": {
+        "0": "Swazi MTN Limited1\neSwatini",
+        "1": "30%"
+      },
+      "HOLDING COMPANY": {
+        "0": "MTN International\n(Mauritius) Limited\nMauritius",
+        "1": "100%"
+      }
+    },
+    "data": [
+      {
+        "TELECOMMUNICATIONS/ISP": "Swazi MTN Limited1\neSwatini",
+        "HOLDING COMPANY": "MTN International\n(Mauritius) Limited\nMauritius"
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "30%",
+        "HOLDING COMPANY": "100%"
+      }
+    ]
+  },
+  {
+    "page": 109,
+    "table_index": 2,
+    "rows": 15,
+    "cols": 6,
+    "headers": [
+      "TELECOMMUNICATIONS/ISP",
+      "",
+      "_1",
+      "HOLDING COMPANIES",
+      "_2",
+      "_3"
+    ],
+    "preview": {
+      "TELECOMMUNICATIONS/ISP": {
+        "0": "WindUpco\nProprietary\nLimited\nSouth Africa",
+        "1": "100%",
+        "2": "Cell Place\nProprietary Limited\nSouth Africa"
+      },
+      "": {
+        "0": "Supersonic FTTX\nProprietary Limited\nSouth Africa",
+        "1": "100% 100%",
+        "2": "iTalk Cellular\nProprietary Limited\nSouth Africa"
+      },
+      "_1": {
+        "0": "Satellite Data\nNetworks\nMauritius\nProprietary Limited\nMauritius",
+        "1": "100%",
+        "2": "MTN Network\nSolutions\nProprietary Limited\nSouth Africa"
+      },
+      "HOLDING COMPANIES": {
+        "0": "Econet Wireless\nCitizens\nLimited\nMauritius",
+        "1": "83%",
+        "2": "TELECOMMUNICATIONS/ISP"
+      },
+      "_2": {
+        "0": "Deci Investments\nProprietary Limited1\nBotswana",
+        "1": "33%",
+        "2": NaN
+      },
+      "_3": {
+        "0": "Mobile Botswana\nLimited\nMauritius",
+        "1": "100%",
+        "2": NaN
+      }
+    },
+    "data": [
+      {
+        "TELECOMMUNICATIONS/ISP": "WindUpco\nProprietary\nLimited\nSouth Africa",
+        "": "Supersonic FTTX\nProprietary Limited\nSouth Africa",
+        "_1": "Satellite Data\nNetworks\nMauritius\nProprietary Limited\nMauritius",
+        "HOLDING COMPANIES": "Econet Wireless\nCitizens\nLimited\nMauritius",
+        "_2": "Deci Investments\nProprietary Limited1\nBotswana",
+        "_3": "Mobile Botswana\nLimited\nMauritius"
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "100%",
+        "": "100% 100%",
+        "_1": "100%",
+        "HOLDING COMPANIES": "83%",
+        "_2": "33%",
+        "_3": "100%"
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "Cell Place\nProprietary Limited\nSouth Africa",
+        "": "iTalk Cellular\nProprietary Limited\nSouth Africa",
+        "_1": "MTN Network\nSolutions\nProprietary Limited\nSouth Africa",
+        "HOLDING COMPANIES": "TELECOMMUNICATIONS/ISP",
+        "_2": NaN,
+        "_3": NaN
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": NaN,
+        "": NaN,
+        "_1": NaN,
+        "HOLDING COMPANIES": "MTN Telephone\nNetworks\nCameroon Limited4\nCameroon",
+        "_2": "MTN Nigeria\nCommunications\nPlc6\nNigeria",
+        "_3": "Mascom\nWireless Botswana\nProprietary\nLimited1\nBotswana"
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "100%",
+        "": "100%",
+        "_1": "100%",
+        "HOLDING COMPANIES": NaN,
+        "_2": NaN,
+        "_3": NaN
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "Mobile Telephone\nNetworks\nProprietary Limited\nSouth Africa",
+        "": "MTN Business\nSolutions\nProprietary Limited\nSouth Africa",
+        "_1": "MTN South Africa\nFoundation\nNPC\nSouth Africa",
+        "HOLDING COMPANIES": NaN,
+        "_2": NaN,
+        "_3": NaN
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": NaN,
+        "": NaN,
+        "_1": NaN,
+        "HOLDING COMPANIES": "80%",
+        "_2": "76% 53%",
+        "_3": NaN
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": NaN,
+        "": NaN,
+        "_1": NaN,
+        "HOLDING COMPANIES": "MTN C\u00f4te d\u2019Ivoire\nSA3\nC\u00f4te d\u2019Ivoire",
+        "_2": "MTN Zambia\nLimited2\nZambia",
+        "_3": "MTN Rwandacell\nLimited\nRwanda"
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "100%",
+        "": "100%",
+        "_1": "100%",
+        "HOLDING COMPANIES": NaN,
+        "_2": NaN,
+        "_3": NaN
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "Chenosis\nPropriety Limited\nSouth Africa",
+        "": "Kente\n(Pty) Ltd\nSouth Africa",
+        "_1": "Waterfall Access\nNetworks (Pty) Ltd",
+        "HOLDING COMPANIES": "59%",
+        "_2": "78%",
+        "_3": "80%"
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": NaN,
+        "": NaN,
+        "_1": NaN,
+        "HOLDING COMPANIES": "MTN Congo S.A.\nRepublic of the\nCongo",
+        "_2": "MTN Uganda\nLimited\nUganda",
+        "_3": "MTN Networks\nSolutions Limited4\nCameroon"
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "100%",
+        "": "100%",
+        "_1": "100%",
+        "HOLDING COMPANIES": NaN,
+        "_2": NaN,
+        "_3": NaN
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "PROPERTY",
+        "": NaN,
+        "_1": NaN,
+        "HOLDING COMPANIES": "100%",
+        "_2": "76%",
+        "_3": "80%"
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "Aconcagua 11\nInvestments\nProprietary Limited\nSouth Africa",
+        "": "MTN Propco\nProprietary Limited\nSouth Africa",
+        "_1": NaN,
+        "HOLDING COMPANIES": "Irancell\nTelecommunication\nCompany Services\n(PJSC)1\nIran",
+        "_2": "XS Broadband\nLimited6\nNigeria",
+        "_3": "MTN Internet\nServices3\nC\u00f4te d\u2019Ivoire S.A."
+      },
+      {
+        "TELECOMMUNICATIONS/ISP": "100%",
+        "": "100%",
+        "_1": NaN,
+        "HOLDING COMPANIES": "49%",
+        "_2": "76%",
+        "_3": "59%"
+      }
+    ]
+  },
+  {
+    "page": 109,
+    "table_index": 3,
+    "rows": 11,
+    "cols": 5,
+    "headers": [
+      "ELECTRONIC SERVICES",
+      "",
+      "_1",
+      "_2",
+      "_3"
+    ],
+    "preview": {
+      "ELECTRONIC SERVICES": {
+        "0": "Simfy Africa\nProprietary Limited\nSouth Africa",
+        "1": "100%",
+        "2": "Group Fincommerce"
+      },
+      "": {
+        "0": "MTN Group Fintech\nHoldings B.V",
+        "1": "100%",
+        "2": "100%\nCredTech DMCC (UAE)"
+      },
+      "_1": {
+        "0": "MTN Group\nFintech B.V\nNetherlands",
+        "1": "100%",
+        "2": "100M%idas TechCo Ltd\n(UAE)"
+      },
+      "_2": {
+        "0": NaN,
+        "1": "ELECTRONIC SERVICES",
+        "2": "MTN Mobile Money\nLimited2\nZambia"
+      },
+      "_3": {
+        "0": NaN,
+        "1": NaN,
+        "2": "Mobile Money\nCorporation PLC4\nCameroon"
+      }
+    },
+    "data": [
+      {
+        "ELECTRONIC SERVICES": "Simfy Africa\nProprietary Limited\nSouth Africa",
+        "": "MTN Group Fintech\nHoldings B.V",
+        "_1": "MTN Group\nFintech B.V\nNetherlands",
+        "_2": NaN,
+        "_3": NaN
+      },
+      {
+        "ELECTRONIC SERVICES": "100%",
+        "": "100%",
+        "_1": "100%",
+        "_2": "ELECTRONIC SERVICES",
+        "_3": NaN
+      },
+      {
+        "ELECTRONIC SERVICES": "Group Fincommerce",
+        "": "100%\nCredTech DMCC (UAE)",
+        "_1": "100M%idas TechCo Ltd\n(UAE)",
+        "_2": "MTN Mobile Money\nLimited2\nZambia",
+        "_3": "Mobile Money\nCorporation PLC4\nCameroon"
+      },
+      {
+        "ELECTRONIC SERVICES": "100%",
+        "": "100%",
+        "_1": "100%",
+        "_2": "78%",
+        "_3": "76%"
+      },
+      {
+        "ELECTRONIC SERVICES": "Mobile Money (U) Ltd\n(Uganda)",
+        "": "Fin Commerce\n(Uganda)",
+        "_1": "",
+        "_2": "Yello digital\nFinancial Services6\nNigeria",
+        "_3": "Mobile Money Congo\nRepublic of the\nCongo"
+      },
+      {
+        "ELECTRONIC SERVICES": "100%",
+        "": "100%",
+        "_1": NaN,
+        "_2": NaN,
+        "_3": NaN
+      },
+      {
+        "ELECTRONIC SERVICES": "STRUCTURED ENTITIES",
+        "": NaN,
+        "_1": NaN,
+        "_2": "76%",
+        "_3": "100%"
+      },
+      {
+        "ELECTRONIC SERVICES": "MTN (Mauritius)\nInvestments Limited\nMauritius",
+        "": NaN,
+        "_1": NaN,
+        "_2": "MTN Mobile Financial\nServices3\nC\u00f4te d\u2019Ivoire",
+        "_3": "Mobile Money\nRwanda Limited\nRwanda"
+      },
+      {
+        "ELECTRONIC SERVICES": "100%",
+        "": NaN,
+        "_1": NaN,
+        "_2": "59%",
+        "_3": "80%"
+      },
+      {
+        "ELECTRONIC SERVICES": NaN,
+        "": NaN,
+        "_1": NaN,
+        "_2": "MTN Mobile Money\nUganda Limited\nUganda",
+        "_3": "Kente (Pty) Ltd"
+      },
+      {
+        "ELECTRONIC SERVICES": NaN,
+        "": NaN,
+        "_1": NaN,
+        "_2": "76%",
+        "_3": "100%"
+      }
+    ]
+  },
+  {
+    "page": 110,
+    "table_index": 0,
+    "rows": 2,
+    "cols": 3,
+    "headers": [
+      "",
+      "MTN Group",
+      "_1"
+    ],
+    "preview": {
+      "": {
+        "0": null,
+        "1": null
+      },
+      "MTN Group": {
+        "0": "MTN (Dubai) Limited\nDubai",
+        "1": "100%"
+      },
+      "_1": {
+        "0": null,
+        "1": null
+      }
+    },
+    "data": [
+      {
+        "": null,
+        "MTN Group": "MTN (Dubai) Limited\nDubai",
+        "_1": null
+      },
+      {
+        "": null,
+        "MTN Group": "100%",
+        "_1": null
+      }
+    ]
+  },
+  {
+    "page": 110,
+    "table_index": 1,
+    "rows": 19,
+    "cols": 3,
+    "headers": [
+      "HOLDING COMPANIES",
+      "",
+      "_1"
+    ],
+    "preview": {
+      "HOLDING COMPANIES": {
+        "0": "Easy Dial\nInternational\nLimited\nBritish Virgin\nIslands",
+        "1": "100%",
+        "2": "Investcom Mobile\nBenin Limited\nBritish Virgin\nIslands"
+      },
+      "": {
+        "0": "Investcom\nTelecommunications\nGuinea-Conakry\nLimited\nBritish Virgin Islands",
+        "1": "100%",
+        "2": "Investcom Mobile\nCommunications\nLimited\nBritish Virgin\nIslands"
+      },
+      "_1": {
+        "0": "Investcom\nConsortium\nHolding S.A.\nBritish Virgin\nIslands",
+        "1": "100%",
+        "2": "Investcom\nTelecommunications\nAfghanistan Limited\nBritish Virgin Islands"
+      }
+    },
+    "data": [
+      {
+        "HOLDING COMPANIES": "Easy Dial\nInternational\nLimited\nBritish Virgin\nIslands",
+        "": "Investcom\nTelecommunications\nGuinea-Conakry\nLimited\nBritish Virgin Islands",
+        "_1": "Investcom\nConsortium\nHolding S.A.\nBritish Virgin\nIslands"
+      },
+      {
+        "HOLDING COMPANIES": "100%",
+        "": "100%",
+        "_1": "100%"
+      },
+      {
+        "HOLDING COMPANIES": "Investcom Mobile\nBenin Limited\nBritish Virgin\nIslands",
+        "": "Investcom Mobile\nCommunications\nLimited\nBritish Virgin\nIslands",
+        "_1": "Investcom\nTelecommunications\nAfghanistan Limited\nBritish Virgin Islands"
+      },
+      {
+        "HOLDING COMPANIES": "100%",
+        "": "100%",
+        "_1": "100%"
+      },
+      {
+        "HOLDING COMPANIES": "MTN NIC\nBV\nNetherlands",
+        "": "MTN (Netherlands)\nBV\nNetherlands",
+        "_1": "MTN (Netherlands)\nCo-Op UA\nNetherlands"
+      },
+      {
+        "HOLDING COMPANIES": "100%",
+        "": "100%",
+        "_1": "100%"
+      },
+      {
+        "HOLDING COMPANIES": "Investcom Global\nLimited\nBritish Virgin\nIslands",
+        "": "MTN Group\nFintech BV\nUnited Arab Emirates",
+        "_1": "Servico SAL\nLebanon"
+      },
+      {
+        "HOLDING COMPANIES": "100%",
+        "": "100%",
+        "_1": "100%"
+      },
+      {
+        "HOLDING COMPANIES": "Progressive Tech\nHoldings\nMauritius",
+        "": "Investcom\nInternational Limited\nBritish Virgin Islands",
+        "_1": "MTN REL Mauritius"
+      },
+      {
+        "HOLDING COMPANIES": "100%",
+        "": "100%",
+        "_1": "100%"
+      },
+      {
+        "HOLDING COMPANIES": "MTN Nigeria\nTowers SPV B.V.\nNetherlands",
+        "": NaN,
+        "_1": NaN
+      },
+      {
+        "HOLDING COMPANIES": "100%",
+        "": NaN,
+        "_1": NaN
+      },
+      {
+        "HOLDING COMPANIES": "TELECOMMUNICATIONS/ISP",
+        "": NaN,
+        "_1": NaN
+      },
+      {
+        "HOLDING COMPANIES": "Lonestar\nCommunications\nCorporation LLC\nLiberia",
+        "": "MTN Business\nKenya Limited\nKenya",
+        "_1": "MTN Sudan\nCompany Limited\nSudan"
+      },
+      {
+        "HOLDING COMPANIES": "60%",
+        "": "70%",
+        "_1": "85%"
+      },
+      {
+        "HOLDING COMPANIES": "GlobalConnect\nSolutions Limited\nDubai",
+        "": "Scancom PLC5\nGhana",
+        "_1": "MTN ICT Services\nPLC\nEthiopia"
+      },
+      {
+        "HOLDING COMPANIES": "100%",
+        "": "72%",
+        "_1": "100%"
+      },
+      {
+        "HOLDING COMPANIES": "Spacetel Benin SA\nBenin",
+        "": "MTN South Sudan\nLimited",
+        "_1": NaN
+      },
+      {
+        "HOLDING COMPANIES": "75%",
+        "": "100%",
+        "_1": NaN
+      }
+    ]
+  },
+  {
+    "page": 110,
+    "table_index": 2,
+    "rows": 26,
+    "cols": 4,
+    "headers": [
+      "PROCUREMENT",
+      "",
+      "_1",
+      "_2"
+    ],
+    "preview": {
+      "PROCUREMENT": {
+        "0": "Global Trading\nCompany Limited\nUnited Arab Emirates",
+        "1": "100%",
+        "2": "Telecom Sourcing\nServices FZ-LLC\nUnited Arab\nEmirates"
+      },
+      "": {
+        "0": NaN,
+        "1": NaN,
+        "2": "MTN\nInvestments\nLimited\nUnited Arab\nEmirates"
+      },
+      "_1": {
+        "0": "Global Sourcing\nCompany Limited\nUnited Arab Emirates",
+        "1": "100%",
+        "2": "MTN SEA\nShared\nServices\nLimited\nUganda"
+      },
+      "_2": {
+        "0": NaN,
+        "1": NaN,
+        "2": "MTN SEA\nShared\nServices\nLimited\nUganda"
+      }
+    },
+    "data": [
+      {
+        "PROCUREMENT": "Global Trading\nCompany Limited\nUnited Arab Emirates",
+        "": NaN,
+        "_1": "Global Sourcing\nCompany Limited\nUnited Arab Emirates",
+        "_2": NaN
+      },
+      {
+        "PROCUREMENT": "100%",
+        "": NaN,
+        "_1": "100%",
+        "_2": NaN
+      },
+      {
+        "PROCUREMENT": "Telecom Sourcing\nServices FZ-LLC\nUnited Arab\nEmirates",
+        "": "MTN\nInvestments\nLimited\nUnited Arab\nEmirates",
+        "_1": "MTN SEA\nShared\nServices\nLimited\nUganda",
+        "_2": "MTN SEA\nShared\nServices\nLimited\nUganda"
+      },
+      {
+        "PROCUREMENT": "100%",
+        "": "100%",
+        "_1": "100%",
+        "_2": "100%"
+      },
+      {
+        "PROCUREMENT": "MANAGEMENT SERVICES",
+        "": NaN,
+        "_1": "STRUCTURED ENTITIES",
+        "_2": NaN
+      },
+      {
+        "PROCUREMENT": "Inteltec Offshore SAL\nLebanon",
+        "": NaN,
+        "_1": "MTN Ghana\nFoundation5\nGhana",
+        "_2": "MTN Nigeria\nFoundation6\nNigeria"
+      },
+      {
+        "PROCUREMENT": "100%",
+        "": NaN,
+        "_1": "72%",
+        "_2": "76%"
+      },
+      {
+        "PROCUREMENT": "INTERNATIONAL BUSINESS",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN
+      },
+      {
+        "PROCUREMENT": "Interserve Overseas Limited\nBritish Virgin Islands",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN
+      },
+      {
+        "PROCUREMENT": "100%",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN
+      },
+      {
+        "PROCUREMENT": "ELECTRONIC SERVICES",
+        "": NaN,
+        "_1": NaN,
+        "_2": NaN
+      },
+      {
+        "PROCUREMENT": "aYo/Fintech",
+        "": NaN,
+        "_1": "Bayobab",
+        "_2": NaN
+      },
+      {
+        "PROCUREMENT": "MTN Mobile Money\nBenin",
+        "": "Middle East\nInternet Middle\nEast Tech\nVenture\nHoldings1 Ltd",
+        "_1": "GlobalConnect\nZambia2\nZambia",
+        "_2": "GlobalConnect\nFibreCo. B.V\nNetherlands"
+      },
+      {
+        "PROCUREMENT": "75%",
+        "": "50%",
+        "_1": "99%",
+        "_2": "100%"
+      },
+      {
+        "PROCUREMENT": "Mobile Money\nLimited\nGhana5",
+        "": "Lonestar Cell\nMTN Mobile\nMoney Inc",
+        "_1": "GlobalConnect\nGhana\nSolutions\nGhana Limited5\nGhana",
+        "_2": "MTN\nGlobalConnect\nUganda Limited"
+      },
+      {
+        "PROCUREMENT": "72%",
+        "": "60%",
+        "_1": "100%",
+        "_2": "100%"
+      },
+      {
+        "PROCUREMENT": "MTN Sudan Fintech\nComp Limited Sudan",
+        "": "aYo Holdings\nLimited\nMauritius",
+        "_1": "GlobalConnect\nSolutions\nLimited DIFC",
+        "_2": "MTN\nGlobalConnect\nE2W Holdings\nLimited (UAE)"
+      },
+      {
+        "PROCUREMENT": "85%",
+        "": "100%",
+        "_1": "100%",
+        "_2": "70%"
+      },
+      {
+        "PROCUREMENT": "aYo C\u00f4te d\u2019Ivoire\nLimited3\nC\u00f4te d\u2019Ivoire",
+        "": "aYo Insurance\nBrokers\nLimited4\nCameroon",
+        "_1": "Bayobab South\nAfrica (Pty) Ltd",
+        "_2": "Bayobab\nInternational\nSolutions Ltd"
+      },
+      {
+        "PROCUREMENT": "100%",
+        "": "100%",
+        "_1": "100%",
+        "_2": "100%"
+      },
+      {
+        "PROCUREMENT": "aYo Micro Insurance\nLimited Nigeria",
+        "": "aYo Rwanda\nLimited\nRwanda",
+        "_1": "GlobalConnect\nNigeria Infra\n(Pty) Ltd5\nNigeria",
+        "_2": "GlobalConnect\nNigeria Limited6\nNigeria"
+      },
+      {
+        "PROCUREMENT": "75%",
+        "": "100%",
+        "_1": "100%",
+        "_2": "100%"
+      },
+      {
+        "PROCUREMENT": "MTN Fintech South\nSudan Services Ltd",
+        "": "aYo\nIntermediaries\nSouth Africa",
+        "_1": "Bayobab C\u00f4te\nd\u2019Ivoire3 S.A.",
+        "_2": "aYo Insurance\nBrokers Zambia\nLimited2 Zambia"
+      },
+      {
+        "PROCUREMENT": "69%",
+        "": "100%",
+        "_1": "100%",
+        "_2": "100%"
+      },
+      {
+        "PROCUREMENT": "aYo Uganda\nLimited Uganda",
+        "": "aYo\nIntermediaries\nGhana\nLimited5\nGhana",
+        "_1": NaN,
+        "_2": NaN
+      },
+      {
+        "PROCUREMENT": "100%",
+        "": "100%",
+        "_1": NaN,
+        "_2": NaN
+      }
+    ]
+  },
+  {
+    "page": 141,
+    "table_index": 0,
+    "rows": 10,
+    "cols": 2,
+    "headers": [
+      "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #",
+      ""
+    ],
+    "preview": {
+      "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": {
+        "0": "1 464 \u2013 1 464 #",
+        "1": "Trade and other payables \u2013 1 223 1 223 #",
+        "2": "Financial guarantee contracts"
+      },
+      "": {
+        "0": NaN,
+        "1": NaN,
+        "2": "\u2013 427 427 320"
+      }
+    },
+    "data": [
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "1 464 \u2013 1 464 #",
+        "": NaN
+      },
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "Trade and other payables \u2013 1 223 1 223 #",
+        "": NaN
+      },
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "Financial guarantee contracts",
+        "": "\u2013 427 427 320"
+      },
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "",
+        "": "\u2013 1 650 1 650"
+      },
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "2024",
+        "": ""
+      },
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "Trade and other receivables 819 \u2013 819 #\nCash and cash equivalents 179 \u2013 179 #",
+        "": NaN
+      },
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "998 \u2013 998 #",
+        "": NaN
+      },
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "Trade and other payables \u2013 1 324 1 324 #",
+        "": NaN
+      },
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "Financial guarantee contracts",
+        "": "\u2013 744 744 663"
+      },
+      {
+        "2025\nTrade and other receivables 934 \u2013 934 #\nCash and cash equivalents 530 \u2013 530 #": "",
+        "": "\u2013 2 068 2 068"
+      }
+    ]
+  }
+]
