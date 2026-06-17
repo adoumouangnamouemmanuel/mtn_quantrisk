@@ -2,6 +2,13 @@ from fastapi import APIRouter, HTTPException
 from datetime import datetime, timezone, timedelta
 import random
 
+#updated by Chidima.
+import joblib
+import pandas as pd
+from pathlib import Path
+from statsmodels.tsa.arima.model import ARIMAResultsWrapper
+#end
+
 from ..schemas import RunScenarioRequest, ReverseStressInput
 from ..services.scenario_service import get_all_kpis, get_all_scenarios, get_scenario_by_id, apply_scenario
 from ..services.reverse_service import run_reverse_stress
@@ -9,7 +16,23 @@ from ..services.history_service import get_quarterly, get_monthly
 
 router = APIRouter(prefix="/api")
 
+# ------------------------------------------------------------------------------
+# Lazy-loaded ARIMA model for forecasts by Chidima
+# ------------------------------------------------------------------------------
+_MODEL_CACHE = {}
 
+def get_arima_model():
+    if "arima" not in _MODEL_CACHE:
+        # Path to the model file relative to this file's location
+        # This file is at: backend/app/api/routes.py
+        # We need to go up 3 levels to reach the project root (mtn_quantrisk)
+        model_path = Path(__file__).resolve().parents[3] / "models/artefacts/arima_revenue.joblib"
+        if not model_path.exists():
+            raise RuntimeError("ARIMA model not found. Run models/train_lstm.py first.")
+        _MODEL_CACHE["arima"] = joblib.load(model_path)
+    return _MODEL_CACHE["arima"]
+
+#END
 # ── KPIs ──────────────────────────────────────────────────────────────────────
 
 @router.get("/kpis")
@@ -50,7 +73,89 @@ def reverse_stress(body: ReverseStressInput):
 # ── Forecast (generated — no time-series ML model yet) ────────────────────────
 
 @router.get("/forecast/{kpi_id}")
+@router.get("/forecast/{kpi_id}")
 def get_forecast(kpi_id: str, horizon: int = 90):
+    """
+    Return a daily forecast for the given KPI for the next `horizon` days.
+    Currently only supports 'Service_Revenue' using the ARIMA model.
+    Confidence intervals are ±15% as per the master plan.
+    """
+    if kpi_id != "Service_Revenue":
+        # You can extend this later for other KPIs by training separate ARIMA models.
+        raise HTTPException(status_code=400, detail=f"Forecast not yet implemented for KPI {kpi_id}")
+
+    # Load the ARIMA model
+    try:
+        model = get_arima_model()
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    # Get historical quarterly data for Service_Revenue
+    from ..services.history_service import get_quarterly
+    q_data = get_quarterly("Service_Revenue")
+    if not q_data:
+        raise HTTPException(status_code=404, detail="No historical quarterly data found")
+
+    # The last historical point: we need the date and value
+    last_hist = q_data[-1]
+    last_hist_date = pd.to_datetime(last_hist["date"])
+    last_hist_value = last_hist["value"]
+
+    # Get 2‑quarter ahead forecast
+    forecast_result = model.forecast(steps=2)
+    forecast_values = forecast_result.tolist()  # e.g., [6493.48, 6797.98]
+
+    # We'll interpolate from the last historical value to the first forecast
+    # over the next 3 months (roughly 90 days), and then from first to second
+    # over the following 3 months.
+    now = datetime.now(timezone.utc)
+
+    # Dates for the two forecast points (approximately 3 and 6 months ahead)
+    date1 = now + relativedelta(months=3)
+    date2 = now + relativedelta(months=6)
+
+    # Build a daily series from now to `horizon` days ahead
+    from datetime import timedelta
+    dates = [now + timedelta(days=i) for i in range(horizon + 1)]
+
+    points = []
+    for dt in dates:
+        if dt <= date1:
+            # Linear interpolation between last historical and first forecast
+            total_seconds = (date1 - now).total_seconds()
+            if total_seconds == 0:
+                fraction = 1.0
+            else:
+                fraction = (dt - now).total_seconds() / total_seconds
+            val = last_hist_value + (forecast_values[0] - last_hist_value) * fraction
+        elif dt <= date2:
+            total_seconds = (date2 - date1).total_seconds()
+            if total_seconds == 0:
+                fraction = 1.0
+            else:
+                fraction = (dt - date1).total_seconds() / total_seconds
+            val = forecast_values[0] + (forecast_values[1] - forecast_values[0]) * fraction
+        else:
+            val = forecast_values[1]
+
+        p50 = val
+        p05 = val * 0.85
+        p95 = val * 1.15
+
+        # Historical flag: only dates up to now are considered historical.
+        is_hist = (dt <= now)
+
+        points.append({
+            "date": dt.strftime("%Y-%m-%d"),
+            "median": round(p50, 2) if not is_hist else 0,
+            "p50": round(p50, 2),
+            "p05": round(p05, 2),
+            "p95": round(p95, 2),
+            "isHistorical": is_hist,
+        })
+
+    return points
+''' def get_forecast(kpi_id: str, horizon: int = 90):
     from ..services.data_loader import load_base_case, KPI_META
     base = load_base_case()
     val  = base.get(kpi_id, 1000.0)
@@ -72,7 +177,7 @@ def get_forecast(kpi_id: str, horizon: int = 90):
             "p95":          round(p50 * 1.12, 2),
             "isHistorical": is_hist,
         })
-    return points
+    return points '''
 
 
 # ── Historical Time-Series ────────────────────────────────────────────────────
