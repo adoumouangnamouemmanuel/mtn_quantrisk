@@ -11,7 +11,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden font-sans bg-surface">
-      
+
       {/* Left Pane - Branding & Value Proposition */}
       <div className="flex flex-col justify-between w-full md:w-1/2 p-8 md:p-12 lg:p-16 relative">
         {/* Top Header */}
@@ -32,7 +32,7 @@ export default function LoginPage() {
           <p className="text-on-surface-variant text-lg md:text-xl mb-8">
             AI-powered risk detection... Real-time. Predictive. Precise.
           </p>
-          
+
           <div className="flex flex-wrap gap-3">
             <div className="flex items-center space-x-2 px-3 py-1.5 bg-surface-container rounded border border-outline/50">
               <Zap className="w-4 h-4 text-mtn-yellow" />
@@ -59,7 +59,7 @@ export default function LoginPage() {
       <div className="w-full md:w-1/2 bg-surface-container-low flex items-center justify-center p-8 relative overflow-hidden">
         {/* Dotted Background Pattern */}
         <div className="absolute inset-0 z-0 bg-[radial-gradient(#374151_1px,transparent_1px)] [background-size:24px_24px] opacity-30"></div>
-        
+
         <div className="w-full max-w-md relative z-10">
           <h2 className="text-3xl font-bold text-white mb-2">
             Welcome Back
@@ -68,8 +68,8 @@ export default function LoginPage() {
             Sign in to your risk intelligence workspace
           </p>
 
-          <form 
-            className="space-y-6" 
+          <form
+            className="space-y-6"
             onSubmit={(e) => {
               e.preventDefault();
               router.push('/dashboard');
@@ -79,9 +79,9 @@ export default function LoginPage() {
               <label className="block text-xs font-mono uppercase tracking-widest text-on-surface-variant mb-2">
                 Work Email
               </label>
-              <input 
-                type="email" 
-                placeholder="analyst@mtn.com" 
+              <input
+                type="email"
+                placeholder="analyst@mtn.com"
                 className="w-full bg-surface-container-low border border-outline/50 rounded p-3 text-white focus:border-mtn-yellow focus:ring-1 focus:ring-mtn-yellow focus:outline-none transition-all placeholder:text-outline"
                 required
               />
@@ -92,8 +92,8 @@ export default function LoginPage() {
                 Password
               </label>
               <div className="relative">
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   defaultValue="........"
                   className="w-full bg-surface-container-low border border-outline/50 rounded p-3 text-white focus:border-mtn-yellow focus:ring-1 focus:ring-mtn-yellow focus:outline-none transition-all pr-10"
                   required

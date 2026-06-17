@@ -67,10 +67,10 @@ export default function ScenariosPage() {
   const output = state.scenarioOutput;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-full animate-in fade-in duration-500">
-      
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 animate-in fade-in duration-500 items-start">
+
       {/* Left Column: Picker */}
-      <div className="md:col-span-3 bg-surface-container-low border-r border-outline/20 p-4 h-full overflow-y-auto hidden md:block">
+      <div className="md:col-span-3 bg-surface-container-low rounded-xl border border-outline/20 p-4 sticky top-0 max-h-[calc(100vh-6rem)] overflow-y-auto hidden md:flex md:flex-col custom-scrollbar">
         <ScenarioPicker 
           activeId={active?.id} 
           onSelect={(scen) => {
@@ -84,7 +84,7 @@ export default function ScenariosPage() {
       </div>
 
       {/* Center Column: Controls & Simulation */}
-      <div className="md:col-span-6 p-4 md:p-6 overflow-y-auto space-y-6">
+      <div className="md:col-span-6 space-y-6 pb-8">
         {!active ? (
           <div className="flex items-center justify-center h-full text-on-surface-variant font-mono text-sm">
             Please select a scenario from the library.
@@ -161,7 +161,7 @@ export default function ScenariosPage() {
       </div>
 
       {/* Right Column: Context & Actions */}
-      <div className="md:col-span-3 bg-surface-container-low border-l border-outline/20 p-4 h-full overflow-y-auto hidden md:block">
+      <div className="md:col-span-3 bg-surface-container-low rounded-xl border border-outline/20 p-4 sticky top-0 max-h-[calc(100vh-6rem)] overflow-y-auto hidden md:block custom-scrollbar">
         {active ? (
           <div className="space-y-6">
             <ScenarioMetadataCard scenario={active} />

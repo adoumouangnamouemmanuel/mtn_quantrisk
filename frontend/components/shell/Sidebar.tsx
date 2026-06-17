@@ -32,9 +32,9 @@ const NAV_ITEMS: NavGroup[] = [
     { href: '/briefs', label: 'Board Briefs', icon: FileText },
   ]},
   { group: 'Advanced Modeling', items: [
-    { href: '/scenarios', label: 'Stress Tester', icon: FlaskConical, disabled: true },
-    { href: '/compare', label: 'Scenario Compare', icon: GitCompare, disabled: true },
-    { href: '/reverse', label: 'Reverse Stress', icon: ActivitySquare, disabled: true },
+    { href: '/scenarios', label: 'Stress Tester', icon: FlaskConical },
+    { href: '/compare', label: 'Scenario Compare', icon: GitCompare },
+    { href: '/reverse', label: 'Reverse Stress', icon: ActivitySquare },
   ]}
 ];
 

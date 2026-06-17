@@ -39,7 +39,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${dmSans.variable} ${spaceMono.variable} ${jetbrainsMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-surface text-on-surface font-sans">
         {children}
-        <Script src="https://cdn.jsdelivr.net/npm/chart.js" strategy="beforeInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/chart.js" strategy="afterInteractive" />
       </body>
     </html>
   );

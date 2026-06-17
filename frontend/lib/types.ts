@@ -139,6 +139,16 @@ export interface MacroOverlays {
   policyRateOverlayPp: number; // -10 to +15
 }
 
+export interface QuarterlyPoint {
+  quarter: string; // "FY20Q1"
+  value: number;
+}
+
+export interface MonthlyPoint {
+  month: string; // "Jan 2023"
+  value: number;
+}
+
 export interface ComparisonRow {
   kpiId: KpiId;
   baseValue: number;
