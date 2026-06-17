@@ -85,14 +85,16 @@ export default function ComparePage() {
   useEffect(() => {
     if (state.comparisonA) {
       runScenario(state.comparisonA.id, 1.0, { cediShockPct: 0, inflationOverlayPp: 0, policyRateOverlayPp: 0 })
-        .then(setOutputA);
+        .then(setOutputA)
+        .catch(console.error);
     }
   }, [state.comparisonA]);
 
   useEffect(() => {
     if (state.comparisonB) {
       runScenario(state.comparisonB.id, 1.0, { cediShockPct: 0, inflationOverlayPp: 0, policyRateOverlayPp: 0 })
-        .then(setOutputB);
+        .then(setOutputB)
+        .catch(console.error);
     }
   }, [state.comparisonB]);
 

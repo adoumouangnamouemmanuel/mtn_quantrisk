@@ -20,6 +20,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
     const body = await res.text();
     throw new Error(`API ${path} → ${res.status}: ${body.slice(0, 200)}`);
   }
+  if (res.status === 204) return undefined as unknown as T;
   return res.json() as Promise<T>;
 }
 
