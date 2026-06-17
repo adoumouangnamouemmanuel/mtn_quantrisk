@@ -26,7 +26,7 @@ def get_arima_model():
         # Path to the model file relative to this file's location
         # This file is at: backend/app/api/routes.py
         # We need to go up 3 levels to reach the project root (mtn_quantrisk)
-        model_path = Path(__file__).resolve().parents[3] / "models/artefacts/arima_revenue.joblib"
+        model_path = Path(__file__).resolve().parents[4] / "models/artefacts/arima_revenue.joblib"
         if not model_path.exists():
             raise RuntimeError("ARIMA model not found. Run models/train_lstm.py first.")
         _MODEL_CACHE["arima"] = joblib.load(model_path)
