@@ -8,6 +8,7 @@ import { CrossScenarioSweep } from '@/components/reverse/CrossScenarioSweep';
 import { TopDangerousScenariosCard } from '@/components/reverse/TopDangerousScenariosCard';
 import { reverseStress } from '@/lib/api';
 import { ReverseStressInput } from '@/lib/types';
+import { ActivitySquare } from 'lucide-react';
 
 export default function ReversePage() {
   const { state, dispatch } = useAppState();
@@ -29,7 +30,18 @@ export default function ReversePage() {
 
   return (
     <div className="flex flex-col space-y-6 pb-8 animate-in fade-in duration-500">
-      
+
+      {/* Page header */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-error/10 border border-error/20 flex items-center justify-center shrink-0">
+          <ActivitySquare className="w-5 h-5 text-error" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-hero font-bold text-on-surface">Reverse Stress</h1>
+          <p className="text-on-surface-variant mt-0.5">Find which scenarios breach a target KPI threshold</p>
+        </div>
+      </div>
+
       {/* Target Builder */}
       <TargetBuilderCard onSolve={handleSolve} isSolving={isSolving} />
 

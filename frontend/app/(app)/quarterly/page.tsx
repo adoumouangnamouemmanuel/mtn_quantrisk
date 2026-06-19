@@ -7,6 +7,7 @@ import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import { fetchQuarterly } from '@/lib/api';
 import { ThemeTokens } from '@/lib/theme';
 import { KpiId, QuarterlyPoint } from '@/lib/types';
+import { CalendarDays } from 'lucide-react';
 
 const KPIS: { id: KpiId; label: string }[] = [
   { id: 'FIN01', label: 'Service Revenue' },
@@ -53,9 +54,14 @@ export default function QuarterlyPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-hero font-bold text-on-surface">Quarterly Trends</h1>
-          <p className="text-on-surface-variant mt-1">Historical quarterly performance (FY20–FY25)</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-mtn-yellow/10 border border-mtn-yellow/20 flex items-center justify-center shrink-0">
+            <CalendarDays className="w-5 h-5 text-mtn-yellow" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-hero font-bold text-on-surface">Quarterly Trends</h1>
+            <p className="text-on-surface-variant mt-0.5">Historical quarterly performance (FY20–FY25)</p>
+          </div>
         </div>
 
         <select

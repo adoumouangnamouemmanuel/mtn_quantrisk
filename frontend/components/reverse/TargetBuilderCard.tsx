@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ReverseStressInput, ReverseOperator, KpiId, Kpi } from '@/lib/types';
 import { fetchKpis } from '@/lib/api';
+import { Target } from 'lucide-react';
 
 interface TargetBuilderCardProps {
   onSolve: (input: ReverseStressInput) => void;
@@ -28,9 +29,12 @@ export function TargetBuilderCard({ onSolve, isSolving }: TargetBuilderCardProps
 
   return (
     <Card className="p-6 bg-surface-container-low border border-mtn-yellow/20">
-      <h3 className="font-sans text-sm font-bold text-mtn-yellow mb-4 uppercase tracking-widest">
-        What outcome would be unacceptable?
-      </h3>
+      <div className="flex items-center gap-2 mb-4">
+        <Target className="w-4 h-4 text-mtn-yellow" />
+        <h3 className="font-sans text-sm font-bold text-mtn-yellow uppercase tracking-widest">
+          What outcome would be unacceptable?
+        </h3>
+      </div>
 
       <div className="flex flex-col md:flex-row items-center gap-4">
         {/* KPI Dropdown */}
