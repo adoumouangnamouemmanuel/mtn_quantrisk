@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchForecast } from '@/lib/api';
 import { ForecastPoint, KpiId } from '@/lib/types';
 import { Card } from '@/components/ui/Card';
@@ -13,6 +13,8 @@ import { ForecastSidebar } from '@/components/forecasts/ForecastSidebar';
 import { MOCK_KPIS } from '@/lib/mockData';
 import { formatNumber, formatPct } from '@/lib/format';
 import { Table, LayoutList } from 'lucide-react';
+import { FeedbackWidget } from '@/components/feedback/FeedbackWidget';
+import type React from 'react';
 
 export default function ForecastsPage() {
   const { state, dispatch } = useAppState();
@@ -24,15 +26,16 @@ export default function ForecastsPage() {
   const kpi = MOCK_KPIS.find(k => k.id === activeKpiId);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoading(true);
-    fetchForecast(activeKpiId, 90).then(data => {
-      setForecast(data);
-      setLoading(false);
-    });
+    fetchForecast(activeKpiId, 90)
+      .then(data => {
+        setForecast(data);
+        setLoading(false);
+      })
+      .catch(console.error);
   }, [activeKpiId]);
 
   const handleSelectKpi = (id: KpiId) => {
+    setLoading(true);
     dispatch({ type: 'SET_ACTIVE_FORECAST_KPI', payload: id });
   };
 
@@ -59,7 +62,7 @@ export default function ForecastsPage() {
       {
         label: 'Confidence Interval (P95)',
         data: forecast.map(f => !f.isHistorical ? f.p95 : null),
-        backgroundColor: ThemeTokens.colors.mtnYellow + '33', // 20% opacity
+        backgroundColor: ThemeTokens.colors.mtnYellow + '33',
         borderColor: 'transparent',
         fill: 1, // fill to Forecast (P50)
         tension: 0.1,
@@ -96,14 +99,21 @@ export default function ForecastsPage() {
               <h2 className="text-sm font-mono text-outline uppercase tracking-widest">
                 {kpi?.id} - {kpi?.name} ({kpi?.unit})
               </h2>
-              <button 
-                onClick={() => setViewAsTable(!viewAsTable)}
-                className="text-on-surface-variant hover:text-white transition-colors"
-                title={viewAsTable ? "View as chart" : "View as table"}
-                aria-label="Toggle table view"
-              >
-                {viewAsTable ? <LayoutList className="w-4 h-4" /> : <Table className="w-4 h-4" />}
-              </button>
+              <div className="flex items-center space-x-3">
+                <FeedbackWidget
+                  page="forecasts"
+                  context={{ kpiId: activeKpiId, kpiLabel: kpi?.name }}
+                  label="Accurate?"
+                />
+                <button 
+                  onClick={() => setViewAsTable(!viewAsTable)}
+                  className="text-on-surface-variant hover:text-white transition-colors"
+                  title={viewAsTable ? "View as chart" : "View as table"}
+                  aria-label="Toggle table view"
+                >
+                  {viewAsTable ? <LayoutList className="w-4 h-4" /> : <Table className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
             <div className="flex-1 relative">
               {loading ? (

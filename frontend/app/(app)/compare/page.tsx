@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppState } from '@/stores/useAppState';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -85,14 +85,16 @@ export default function ComparePage() {
   useEffect(() => {
     if (state.comparisonA) {
       runScenario(state.comparisonA.id, 1.0, { cediShockPct: 0, inflationOverlayPp: 0, policyRateOverlayPp: 0 })
-        .then(setOutputA);
+        .then(setOutputA)
+        .catch(console.error);
     }
   }, [state.comparisonA]);
 
   useEffect(() => {
     if (state.comparisonB) {
       runScenario(state.comparisonB.id, 1.0, { cediShockPct: 0, inflationOverlayPp: 0, policyRateOverlayPp: 0 })
-        .then(setOutputB);
+        .then(setOutputB)
+        .catch(console.error);
     }
   }, [state.comparisonB]);
 
@@ -107,7 +109,7 @@ export default function ComparePage() {
   const isReady = state.comparisonA && state.comparisonB && outputA && outputB && kpis.length > 0;
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto p-4 md:p-6 space-y-8 animate-in fade-in duration-500">
+    <div className="flex flex-col space-y-8 pb-8 animate-in fade-in duration-500">
       
       {/* Top Section */}
       <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 relative z-30">

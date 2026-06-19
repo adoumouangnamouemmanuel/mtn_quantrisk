@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { ReverseStressInput } from '@/lib/types';
+import { ReverseStressInput, Scenario } from '@/lib/types';
 import { BinarySearchTrajectory } from './BinarySearchTrajectory';
 import { ScenarioPicker } from '@/components/scenarios/ScenarioPicker';
-import { MOCK_SCENARIOS } from '@/lib/mockData';
+import { fetchScenarios } from '@/lib/api';
 
 interface SingleScenarioSolverProps {
   input: ReverseStressInput;
@@ -21,8 +21,13 @@ interface SingleScenarioSolverProps {
 
 export function SingleScenarioSolver({ input, result, onSolveScenario }: SingleScenarioSolverProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
 
-  const scenario = result ? MOCK_SCENARIOS.find(s => s.id === result.scenarioId) : null;
+  useEffect(() => {
+    fetchScenarios().then(setScenarios).catch(console.error);
+  }, []);
+
+  const scenario = result ? scenarios.find(s => s.id === result.scenarioId) : null;
   const severity = result?.requiredSeverityMultiplier || 0;
   
   // Cap visual bar at 5.0 to avoid breaking layout if requires crazy severity

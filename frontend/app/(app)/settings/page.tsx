@@ -1,55 +1,68 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { fetchPipelineHealth } from '@/lib/api';
-import { PipelineHealth } from '@/lib/types';
+import { useEffect, useState } from 'react';
+import { fetchPipelineHealth, retrainModels } from '@/lib/api';
+import type { PipelineHealth } from '@/lib/types';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
+import { UploadZone } from '@/components/data/UploadZone';
+import { BaseCaseLogs } from '@/components/data/BaseCaseLogs';
+import { RefreshCw, Database, Upload, History } from 'lucide-react';
 
 export default function SettingsPage() {
   const [health, setHealth] = useState<PipelineHealth | null>(null);
+  const [retraining, setRetraining] = useState(false);
+  const [retrainMsg, setRetrainMsg] = useState('');
+  const [logsKey, setLogsKey] = useState(0);
 
-  useEffect(() => {
-    fetchPipelineHealth().then(setHealth);
-  }, []);
+  useEffect(() => { fetchPipelineHealth().then(setHealth).catch(console.error); }, []);
+
+  const handleRetrain = async () => {
+    setRetraining(true);
+    setRetrainMsg('');
+    try {
+      const res = await retrainModels();
+      setRetrainMsg(res.success ? 'Models retrained successfully.' : `Retrain failed: ${res.stderr.slice(0, 120)}`);
+    } catch (e: unknown) {
+      setRetrainMsg(e instanceof Error ? e.message : 'Retrain error');
+    } finally {
+      setRetraining(false);
+    }
+  };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-8 pb-8 animate-in fade-in duration-500">
       <div>
         <h1 className="text-3xl font-hero font-bold text-on-surface">Settings & Integrations</h1>
-        <p className="text-on-surface-variant mt-1">Manage data pipelines and system configuration</p>
+        <p className="text-on-surface-variant mt-1">Manage data pipelines, uploads, and system configuration</p>
       </div>
 
+      {/* ── Row 1: Pipeline health + Account ─────────────────────────────── */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="space-y-4">
-          <h2 className="text-lg font-sans font-medium text-on-surface border-b border-outline/20 pb-2">Data Pipeline Health</h2>
-          
+          <div className="flex items-center gap-2 border-b border-outline/20 pb-3">
+            <Database className="w-4 h-4 text-mtn-yellow" />
+            <h2 className="font-sans font-medium text-on-surface">Data Pipeline Health</h2>
+          </div>
           {!health ? (
             <div className="space-y-3">
-              <SkeletonBlock className="h-10" />
-              <SkeletonBlock className="h-10" />
-              <SkeletonBlock className="h-10" />
+              {[1,2,3].map(i => <SkeletonBlock key={i} className="h-10" />)}
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex items-center justify-between bg-surface-container-high p-3 rounded-md">
-                <span className="font-mono text-sm text-on-surface-variant uppercase tracking-widest">Global Status</span>
+              <div className="flex items-center justify-between bg-surface-container-high p-3 rounded-lg">
+                <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">Global Status</span>
                 <Chip variant={health.status === 'Healthy' ? 'success' : 'warning'}>{health.status}</Chip>
               </div>
-              
               <div className="space-y-2">
-                {health.sources.map(source => (
-                  <div key={source.name} className="flex items-center justify-between p-2 border border-outline/10 rounded-md hover:bg-surface-container transition-colors">
+                {health.sources.map(s => (
+                  <div key={s.name} className="flex items-center justify-between p-2.5 border border-outline/10 rounded-lg hover:bg-surface-container transition-colors">
                     <div>
-                      <div className="text-sm font-sans font-medium text-on-surface">{source.name}</div>
-                      <div className="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest mt-0.5">
-                        Latency: {source.latencyMs}ms
-                      </div>
+                      <p className="font-sans text-sm text-on-surface">{s.name}</p>
+                      <p className="font-mono text-[9px] text-on-surface-variant mt-0.5 uppercase tracking-widest">Latency: {s.latencyMs}ms</p>
                     </div>
-                    <Chip size="sm" variant={source.status === 'Healthy' ? 'success' : 'error'}>
-                      {source.status}
-                    </Chip>
+                    <Chip size="sm" variant={s.status === 'Healthy' ? 'success' : 'error'}>{s.status}</Chip>
                   </div>
                 ))}
               </div>
@@ -58,25 +71,61 @@ export default function SettingsPage() {
         </Card>
 
         <Card className="space-y-4">
-          <h2 className="text-lg font-sans font-medium text-on-surface border-b border-outline/20 pb-2">Account Details</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-[10px] font-mono text-on-surface-variant uppercase tracking-widest mb-1">User Role</label>
-              <div className="text-sm font-sans text-on-surface bg-surface-container p-2 rounded border border-outline/20">Executive Risk Analyst</div>
-            </div>
-            <div>
-              <label className="block text-[10px] font-mono text-on-surface-variant uppercase tracking-widest mb-1">Session Timeout</label>
-              <div className="text-sm font-sans text-on-surface bg-surface-container p-2 rounded border border-outline/20">30 minutes</div>
-            </div>
-            <div>
-              <label className="block text-[10px] font-mono text-on-surface-variant uppercase tracking-widest mb-1">Theme</label>
-              <div className="flex items-center space-x-2">
-                <Chip variant="default" className="border-mtn-yellow text-mtn-yellow">Precision Dark</Chip>
+          <h2 className="font-sans font-medium text-on-surface border-b border-outline/20 pb-3">Account Details</h2>
+          <div className="space-y-3">
+            {[
+              { label: 'User Role',        value: 'Executive Risk Analyst' },
+              { label: 'Session Timeout',  value: '30 minutes' },
+              { label: 'Theme',            value: 'Precision Dark' },
+            ].map(f => (
+              <div key={f.label}>
+                <p className="font-mono text-[9px] text-on-surface-variant uppercase tracking-widest mb-1">{f.label}</p>
+                <p className="font-sans text-sm text-on-surface bg-surface-container p-2.5 rounded-lg border border-outline/10">{f.value}</p>
               </div>
-            </div>
+            ))}
+          </div>
+
+          <div className="border-t border-outline/20 pt-3">
+            <p className="font-mono text-[9px] text-on-surface-variant uppercase tracking-widest mb-2">XGBoost Models</p>
+            <button
+              onClick={handleRetrain}
+              disabled={retraining}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-outline/20 font-mono text-[10px] uppercase tracking-widest text-on-surface-variant hover:border-mtn-yellow/40 hover:text-mtn-yellow disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${retraining ? 'animate-spin' : ''}`} />
+              {retraining ? 'Retraining…' : 'Retrain Models'}
+            </button>
+            {retrainMsg && (
+              <p className={`mt-2 font-mono text-[9px] ${retrainMsg.startsWith('Models') ? 'text-green-400' : 'text-error'}`}>
+                {retrainMsg}
+              </p>
+            )}
           </div>
         </Card>
       </div>
+
+      {/* ── Row 2: Upload ─────────────────────────────────────────────────── */}
+      <Card className="space-y-4">
+        <div className="flex items-center gap-2 border-b border-outline/20 pb-3">
+          <Upload className="w-4 h-4 text-mtn-yellow" />
+          <div>
+            <h2 className="font-sans font-medium text-on-surface">Upload Data</h2>
+            <p className="font-mono text-[9px] text-on-surface-variant mt-0.5">
+              Upload a CSV to directly update base case values, or a PDF to extract KPIs via LLM
+            </p>
+          </div>
+        </div>
+        <UploadZone onSuccess={() => setLogsKey(k => k + 1)} />
+      </Card>
+
+      {/* ── Row 3: Base case logs ─────────────────────────────────────────── */}
+      <Card className="space-y-4">
+        <div className="flex items-center gap-2 border-b border-outline/20 pb-3">
+          <History className="w-4 h-4 text-mtn-yellow" />
+          <h2 className="font-sans font-medium text-on-surface">Base Case Change History</h2>
+        </div>
+        <BaseCaseLogs key={logsKey} />
+      </Card>
     </div>
   );
 }

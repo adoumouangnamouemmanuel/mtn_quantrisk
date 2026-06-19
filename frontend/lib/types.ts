@@ -74,14 +74,61 @@ export interface ForecastPoint {
   isHistorical: boolean;
 }
 
+export interface MonteCarloKpiResult {
+  kpiId: string;
+  kpiName: string;
+  unit: string;
+  baseValue: number;
+  p05: number;
+  p25: number;
+  p50: number;
+  p75: number;
+  p95: number;
+  mean: number;
+  std: number;
+  worstCase: number;
+  bestCase: number;
+}
+
 export interface MonteCarloResult {
-  kpiId: KpiId;
-  iterations: number;
-  var5: number;
-  var50: number;
-  var95: number;
-  cvar5: number;
-  generatedAt: string;
+  scenarioId: string;
+  nSimulations: number;
+  uncertaintyPct: number;
+  results: MonteCarloKpiResult[];
+}
+
+export interface FeedbackPayload {
+  page: string;
+  feedbackType: 'wrong_prediction' | 'false_alert' | 'inaccurate' | 'other';
+  rating: 'positive' | 'negative';
+  message: string;
+  context?: Record<string, unknown>;
+}
+
+export interface BaseCaseLogEntry {
+  timestamp: string;
+  kpiId: string;
+  oldValue: number;
+  newValue: number;
+  delta: number;
+  deltaPct: number;
+  source: string;
+}
+
+export interface PdfKpiCandidate {
+  kpiId: string;
+  kpiName: string;
+  value: number;
+  unit: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export interface UploadResult {
+  filename: string;
+  changesApplied?: number;
+  changes?: Array<{ kpiId: string; kpiName: string; oldValue: number; newValue: number; deltaPct: number }>;
+  kpiCandidates?: PdfKpiCandidate[];
+  llmUsed?: boolean;
 }
 
 export interface BoardBrief {
@@ -141,6 +188,27 @@ export interface MacroOverlays {
   cediShockPct: number;       // -50 to +50
   inflationOverlayPp: number; // -10 to +30
   policyRateOverlayPp: number; // -10 to +15
+}
+
+export interface QuarterlyPoint {
+  quarter: string; // "FY20Q1"
+  value: number;
+}
+
+export interface MonthlyPoint {
+  month: string; // "Jan 2023"
+  value: number;
+}
+
+export interface ScenarioFormData {
+  name: string;
+  pillar: PillarId;
+  type: ScenarioType;
+  severity: number;
+  plausibility: number;
+  description: string;
+  kpiImpacts: { kpiId: string; type: 'pct' | 'delta' | 'abs'; value: number }[];
+  calibrationAnchor?: string;
 }
 
 export interface ComparisonRow {

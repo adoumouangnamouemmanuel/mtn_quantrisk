@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.conda/
+*.joblib
+venv/
+.venv/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Output / logs
+*.log
+tsc_output.txt
+lint_output.txt
+build_output.txt
+depcheck_output.txt

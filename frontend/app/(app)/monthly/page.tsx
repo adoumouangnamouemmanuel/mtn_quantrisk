@@ -1,37 +1,47 @@
 "use client";
 
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { LineChart } from '@/components/charts/LineChart';
-import { MOCK_MONTHLY } from '@/lib/mockData';
+import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
+import { fetchMonthly } from '@/lib/api';
 import { ThemeTokens } from '@/lib/theme';
-import { KpiId } from '@/lib/types';
+import { KpiId, MonthlyPoint } from '@/lib/types';
+
+const KPIS: { id: KpiId; label: string }[] = [
+  { id: 'OPS01', label: 'Total Subscribers' },
+  { id: 'OPS04', label: 'ARPU' },
+  { id: 'EXT01', label: 'Inflation' },
+  { id: 'EXT03', label: 'Cedi/USD' },
+  { id: 'FIN01', label: 'Service Revenue' },
+  { id: 'SEG03', label: 'MoMo Revenue' },
+];
 
 export default function MonthlyPage() {
   const [selectedKpi, setSelectedKpi] = useState<KpiId>('OPS01');
+  const [data, setData] = useState<MonthlyPoint[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const kpis: {id: KpiId; label: string}[] = [
-    { id: 'OPS01', label: 'Total Subscribers' },
-    { id: 'OPS04', label: 'ARPU' },
-    { id: 'EXT01', label: 'Inflation' },
-    { id: 'EXT03', label: 'Cedi/USD' },
-  ];
+  useEffect(() => {
+    fetchMonthly(selectedKpi, 36)
+      .then(setData)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [selectedKpi]);
 
-  const data = MOCK_MONTHLY[selectedKpi] || [];
-  
   const chartData = {
     labels: data.map(d => d.month),
     datasets: [
       {
-        label: selectedKpi,
+        label: KPIS.find(k => k.id === selectedKpi)?.label ?? selectedKpi,
         data: data.map(d => d.value),
         borderColor: ThemeTokens.colors.mtnYellow,
-        backgroundColor: ThemeTokens.colors.mtnYellow + '1A', // 10% opacity
+        backgroundColor: ThemeTokens.colors.mtnYellow + '1A',
         borderWidth: 2,
         fill: true,
         tension: 0.4,
-      }
-    ]
+      },
+    ],
   };
 
   return (
@@ -41,24 +51,29 @@ export default function MonthlyPage() {
           <h1 className="text-3xl font-hero font-bold text-on-surface">Monthly Trends</h1>
           <p className="text-on-surface-variant mt-1">High-frequency trailing 36-month tracking</p>
         </div>
-        
-        <select 
+
+        <select
           value={selectedKpi}
-          onChange={(e) => setSelectedKpi(e.target.value as KpiId)}
+          onChange={e => {
+            setSelectedKpi(e.target.value as KpiId);
+            setLoading(true);
+          }}
           className="bg-surface-container border border-outline/30 rounded-md py-2 px-4 text-sm text-on-surface focus:outline-none focus:border-mtn-yellow font-sans"
         >
-          {kpis.map(k => (
-            <option key={k.id} value={k.id}>{k.id} - {k.label}</option>
+          {KPIS.map(k => (
+            <option key={k.id} value={k.id}>{k.id} — {k.label}</option>
           ))}
         </select>
       </div>
 
       <Card className="h-[500px]">
-        {data.length > 0 ? (
+        {loading ? (
+          <SkeletonBlock className="h-full w-full" />
+        ) : data.length > 0 ? (
           <LineChart data={chartData} height="100%" />
         ) : (
           <div className="h-full flex items-center justify-center text-on-surface-variant font-mono text-sm">
-            No monthly data available for {selectedKpi}
+            No data for {selectedKpi}
           </div>
         )}
       </Card>
