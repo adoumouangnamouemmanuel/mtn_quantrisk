@@ -5,6 +5,21 @@ import { Sparkline } from './Sparkline';
 import { Kpi } from '@/lib/types';
 import { formatNumber, formatPct } from '@/lib/format';
 import { ThemeTokens } from '@/lib/theme';
+import { CheckCircle2, AlertTriangle, XCircle, Eye, DollarSign, PieChart, Cpu, Globe } from 'lucide-react';
+
+const STATUS_ICON = {
+  Safe:     <CheckCircle2 className="w-3 h-3" />,
+  Watch:    <Eye          className="w-3 h-3" />,
+  Warning:  <AlertTriangle className="w-3 h-3" />,
+  Critical: <XCircle     className="w-3 h-3" />,
+};
+
+const CATEGORY_ICON: Record<string, React.ReactNode> = {
+  Financial:   <DollarSign className="w-3 h-3" />,
+  Segment:     <PieChart   className="w-3 h-3" />,
+  Operational: <Cpu        className="w-3 h-3" />,
+  External:    <Globe      className="w-3 h-3" />,
+};
 
 interface KpiTileProps {
   kpi: Kpi;
@@ -37,11 +52,21 @@ export function KpiTile({ kpi, onClick }: KpiTileProps) {
       onClick={onClick}
     >
       <div className="flex justify-between items-start mb-4">
-        <div>
-          <div className="text-on-surface-variant font-mono text-xs mb-1">{kpi.id} | {kpi.category}</div>
-          <div className="text-on-surface font-sans font-medium text-sm">{kpi.name}</div>
+        <div className="flex items-start gap-2">
+          <div className="mt-0.5 text-on-surface-variant/60">
+            {CATEGORY_ICON[kpi.category]}
+          </div>
+          <div>
+            <div className="text-on-surface-variant font-mono text-xs mb-1">{kpi.id} · {kpi.category}</div>
+            <div className="text-on-surface font-sans font-medium text-sm leading-tight">{kpi.name}</div>
+          </div>
         </div>
-        <Chip variant={chipVariant} size="sm">{kpi.currentStatus}</Chip>
+        <Chip variant={chipVariant} size="sm">
+          <span className="flex items-center gap-1">
+            {STATUS_ICON[kpi.currentStatus]}
+            {kpi.currentStatus}
+          </span>
+        </Chip>
       </div>
 
       <div className="flex items-end justify-between mt-6">

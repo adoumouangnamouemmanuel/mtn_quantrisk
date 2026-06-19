@@ -8,7 +8,7 @@ import { Chip } from '@/components/ui/Chip';
 import { Button } from '@/components/ui/Button';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import { BoardBriefSlideOver } from '@/components/scenarios/BoardBriefSlideOver';
-import { FileText, Download, Plus } from 'lucide-react';
+import { FileText, Download, Plus, Newspaper } from 'lucide-react';
 
 export default function BriefsPage() {
   const [briefs, setBriefs] = useState<BoardBrief[]>([]);
@@ -39,9 +39,14 @@ export default function BriefsPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-hero font-bold text-on-surface">Board Briefs</h1>
-          <p className="text-on-surface-variant mt-1">AI-generated narrative reports for executives</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-400/10 border border-blue-400/20 flex items-center justify-center shrink-0">
+            <Newspaper className="w-5 h-5 text-blue-400" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-hero font-bold text-on-surface">Board Briefs</h1>
+            <p className="text-on-surface-variant mt-0.5">AI-generated narrative reports for executives</p>
+          </div>
         </div>
         <Button variant="primary" onClick={handleGenerateNew} disabled={generating}>
           <Plus className="w-4 h-4 mr-2" />

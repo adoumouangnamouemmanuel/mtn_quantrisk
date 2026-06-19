@@ -11,7 +11,7 @@ import { VsBadge } from '@/components/compare/VsBadge';
 import { ScenarioVsBar } from '@/components/compare/ScenarioVsBar';
 import { ComparisonTable } from '@/components/compare/ComparisonTable';
 import { ComparativeBriefPanel } from '@/components/compare/ComparativeBriefPanel';
-import { Printer } from 'lucide-react';
+import { Printer, GitCompare } from 'lucide-react';
 import { PillarBadge } from '@/components/ui/PillarBadge';
 import { SeverityDots } from '@/components/ui/SeverityDots';
 
@@ -110,7 +110,18 @@ export default function ComparePage() {
 
   return (
     <div className="flex flex-col space-y-8 pb-8 animate-in fade-in duration-500">
-      
+
+      {/* Page header */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-green-400/10 border border-green-400/20 flex items-center justify-center shrink-0">
+          <GitCompare className="w-5 h-5 text-green-400" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-hero font-bold text-on-surface">Scenario Compare</h1>
+          <p className="text-on-surface-variant mt-0.5">Side-by-side KPI impact across two stress scenarios</p>
+        </div>
+      </div>
+
       {/* Top Section */}
       <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 relative z-30">
         <ScenarioDropdown 

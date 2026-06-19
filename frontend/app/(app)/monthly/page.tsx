@@ -7,6 +7,7 @@ import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import { fetchMonthly } from '@/lib/api';
 import { ThemeTokens } from '@/lib/theme';
 import { KpiId, MonthlyPoint } from '@/lib/types';
+import { Calendar } from 'lucide-react';
 
 const KPIS: { id: KpiId; label: string }[] = [
   { id: 'OPS01', label: 'Total Subscribers' },
@@ -48,9 +49,14 @@ export default function MonthlyPage() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl font-hero font-bold text-on-surface">Monthly Trends</h1>
-          <p className="text-on-surface-variant mt-1">High-frequency trailing 36-month tracking</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-400/10 border border-purple-400/20 flex items-center justify-center shrink-0">
+            <Calendar className="w-5 h-5 text-purple-400" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-hero font-bold text-on-surface">Monthly Trends</h1>
+            <p className="text-on-surface-variant mt-0.5">High-frequency trailing 36-month tracking</p>
+          </div>
         </div>
 
         <select
