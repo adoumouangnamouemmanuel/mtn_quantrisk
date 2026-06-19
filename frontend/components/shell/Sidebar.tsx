@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, List, Calendar, CalendarDays, LineChart, 
-  FileText, FlaskConical, GitCompare, ActivitySquare, Settings
+  FileText, FlaskConical, GitCompare, ActivitySquare, Settings, HelpCircle
 } from 'lucide-react';
 
 interface NavItem {
@@ -96,7 +96,18 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-outline/20">
+      <div className="p-4 border-t border-outline/20 space-y-1">
+        <Link 
+          href="/help"
+          className={`flex items-center px-4 py-2 text-sm font-sans font-medium rounded-md transition-colors ${
+            pathname === '/help' 
+              ? 'text-mtn-yellow bg-mtn-yellow/10' 
+              : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+          }`}
+        >
+          <HelpCircle className="w-4 h-4 mr-3" />
+          Help & Support
+        </Link>
         <Link 
           href="/settings"
           className={`flex items-center px-4 py-2 text-sm font-sans font-medium rounded-md transition-colors ${
