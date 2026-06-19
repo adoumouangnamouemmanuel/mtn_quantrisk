@@ -151,3 +151,31 @@ class PipelineHealth(BaseModel):
     status: Literal['Healthy', 'Degraded', 'Failed']
     lastBeatAt: str
     sources: List[PipelineHealthSource]
+
+
+class FeedbackInput(BaseModel):
+    page: str
+    feedbackType: Literal['wrong_prediction', 'false_alert', 'inaccurate', 'other']
+    rating: Literal['positive', 'negative']
+    message: str
+    context: Optional[dict] = None
+
+
+class MonteCarloRequest(BaseModel):
+    scenarioId: str
+    nSimulations: int = 1000
+    severityMultiplier: float = 1.0
+    uncertaintyPct: float = 0.20
+
+
+class PdfKpiCandidate(BaseModel):
+    kpiId: str
+    kpiName: str
+    value: float
+    unit: str
+    confidence: Literal['high', 'medium', 'low'] = 'medium'
+
+
+class ApplyPdfCandidatesInput(BaseModel):
+    filename: str
+    candidates: List[PdfKpiCandidate]

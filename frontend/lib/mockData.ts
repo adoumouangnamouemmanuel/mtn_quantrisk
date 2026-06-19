@@ -3923,131 +3923,22 @@ export const MOCK_FORECAST: ForecastPoint[] = [
 
 export const MOCK_MONTE_CARLO: MonteCarloResult[] = [
   {
-    "kpiId": "FIN01",
-    "iterations": 10000,
-    "var5": 19520.0,
-    "var50": 24400,
-    "var95": 29280.0,
-    "cvar5": 18300.0,
-    "generatedAt": "2026-06-10T09:09:59.407479"
+    scenarioId: 'S01',
+    nSimulations: 1000,
+    uncertaintyPct: 0.20,
+    results: [
+      {
+        kpiId: 'FIN01', kpiName: 'Service Revenue', unit: 'GHSm',
+        baseValue: 24400, p05: 19250, p25: 21900, p50: 24400, p75: 26900, p95: 29550,
+        mean: 24400, std: 3150, worstCase: 17500, bestCase: 32000,
+      },
+      {
+        kpiId: 'FIN02', kpiName: 'EBITDA', unit: 'GHSm',
+        baseValue: 14664, p05: 11550, p25: 13100, p50: 14664, p75: 16200, p95: 17800,
+        mean: 14664, std: 1900, worstCase: 10500, bestCase: 19200,
+      },
+    ],
   },
-  {
-    "kpiId": "FIN02",
-    "iterations": 10000,
-    "var5": 11731.2,
-    "var50": 14664,
-    "var95": 17596.8,
-    "cvar5": 10998.0,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "FIN03",
-    "iterations": 10000,
-    "var5": 48.080000000000005,
-    "var50": 60.1,
-    "var95": 72.12,
-    "cvar5": 45.075,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "FIN04",
-    "iterations": 10000,
-    "var5": 6480.0,
-    "var50": 8100,
-    "var95": 9720.0,
-    "cvar5": 6075.0,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "FIN05",
-    "iterations": 10000,
-    "var5": 26.560000000000002,
-    "var50": 33.2,
-    "var95": 39.84,
-    "cvar5": 24.900000000000002,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "FIN06",
-    "iterations": 10000,
-    "var5": 28.960000000000004,
-    "var50": 36.2,
-    "var95": 43.440000000000005,
-    "cvar5": 27.150000000000002,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "SEG01",
-    "iterations": 10000,
-    "var5": 6832.0,
-    "var50": 8540,
-    "var95": 10248.0,
-    "cvar5": 6405.0,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "SEG03",
-    "iterations": 10000,
-    "var5": 4800.0,
-    "var50": 6000,
-    "var95": 7200.0,
-    "cvar5": 4500.0,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "OPS01",
-    "iterations": 10000,
-    "var5": 24.16,
-    "var50": 30.2,
-    "var95": 36.239999999999995,
-    "cvar5": 22.65,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "OPS04",
-    "iterations": 10000,
-    "var5": 53.52000000000001,
-    "var50": 66.9,
-    "var95": 80.28,
-    "cvar5": 50.175000000000004,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "OPS07",
-    "iterations": 10000,
-    "var5": 79.60000000000001,
-    "var50": 99.5,
-    "var95": 119.39999999999999,
-    "cvar5": 74.625,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "EXT01",
-    "iterations": 10000,
-    "var5": 4.32,
-    "var50": 5.4,
-    "var95": 6.48,
-    "cvar5": 4.050000000000001,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "EXT02",
-    "iterations": 10000,
-    "var5": 22.400000000000002,
-    "var50": 28.0,
-    "var95": 33.6,
-    "cvar5": 21.0,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  },
-  {
-    "kpiId": "EXT03",
-    "iterations": 10000,
-    "var5": 9.28,
-    "var50": 11.6,
-    "var95": 13.92,
-    "cvar5": 8.7,
-    "generatedAt": "2026-06-10T09:09:59.407479"
-  }
 ];
 
 export const MOCK_BRIEFS: BoardBrief[] = [

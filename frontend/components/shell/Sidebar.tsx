@@ -3,9 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, List, Calendar, CalendarDays, LineChart, 
-  FileText, FlaskConical, GitCompare, ActivitySquare, Settings, HelpCircle
+import {
+  LayoutDashboard, List, Calendar, CalendarDays, LineChart,
+  FileText, FlaskConical, GitCompare, ActivitySquare, Settings, HelpCircle, Dices
 } from 'lucide-react';
 
 interface NavItem {
@@ -35,6 +35,7 @@ const NAV_ITEMS: NavGroup[] = [
     { href: '/scenarios', label: 'Stress Tester', icon: FlaskConical },
     { href: '/compare', label: 'Scenario Compare', icon: GitCompare },
     { href: '/reverse', label: 'Reverse Stress', icon: ActivitySquare },
+    { href: '/monte-carlo', label: 'Monte Carlo', icon: Dices },
   ]}
 ];
 

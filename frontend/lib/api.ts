@@ -3,10 +3,8 @@ import type {
   ForecastPoint, MonteCarloResult, BoardBrief, PipelineHealth,
   QuarterlyPoint, MonthlyPoint,
   KpiId, MacroOverlays, ScenarioFormData,
+  FeedbackPayload, BaseCaseLogEntry, UploadResult, PdfKpiCandidate,
 } from './types';
-import {
-  MOCK_MONTE_CARLO,
-} from './mockData';
 
 const USE_MOCK_API = false;
 const API_BASE = 'http://127.0.0.1:8001';
@@ -80,9 +78,9 @@ export async function fetchForecast(kpiId: KpiId, horizon: 7 | 30 | 90): Promise
   return apiFetch<ForecastPoint[]>(`/api/forecast/${kpiId}?horizon=${horizon}`);
 }
 
-export async function fetchMonteCarlo(_kpiId: KpiId, _iterations: number): Promise<MonteCarloResult> {
-  // No Monte Carlo ML model yet — always use mock
-  return MOCK_MONTE_CARLO[0]!;
+// fetchMonteCarlo kept for backwards compat — prefer runMonteCarlo(scenarioId)
+export async function fetchMonteCarlo(_kpiId: KpiId, _iterations: number): Promise<MonteCarloResult | null> {
+  return null;
 }
 
 export async function generateBoardBrief(scenarioIds: string[]): Promise<BoardBrief> {
@@ -136,4 +134,65 @@ export async function fetchPipelineHealth(): Promise<PipelineHealth> {
     return MOCK_PIPELINE_HEALTH;
   }
   return apiFetch<PipelineHealth>('/api/health');
+}
+
+// ── Upload ─────────────────────────────────────────────────────────────────────
+
+export async function uploadCsv(file: File): Promise<UploadResult> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_BASE}/api/upload/csv`, { method: 'POST', body: form });
+  if (!res.ok) { const t = await res.text(); throw new Error(`Upload failed: ${t.slice(0, 200)}`); }
+  return res.json();
+}
+
+export async function uploadPdf(file: File): Promise<UploadResult> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_BASE}/api/upload/pdf`, { method: 'POST', body: form });
+  if (!res.ok) { const t = await res.text(); throw new Error(`Upload failed: ${t.slice(0, 200)}`); }
+  return res.json();
+}
+
+export async function applyPdfCandidates(filename: string, candidates: PdfKpiCandidate[]): Promise<UploadResult> {
+  return apiFetch<UploadResult>('/api/upload/pdf/apply', {
+    method: 'POST',
+    body: JSON.stringify({ filename, candidates }),
+  });
+}
+
+// ── Monte Carlo ────────────────────────────────────────────────────────────────
+
+export async function runMonteCarlo(
+  scenarioId: string,
+  nSimulations = 1000,
+  severityMultiplier = 1.0,
+  uncertaintyPct = 0.20,
+): Promise<MonteCarloResult> {
+  return apiFetch<MonteCarloResult>('/api/monte-carlo', {
+    method: 'POST',
+    body: JSON.stringify({ scenarioId, nSimulations, severityMultiplier, uncertaintyPct }),
+  });
+}
+
+// ── Retrain ────────────────────────────────────────────────────────────────────
+
+export async function retrainModels(): Promise<{ success: boolean; stdout: string; stderr: string }> {
+  return apiFetch('/api/retrain', { method: 'POST', body: '{}' });
+}
+
+// ── Feedback ───────────────────────────────────────────────────────────────────
+
+export async function submitFeedback(payload: FeedbackPayload): Promise<void> {
+  await apiFetch('/api/feedback', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function fetchFeedback(): Promise<FeedbackPayload[]> {
+  return apiFetch('/api/feedback');
+}
+
+// ── Logs ───────────────────────────────────────────────────────────────────────
+
+export async function fetchBaseCaseLogs(): Promise<BaseCaseLogEntry[]> {
+  return apiFetch('/api/logs/base-case');
 }
