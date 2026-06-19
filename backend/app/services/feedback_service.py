@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-FEEDBACK_FILE = Path(__file__).resolve().parents[4] / "data/logs/feedback.json"
+FEEDBACK_FILE = Path(__file__).resolve().parents[3] / "data/logs/feedback.json"
 
 
 def _load() -> list:

@@ -341,7 +341,7 @@ def apply_pdf(body: ApplyPdfCandidatesInput):
 @router.post("/monte-carlo")
 def run_mc(body: MonteCarloRequest):
     import sys
-    sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
     from models.monte_carlo import run_monte_carlo
     try:
         return run_monte_carlo(

@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-LOG_FILE = Path(__file__).resolve().parents[4] / "data/logs/base_case_changes.json"
+LOG_FILE = Path(__file__).resolve().parents[3] / "data/logs/base_case_changes.json"
 
 
 def _load() -> list:

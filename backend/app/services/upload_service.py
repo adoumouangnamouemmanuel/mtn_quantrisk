@@ -14,7 +14,7 @@ import pandas as pd
 from .data_loader import BASE_CASE_CSV, clear_scenario_cache, load_base_case
 from .log_service import log_base_case_change
 
-UPLOAD_DIR = Path(__file__).resolve().parents[4] / "data/uploads"
+UPLOAD_DIR = Path(__file__).resolve().parents[3] / "data/uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 KPI_NAMES = {
@@ -170,7 +170,7 @@ def process_pdf_upload(file_bytes: bytes, filename: str) -> dict:
     kpi_candidates = _llm_extract_kpis(text, filename)
 
     # Save extracted JSON
-    json_path = Path(__file__).resolve().parents[4] / "data/extracted" / (filename + ".json")
+    json_path = Path(__file__).resolve().parents[3] / "data/extracted" / (filename + ".json")
     json_path.parent.mkdir(parents=True, exist_ok=True)
     json_path.write_text(json.dumps(kpi_candidates, indent=2), encoding="utf-8")
 
@@ -218,7 +218,7 @@ def apply_pdf_candidates(candidates: list[dict], source: str) -> dict:
 def retrain_xgboost() -> dict:
     """Trigger XGBoost model retraining. Returns metrics."""
     import subprocess, sys
-    proj_root = Path(__file__).resolve().parents[4]
+    proj_root = Path(__file__).resolve().parents[3]
     script = proj_root / "models/train_impact_model.py"
     if not script.exists():
         raise FileNotFoundError("train_impact_model.py not found")
