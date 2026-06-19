@@ -28,7 +28,6 @@ export default function QuarterlyPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
     fetchQuarterly(selectedKpi)
       .then(setData)
       .catch(console.error)
@@ -61,7 +60,10 @@ export default function QuarterlyPage() {
 
         <select
           value={selectedKpi}
-          onChange={e => setSelectedKpi(e.target.value as KpiId)}
+          onChange={e => {
+            setSelectedKpi(e.target.value as KpiId);
+            setLoading(true);
+          }}
           className="bg-surface-container border border-outline/30 rounded-md py-2 px-4 text-sm text-on-surface focus:outline-none focus:border-mtn-yellow font-sans"
         >
           {KPIS.map(k => (

@@ -79,7 +79,7 @@ export async function fetchForecast(kpiId: KpiId, horizon: 7 | 30 | 90): Promise
 }
 
 // fetchMonteCarlo kept for backwards compat — prefer runMonteCarlo(scenarioId)
-export async function fetchMonteCarlo(_kpiId: KpiId, _iterations: number): Promise<MonteCarloResult | null> {
+export async function fetchMonteCarlo(): Promise<MonteCarloResult | null> {
   return null;
 }
 

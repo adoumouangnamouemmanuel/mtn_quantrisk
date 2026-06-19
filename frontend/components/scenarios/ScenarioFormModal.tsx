@@ -57,21 +57,24 @@ export function ScenarioFormModal({ open, mode, initial, onClose, onSaved }: Pro
 
   useEffect(() => {
     if (!open) return;
-    if (mode === 'edit' && initial) {
-      setForm({
-        name: initial.name,
-        pillar: initial.pillar,
-        type: initial.type,
-        severity: initial.severity,
-        plausibility: initial.plausibility,
-        description: initial.description,
-        kpiImpacts: initial.kpiImpacts.map(i => ({ kpiId: i.kpiId, type: i.type, value: i.value })),
-        calibrationAnchor: initial.calibrationAnchor ?? '',
-      });
-    } else {
-      setForm(BLANK);
-    }
-    setError(null);
+    const timer = setTimeout(() => {
+      if (mode === 'edit' && initial) {
+        setForm({
+          name: initial.name,
+          pillar: initial.pillar,
+          type: initial.type,
+          severity: initial.severity,
+          plausibility: initial.plausibility,
+          description: initial.description,
+          kpiImpacts: initial.kpiImpacts.map(i => ({ kpiId: i.kpiId, type: i.type, value: i.value })),
+          calibrationAnchor: initial.calibrationAnchor ?? '',
+        });
+      } else {
+        setForm(BLANK);
+      }
+      setError(null);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [open, mode, initial]);
 
   const handleSave = async () => {

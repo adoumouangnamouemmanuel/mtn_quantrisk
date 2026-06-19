@@ -49,7 +49,11 @@ export default function ScenariosPage() {
       .finally(() => setLoadingScenarios(false));
   }, []);
 
-  useEffect(() => { refreshScenarios(); }, [refreshScenarios]);
+  useEffect(() => {
+    fetchScenarios()
+      .then(setScenarios)
+      .finally(() => setLoadingScenarios(false));
+  }, []);
 
   // Hydrate active scenario from URL param
   useEffect(() => {
@@ -84,7 +88,10 @@ export default function ScenariosPage() {
   // Auto-run when a scenario is first selected with no output
   useEffect(() => {
     if (state.activeScenario && !state.scenarioOutput && !isRunning) {
-      handleRun();
+      const timer = setTimeout(() => {
+        handleRun();
+      }, 0);
+      return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.activeScenario]);

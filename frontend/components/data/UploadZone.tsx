@@ -144,7 +144,11 @@ export function UploadZone({ onSuccess }: Props) {
                   checked={selectedCandidates.has(i)}
                   onChange={e => {
                     const next = new Set(selectedCandidates);
-                    e.target.checked ? next.add(i) : next.delete(i);
+                    if (e.target.checked) {
+                      next.add(i);
+                    } else {
+                      next.delete(i);
+                    }
                     setSelectedCandidates(next);
                   }}
                   className="accent-[#FFD100] w-3.5 h-3.5"
