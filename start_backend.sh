@@ -3,10 +3,15 @@
 # Run from: mtn_quantrisk/ directory
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PYTHON="$SCRIPT_DIR/../.conda/python.exe"
 
+# Try local conda environment first, fallback to system python
+PYTHON="$SCRIPT_DIR/../.conda/python.exe"
 if [ ! -f "$PYTHON" ]; then
-  echo "ERROR: Conda Python not found at $PYTHON"
+  PYTHON="python"
+fi
+
+if ! command -v "$PYTHON" &> /dev/null; then
+  echo "ERROR: Python executable not found on PATH or at local .conda env"
   exit 1
 fi
 
