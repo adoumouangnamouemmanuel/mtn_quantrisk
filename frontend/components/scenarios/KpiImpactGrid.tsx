@@ -110,7 +110,7 @@ function ImpactTile({
 
 export function KpiImpactGrid({ results, severityScore }: KpiImpactGridProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {ANCHOR_KPIS.map(id => (
         <ImpactTile key={id} kpiId={id} result={results.find(r => r.kpiId === id)} />
       ))}

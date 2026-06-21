@@ -14,15 +14,14 @@ import { MacroOverlaysPanel } from '@/components/scenarios/MacroOverlays';
 import { KpiImpactGrid } from '@/components/scenarios/KpiImpactGrid';
 import { WaterfallChart } from '@/components/scenarios/WaterfallChart';
 import { ShapAttributionCard } from '@/components/scenarios/ShapAttributionCard';
-import { ScenarioMetadataCard } from '@/components/scenarios/ScenarioMetadataCard';
-import { CalibrationAnchorCard } from '@/components/scenarios/CalibrationAnchorCard';
 import { BoardBriefSlideOver } from '@/components/scenarios/BoardBriefSlideOver';
 import { PillarBadge } from '@/components/ui/PillarBadge';
 import { Chip } from '@/components/ui/Chip';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import {
-  Activity, Play, Download, GitCompare, ExternalLink, CheckCircle,
-  ShieldAlert, AlertTriangle, TrendingDown, CheckCircle2, Info, FlaskConical,
+  Activity, Play, Download, GitCompare, CheckCircle, FlaskConical,
+  ShieldAlert, AlertTriangle, TrendingDown, CheckCircle2, Info,
+  Maximize2, Minimize2, Pencil,
 } from 'lucide-react';
 
 // ── Risk config ──────────────────────────────────────────────────────────────
@@ -51,7 +50,7 @@ function ScenarioResultsBanner({
   };
 
   const sorted = [...output.results].sort((a, b) => a.deltaPct - b.deltaPct);
-  const worst = sorted[0]!;
+  const worst  = sorted[0]!;
   const worstKpi = MOCK_KPIS.find(k => k.id === worst.kpiId);
 
   const avgDelta = output.results.reduce((s, r) => s + r.deltaPct, 0) / output.results.length;
@@ -67,7 +66,7 @@ function ScenarioResultsBanner({
 
   return (
     <div className="space-y-4">
-      {/* Narrative headline */}
+      {/* Narrative */}
       <div className="rounded-xl border border-outline/20 bg-surface-container-low p-5">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg bg-mtn-yellow/10 shrink-0">
@@ -91,7 +90,7 @@ function ScenarioResultsBanner({
         </div>
       </div>
 
-      {/* Risk count chips */}
+      {/* Risk chips */}
       <div className="grid grid-cols-4 gap-3">
         {(['Critical', 'Warning', 'Watch', 'Safe'] as const).map(level => {
           const cfg = STATUS_CONFIG[level];
@@ -133,43 +132,46 @@ function ScenarioResultsBanner({
   );
 }
 
+// ── Divider helper ───────────────────────────────────────────────────────────
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant whitespace-nowrap">
+        {label}
+      </p>
+      <div className="flex-1 h-px bg-outline/15" />
+    </div>
+  );
+}
+
+// ── Main Page ────────────────────────────────────────────────────────────────
+
 export default function ScenariosPage() {
   const searchParams = useSearchParams();
   const urlId = searchParams.get('id');
   const { state, dispatch } = useAppState();
   const router = useRouter();
 
-  // Lifted scenarios state — ScenarioPicker is now a pure display component
-  const [scenarios, setScenarios] = useState<Scenario[]>([]);
-  const [loadingScenarios, setLoadingScenarios] = useState(true);
+  const [scenarios,        setScenarios]        = useState<Scenario[]>([]);
+  const [loadingScenarios, setLoadingScenarios]  = useState(true);
+  const [severity,         setSeverity]          = useState(1.0);
+  const [overlays,         setOverlays]          = useState<MacroOverlays>({ cediShockPct: 0, inflationOverlayPp: 0, policyRateOverlayPp: 0 });
+  const [isRunning,        setIsRunning]         = useState(false);
+  const [runSuccess,       setRunSuccess]        = useState(false);
+  const [runError,         setRunError]          = useState<string | null>(null);
+  const [fullView,         setFullView]          = useState(false);
+  const [formModal,        setFormModal]         = useState<{ open: boolean; mode: 'create' | 'edit'; initial?: Scenario }>({ open: false, mode: 'create' });
 
-  // Simulation state
-  const [severity, setSeverity] = useState(1.0);
-  const [overlays, setOverlays] = useState<MacroOverlays>({ cediShockPct: 0, inflationOverlayPp: 0, policyRateOverlayPp: 0 });
-  const [isRunning, setIsRunning] = useState(false);
-  const [runSuccess, setRunSuccess] = useState(false);
-  const [runError, setRunError] = useState<string | null>(null);
-
-  // CRUD modal state
-  const [formModal, setFormModal] = useState<{ open: boolean; mode: 'create' | 'edit'; initial?: Scenario }>({
-    open: false, mode: 'create',
-  });
-
-  // Fetch scenario library
   const refreshScenarios = useCallback(() => {
     setLoadingScenarios(true);
-    fetchScenarios()
-      .then(setScenarios)
-      .finally(() => setLoadingScenarios(false));
+    fetchScenarios().then(setScenarios).finally(() => setLoadingScenarios(false));
   }, []);
 
   useEffect(() => {
-    fetchScenarios()
-      .then(setScenarios)
-      .finally(() => setLoadingScenarios(false));
+    fetchScenarios().then(setScenarios).finally(() => setLoadingScenarios(false));
   }, []);
 
-  // Hydrate active scenario from URL param
   useEffect(() => {
     if (urlId && (!state.activeScenario || state.activeScenario.id !== urlId)) {
       fetchScenarioById(urlId).then(scen => {
@@ -202,18 +204,15 @@ export default function ScenariosPage() {
       setTimeout(() => setRunSuccess(false), 2500);
     } catch (e) {
       console.error(e);
-      setRunError("Simulation failed. Please check network logs.");
+      setRunError('Simulation failed. Please check network logs.');
     } finally {
       setIsRunning(false);
     }
   };
 
-  // Auto-run when a scenario is first selected with no output
   useEffect(() => {
     if (state.activeScenario && !state.scenarioOutput && !isRunning) {
-      const timer = setTimeout(() => {
-        handleRun();
-      }, 0);
+      const timer = setTimeout(() => { handleRun(); }, 0);
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -221,7 +220,6 @@ export default function ScenariosPage() {
 
   const handleDelete = async (id: string) => {
     await deleteScenario(id);
-    // If the deleted scenario was active, deselect it
     if (state.activeScenario?.id === id) {
       dispatch({ type: 'SET_ACTIVE_SCENARIO', payload: null });
       dispatch({ type: 'SET_SCENARIO_OUTPUT', payload: null });
@@ -231,7 +229,6 @@ export default function ScenariosPage() {
 
   const handleSaved = (saved: Scenario) => {
     refreshScenarios();
-    // Auto-select the newly created/edited scenario
     dispatch({ type: 'SET_ACTIVE_SCENARIO', payload: saved });
     dispatch({ type: 'SET_SCENARIO_OUTPUT', payload: null });
   };
@@ -241,33 +238,38 @@ export default function ScenariosPage() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 animate-in fade-in duration-500 items-start">
+      <div className={`grid gap-5 items-start animate-in fade-in duration-500 ${
+        fullView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-12'
+      }`}>
 
-        {/* ── Left: Scenario Library ───────────────────────────── */}
-        <div className="md:col-span-3 bg-[#1A1A1A] rounded-xl border border-outline/20 p-4 sticky top-0 max-h-[calc(100vh-6rem)] overflow-y-auto hidden md:flex md:flex-col custom-scrollbar">
-          {loadingScenarios ? (
-            <div className="space-y-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonBlock key={i} className="h-10 rounded-lg" />
-              ))}
-            </div>
-          ) : (
-            <ScenarioPicker
-              scenarios={scenarios}
-              activeId={active?.id}
-              onSelect={handleSelect}
-              onEdit={scen => setFormModal({ open: true, mode: 'edit', initial: scen })}
-              onDelete={handleDelete}
-              onCreateNew={() => setFormModal({ open: true, mode: 'create' })}
-            />
-          )}
-        </div>
+        {/* ── Left: Scenario Library ─────────────────────────────────────── */}
+        {!fullView && (
+          <div className="md:col-span-3 bg-[#1A1A1A] rounded-xl border border-outline/20 p-4 sticky top-0 max-h-[calc(100vh-6rem)] overflow-y-auto hidden md:flex md:flex-col custom-scrollbar">
+            {loadingScenarios ? (
+              <div className="space-y-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonBlock key={i} className="h-10 rounded-lg" />
+                ))}
+              </div>
+            ) : (
+              <ScenarioPicker
+                scenarios={scenarios}
+                activeId={active?.id}
+                onSelect={handleSelect}
+                onEdit={scen => setFormModal({ open: true, mode: 'edit', initial: scen })}
+                onDelete={handleDelete}
+                onCreateNew={() => setFormModal({ open: true, mode: 'create' })}
+              />
+            )}
+          </div>
+        )}
 
-        {/* ── Center: Simulation Workspace ─────────────────────── */}
-        <div className="md:col-span-6 space-y-5 pb-8">
+        {/* ── Main Workspace ─────────────────────────────────────────────── */}
+        <div className={`space-y-5 pb-8 ${fullView ? 'max-w-7xl mx-auto w-full px-2' : 'md:col-span-9'}`}>
+
           {!active ? (
-            /* Empty state */
-            <div className="flex flex-col items-center justify-center py-24 text-center">
+            /* ── Empty state ── */
+            <div className="flex flex-col items-center justify-center py-32 text-center">
               <div className="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center mb-5 border border-outline/20">
                 <Activity className="w-7 h-7 text-on-surface-variant" />
               </div>
@@ -287,10 +289,11 @@ export default function ScenariosPage() {
             </div>
           ) : (
             <>
-              {/* Scenario banner */}
+              {/* ── Scenario Banner ── */}
               <div className="relative rounded-xl border border-outline/20 bg-[#1A1A1A] p-5 overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-mtn-yellow rounded-l-xl" />
                 <div className="ml-3">
+                  {/* Badges + timestamp */}
                   <div className="flex items-center gap-2.5 mb-3 flex-wrap">
                     <PillarBadge pillar={active.pillar} />
                     <Chip size="sm">{active.type}</Chip>
@@ -300,6 +303,7 @@ export default function ScenariosPage() {
                       </span>
                     )}
                   </div>
+
                   <h1 className="text-2xl font-hero font-bold text-on-surface leading-snug">
                     {active.name}
                   </h1>
@@ -308,101 +312,121 @@ export default function ScenariosPage() {
                       {active.description}
                     </p>
                   )}
+
+                  {/* Action toolbar */}
+                  <div className="mt-4 pt-3 border-t border-outline/10 flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => setFullView(f => !f)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-mtn-yellow/40 text-mtn-yellow hover:bg-mtn-yellow/10 transition-colors"
+                    >
+                      {fullView
+                        ? <><Minimize2 className="w-3 h-3" /> Exit Full View</>
+                        : <><Maximize2 className="w-3 h-3" /> Full View</>}
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const { generateBoardBrief } = await import('@/lib/api');
+                        const brief = await generateBoardBrief([active.id]);
+                        dispatch({ type: 'OPEN_BRIEF_SLIDEOVER', payload: { brief } });
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-outline/20 text-on-surface-variant hover:text-on-surface hover:border-outline/40 transition-colors"
+                    >
+                      Board Brief
+                    </button>
+                    <button
+                      onClick={() => window.print()}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-outline/20 text-on-surface-variant hover:text-on-surface hover:border-outline/40 transition-colors"
+                    >
+                      <Download className="w-3 h-3" /> Export PDF
+                    </button>
+                    <button
+                      onClick={() => {
+                        dispatch({ type: 'SET_COMPARISON_A', payload: active });
+                        router.push('/compare');
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-outline/20 text-on-surface-variant hover:text-on-surface hover:border-outline/40 transition-colors"
+                    >
+                      <GitCompare className="w-3 h-3" /> Compare
+                    </button>
+                    <button
+                      onClick={() => setFormModal({ open: true, mode: 'edit', initial: active })}
+                      className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-outline/20 text-on-surface-variant hover:text-on-surface hover:border-outline/40 transition-colors"
+                    >
+                      <Pencil className="w-3 h-3" /> Edit Scenario
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Simulation parameters */}
-              <div className="rounded-xl border border-outline/20 bg-[#1A1A1A] p-5">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-mtn-yellow mb-4">
-                  Simulation Parameters
-                </p>
-                <div className="space-y-4">
-                  <SeveritySlider value={severity} onChange={setSeverity} />
-                  <MacroOverlaysPanel value={overlays} onChange={setOverlays} />
-                </div>
+              {/* ── Parameters side-by-side ── */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <SeveritySlider value={severity} onChange={setSeverity} />
+                <MacroOverlaysPanel value={overlays} onChange={setOverlays} />
               </div>
 
-              {/* Execute button */}
+              {/* ── Execute button ── */}
               <button
                 onClick={handleRun}
                 disabled={isRunning}
                 className={`w-full py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed ${
-                  runSuccess 
-                    ? 'bg-green-500 text-black shadow-[0_0_12px_rgba(34,197,94,0.4)]' 
-                    : runError 
-                      ? 'bg-error text-white font-bold' 
+                  runSuccess
+                    ? 'bg-green-500 text-black shadow-[0_0_12px_rgba(34,197,94,0.4)]'
+                    : runError
+                      ? 'bg-error text-white'
                       : 'bg-mtn-yellow text-black hover:bg-mtn-yellow/90'
                 }`}
               >
                 {isRunning ? (
                   <>
                     <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                    Running Simulation...
+                    Running Simulation…
                   </>
                 ) : runSuccess ? (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    CALIBRATED
-                  </>
+                  <><CheckCircle className="w-4 h-4" /> CALIBRATED</>
                 ) : runError ? (
-                  'RUN FAILED'
+                  'RUN FAILED — click to retry'
                 ) : (
-                  <>
-                    <Play className="w-4 h-4 fill-black" />
-                    Execute Simulation
-                  </>
+                  <><Play className="w-4 h-4 fill-black" /> Execute Simulation</>
                 )}
               </button>
 
-              {/* Results */}
+              {runError && (
+                <div className="rounded-lg bg-error/10 border border-error/30 p-3 flex gap-2">
+                  <AlertTriangle className="w-3.5 h-3.5 text-error shrink-0 mt-0.5" />
+                  <p className="font-sans text-xs text-error">{runError}</p>
+                </div>
+              )}
+
+              {/* ── Results ── */}
               {output && (
-                <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  {/* Narrative summary banner */}
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
                   <ScenarioResultsBanner output={output} scenario={active} severity={severity} />
 
-                  {/* Section label */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant">
-                      KPI Impact Analysis — {output.results.length} Indicators
-                    </p>
-                    <div className="flex-1 h-px bg-outline/15" />
-                  </div>
-
+                  <SectionDivider label={`KPI Impact Analysis — ${output.results.length} indicators`} />
                   <KpiImpactGrid results={output.results} severityScore={active.severity * severity} />
 
-                  {/* Waterfall divider */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant">
-                      Revenue & EBITDA Decomposition
-                    </p>
-                    <div className="flex-1 h-px bg-outline/15" />
+                  <SectionDivider label="Revenue & EBITDA Decomposition" />
+                  <div className="space-y-5">
+                    {output.results.find(r => r.kpiId === 'FIN01') && (
+                      <WaterfallChart
+                        title="REVENUE WATERFALL — Base → Scenario"
+                        kpiId="FIN01"
+                        result={output.results.find(r => r.kpiId === 'FIN01')!}
+                        attributions={output.shapAttributions}
+                      />
+                    )}
+                    {output.results.find(r => r.kpiId === 'FIN02') && (
+                      <WaterfallChart
+                        title="EBITDA WATERFALL — Base → Scenario"
+                        kpiId="FIN02"
+                        result={output.results.find(r => r.kpiId === 'FIN02')!}
+                        attributions={output.shapAttributions}
+                      />
+                    )}
                   </div>
 
-                  {output.results.find(r => r.kpiId === 'FIN01') && (
-                    <WaterfallChart
-                      title="REVENUE WATERFALL — Base → Scenario"
-                      kpiId="FIN01"
-                      result={output.results.find(r => r.kpiId === 'FIN01')!}
-                      attributions={output.shapAttributions}
-                    />
-                  )}
-                  {output.results.find(r => r.kpiId === 'FIN02') && (
-                    <WaterfallChart
-                      title="EBITDA WATERFALL — Base → Scenario"
-                      kpiId="FIN02"
-                      result={output.results.find(r => r.kpiId === 'FIN02')!}
-                      attributions={output.shapAttributions}
-                    />
-                  )}
-
-                  {/* SHAP divider */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant">
-                      Driver Attribution (XGBoost SHAP)
-                    </p>
-                    <div className="flex-1 h-px bg-outline/15" />
-                  </div>
-
+                  <SectionDivider label="Driver Attribution (XGBoost SHAP)" />
                   <ShapAttributionCard attributions={output.shapAttributions} />
 
                   {/* Reading guide */}
@@ -410,10 +434,10 @@ export default function ScenariosPage() {
                     <Info className="w-4 h-4 text-on-surface-variant shrink-0 mt-0.5" />
                     <p className="font-sans text-[10px] text-on-surface-variant leading-relaxed">
                       <strong className="text-on-surface">Reading this report:</strong>{' '}
-                      Red tiles indicate KPIs breaching critical thresholds; yellow tiles flag warning-level exposure.
-                      The waterfall charts show which macro and operational drivers contributed most to the revenue and EBITDA shift.
+                      Red tiles indicate KPIs breaching critical thresholds; yellow tiles flag warning-level exposure; orange tiles are under watch.
+                      The waterfall charts decompose which macro and operational drivers contributed most to the revenue and EBITDA shifts.
                       The SHAP panel ranks input features by marginal impact — positive bars push KPIs up, negative bars pull them down.
-                      Re-run with a higher severity multiplier or different macro overlays to explore more extreme but plausible outcomes.
+                      Re-run at a higher severity multiplier or with different macro overlays to explore more extreme but plausible outcomes.
                     </p>
                   </div>
                 </div>
@@ -421,64 +445,9 @@ export default function ScenariosPage() {
             </>
           )}
         </div>
-
-        {/* ── Right: Context & Actions ──────────────────────────── */}
-        <div className="md:col-span-3 rounded-xl border border-outline/20 bg-[#1A1A1A] p-4 sticky top-0 max-h-[calc(100vh-6rem)] overflow-y-auto hidden md:block custom-scrollbar">
-          {active ? (
-            <div className="space-y-5">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-mtn-yellow">Scenario Context</p>
-              <ScenarioMetadataCard scenario={active} />
-              <CalibrationAnchorCard anchor={active.calibrationAnchor} />
-
-              <div className="border-t border-outline/20 pt-4 flex flex-col gap-2">
-                <button
-                  onClick={async () => {
-                    const { generateBoardBrief } = await import('@/lib/api');
-                    const brief = await generateBoardBrief([active.id]);
-                    dispatch({ type: 'OPEN_BRIEF_SLIDEOVER', payload: { brief } });
-                  }}
-                  className="w-full py-2.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-outline/20 text-on-surface-variant hover:text-on-surface hover:border-outline/40 transition-colors"
-                >
-                  Generate Board Brief
-                </button>
-                <button
-                  onClick={() => window.print()}
-                  className="w-full py-2.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-outline/20 text-on-surface-variant hover:text-on-surface hover:border-outline/40 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Download className="w-3.5 h-3.5" /> Export PDF
-                </button>
-                <button
-                  onClick={() => {
-                    dispatch({ type: 'SET_COMPARISON_A', payload: active });
-                    router.push('/compare');
-                  }}
-                  className="w-full py-2.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-outline/20 text-on-surface-variant hover:text-on-surface hover:border-outline/40 transition-colors flex items-center justify-center gap-2"
-                >
-                  <GitCompare className="w-3.5 h-3.5" /> Add to Compare
-                </button>
-                <button
-                  onClick={() => window.open(window.location.href, '_blank')}
-                  className="w-full py-2.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-outline/20 text-on-surface-variant hover:text-on-surface hover:border-outline/40 transition-colors flex items-center justify-center gap-2"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> Open Full View
-                </button>
-                <button
-                  onClick={() => setFormModal({ open: true, mode: 'edit', initial: active })}
-                  className="w-full py-2.5 rounded-lg font-mono text-[10px] uppercase tracking-widest border border-mtn-yellow/30 text-mtn-yellow hover:bg-mtn-yellow/10 transition-colors"
-                >
-                  Edit This Scenario
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-40 text-on-surface-variant font-mono text-[10px] uppercase tracking-widest text-center">
-              Context appears<br />when a scenario<br />is selected
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* ── CRUD Modal ─────────────────────────────────────────── */}
+      {/* ── CRUD Modal ─────────────────────────────────────────────────────── */}
       <ScenarioFormModal
         open={formModal.open}
         mode={formModal.mode}
@@ -487,7 +456,7 @@ export default function ScenariosPage() {
         onSaved={handleSaved}
       />
 
-      {/* ── Board Brief Slide-over ─────────────────────────────── */}
+      {/* ── Board Brief Slide-over ──────────────────────────────────────────── */}
       {state.briefSlideover.open && state.briefSlideover.brief && (
         <BoardBriefSlideOver
           brief={state.briefSlideover.brief}
