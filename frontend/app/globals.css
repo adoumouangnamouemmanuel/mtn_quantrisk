@@ -1,46 +1,172 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-surface: #000000;
-  --color-surface-container-low: #0a0a0a;
-  --color-surface-container: #111111;
-  --color-surface-container-high: #1a1a1a;
-  --color-mtn-yellow: #FFCC00;
-  --color-on-surface: #ffffff;
-  --color-on-surface-variant: #9ca3af;
-  --color-outline: #374151;
-  
-  --color-error: #ffb4ab;
-  --color-secondary: #adc6ff;
-  --color-tertiary: #c6f6ff;
-  --color-row-hover: #111111;
+  /* ── Surfaces (warm dark, not flat black) ── */
+  --color-surface:               #07070D;
+  --color-surface-container-low: #0E0E18;
+  --color-surface-container:     #161622;
+  --color-surface-container-high:#1E1E2C;
 
-  --font-dm-sans: var(--font-dm-sans), sans-serif;
-  --font-inter: var(--font-inter), sans-serif;
-  --font-space-mono: var(--font-space-mono), monospace;
-  --font-jetbrains-mono: var(--font-jetbrains-mono), monospace;
-  
+  /* ── MTN Yellow palette ── */
+  --color-mtn-yellow:        #FFD000;
+  --color-mtn-yellow-bright: #FFE040;
+  --color-mtn-yellow-dim:    #C9A400;
+  --color-mtn-gold:          #F5A623;
+
+  /* ── Text ── */
+  --color-on-surface:         #F0EDE8;
+  --color-on-surface-variant: #A09BB0;
+  --color-outline:            #3D3850;
+
+  /* ── Semantic ── */
+  --color-error:     #FF8A80;
+  --color-secondary: #82B1FF;
+  --color-tertiary:  #80DEEA;
+  --color-row-hover: #16162A;
+
+  /* ── Fonts ── */
+  --font-dm-sans:       var(--font-dm-sans), sans-serif;
+  --font-inter:         var(--font-inter), sans-serif;
+  --font-space-mono:    var(--font-space-mono), monospace;
+  --font-jetbrains-mono:var(--font-jetbrains-mono), monospace;
+
   --font-sans: var(--font-inter), sans-serif;
   --font-mono: var(--font-space-mono), monospace;
+  --font-hero: var(--font-dm-sans), sans-serif;
+  --font-data: var(--font-jetbrains-mono), monospace;
 }
+
+/* ── Base ─────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 16px; }
 
 body {
   background-color: var(--color-surface);
   color: var(--color-on-surface);
   font-family: var(--font-inter), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-font-size: 12px;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Bump up the Tailwind micro-text classes so nothing goes below 11px */
+.text-\[8px\]  { font-size: 0.6875rem !important; }  /* 11px */
+.text-\[9px\]  { font-size: 0.6875rem !important; }  /* 11px */
+.text-\[10px\] { font-size: 0.75rem   !important; }  /* 12px */
+.text-\[11px\] { font-size: 0.75rem   !important; }  /* 12px */
+
+/* ── Brand gradients ──────────────────────────────────────────────────── */
+
+.gradient-mtn {
+  background: linear-gradient(135deg, #FFD000 0%, #F5A623 100%);
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--color-surface); 
+
+.gradient-mtn-text {
+  background: linear-gradient(135deg, #FFE040 0%, #F5A623 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
+
+.gradient-surface {
+  background: linear-gradient(180deg, #0E0E18 0%, #07070D 100%);
+}
+
+/* Yellow glow utilities */
+.glow-yellow {
+  box-shadow: 0 0 20px rgba(255, 208, 0, 0.15), 0 0 40px rgba(255, 208, 0, 0.05);
+}
+.glow-yellow-sm {
+  box-shadow: 0 0 8px rgba(255, 208, 0, 0.20);
+}
+.glow-yellow-border {
+  box-shadow: 0 0 0 1px rgba(255, 208, 0, 0.3), 0 0 12px rgba(255, 208, 0, 0.1);
+}
+.text-glow-yellow {
+  text-shadow: 0 0 12px rgba(255, 208, 0, 0.6);
+}
+
+/* Ambient top-edge glow on cards */
+.card-ambient {
+  position: relative;
+}
+.card-ambient::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 208, 0, 0.4), transparent);
+  border-radius: inherit;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────── */
+
+.custom-scrollbar::-webkit-scrollbar       { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-surface-container-high); 
-  border-radius: 4px;
+  background: rgba(255, 208, 0, 0.15);
+  border-radius: 3px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-outline); 
+  background: rgba(255, 208, 0, 0.3);
+}
+
+/* ── Input focus ring ─────────────────────────────────────────────────── */
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+}
+
+/* ── Selection colour ─────────────────────────────────────────────────── */
+
+::selection {
+  background: rgba(255, 208, 0, 0.25);
+  color: #F0EDE8;
+}
+
+/* ── Subtle animated shimmer for skeleton blocks ─────────────────────── */
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-container) 25%,
+    var(--color-surface-container-high) 50%,
+    var(--color-surface-container) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+/* ── Yellow accent line (top of topbar) ──────────────────────────────── */
+
+.topbar-accent {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 208, 0, 0.6) 30%,
+    #FFD000 50%,
+    rgba(245, 166, 35, 0.6) 70%,
+    transparent 100%
+  );
+}
+
+/* ── Sidebar gradient overlay ─────────────────────────────────────────── */
+
+.sidebar-header-bg {
+  background: linear-gradient(145deg,
+    rgba(255, 208, 0, 0.08) 0%,
+    rgba(255, 208, 0, 0.03) 50%,
+    transparent 100%
+  );
+}
+
+/* ── Active nav glow ─────────────────────────────────────────────────── */
+
+.nav-active-glow {
+  box-shadow: inset 3px 0 0 #FFD000, inset 0 0 20px rgba(255, 208, 0, 0.06);
 }
