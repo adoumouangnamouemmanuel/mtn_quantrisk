@@ -44,6 +44,11 @@ html { font-size: 16px; }
 
 body {
   background-color: var(--color-surface);
+  /* Subtle ambient glow — barely visible, adds depth without noise */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 0% 0%,   rgba(255, 208, 0, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(245, 166, 35, 0.025) 0%, transparent 55%);
+  background-attachment: fixed;
   color: var(--color-on-surface);
   font-family: var(--font-inter), sans-serif;
   -webkit-font-smoothing: antialiased;
