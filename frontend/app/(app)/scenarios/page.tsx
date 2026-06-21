@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAppState } from '@/stores/useAppState';
 import { fetchScenarios, fetchScenarioById, runScenario, deleteScenario } from '@/lib/api';
-import type { MacroOverlays, Scenario } from '@/lib/types';
+import type { MacroOverlays, Scenario, ScenarioOutput } from '@/lib/types';
+import { MOCK_KPIS } from '@/lib/mockData';
 
 import { ScenarioPicker } from '@/components/scenarios/ScenarioPicker';
 import { ScenarioFormModal } from '@/components/scenarios/ScenarioFormModal';
@@ -19,7 +20,118 @@ import { BoardBriefSlideOver } from '@/components/scenarios/BoardBriefSlideOver'
 import { PillarBadge } from '@/components/ui/PillarBadge';
 import { Chip } from '@/components/ui/Chip';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
-import { Activity, Play, Download, GitCompare, ExternalLink, CheckCircle } from 'lucide-react';
+import {
+  Activity, Play, Download, GitCompare, ExternalLink, CheckCircle,
+  ShieldAlert, AlertTriangle, TrendingDown, CheckCircle2, Info, FlaskConical,
+} from 'lucide-react';
+
+// ── Risk config ──────────────────────────────────────────────────────────────
+
+const STATUS_CONFIG = {
+  Critical: { label: 'Critical',  color: 'text-error',      bg: 'bg-error/10',      border: 'border-error/30',      icon: ShieldAlert  },
+  Warning:  { label: 'Warning',   color: 'text-mtn-yellow', bg: 'bg-mtn-yellow/10', border: 'border-mtn-yellow/30', icon: AlertTriangle },
+  Watch:    { label: 'Watch',     color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-400/30', icon: TrendingDown  },
+  Safe:     { label: 'Resilient', color: 'text-green-400',  bg: 'bg-green-400/10',  border: 'border-green-400/30', icon: CheckCircle2  },
+} as const;
+
+// ── Scenario Results Banner ──────────────────────────────────────────────────
+
+function ScenarioResultsBanner({
+  output, scenario, severity,
+}: {
+  output: ScenarioOutput;
+  scenario: Scenario;
+  severity: number;
+}) {
+  const counts = {
+    Critical: output.results.filter(r => r.status === 'Critical').length,
+    Warning:  output.results.filter(r => r.status === 'Warning').length,
+    Watch:    output.results.filter(r => r.status === 'Watch').length,
+    Safe:     output.results.filter(r => r.status === 'Safe').length,
+  };
+
+  const sorted = [...output.results].sort((a, b) => a.deltaPct - b.deltaPct);
+  const worst = sorted[0]!;
+  const worstKpi = MOCK_KPIS.find(k => k.id === worst.kpiId);
+
+  const avgDelta = output.results.reduce((s, r) => s + r.deltaPct, 0) / output.results.length;
+  const effectiveSeverity = (scenario.severity * severity).toFixed(1);
+
+  const tone = counts.Critical > 0
+    ? `${counts.Critical} KPI${counts.Critical > 1 ? 's are' : ' is'} in critical territory — immediate board-level review is recommended.`
+    : counts.Warning > 0
+      ? `${counts.Warning} KPI${counts.Warning > 1 ? 's are' : ' is'} in warning territory — proactive mitigation should be considered.`
+      : counts.Watch > 0
+        ? `${counts.Watch} KPI${counts.Watch > 1 ? 's are' : ' is'} under watch — monitor with increased frequency.`
+        : 'All tracked KPIs remain within safe bounds under this scenario.';
+
+  return (
+    <div className="space-y-4">
+      {/* Narrative headline */}
+      <div className="rounded-xl border border-outline/20 bg-surface-container-low p-5">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-lg bg-mtn-yellow/10 shrink-0">
+            <FlaskConical className="w-5 h-5 text-mtn-yellow" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-sans text-sm font-semibold text-on-surface mb-1">
+              Stress Test Complete — {scenario.name}
+            </p>
+            <p className="font-sans text-xs text-on-surface-variant leading-relaxed">
+              Scenario applied at{' '}
+              <strong className="text-on-surface">{effectiveSeverity}× effective severity</strong>{' '}
+              across <strong className="text-on-surface">{output.results.length} KPIs</strong>.
+              Average portfolio delta is{' '}
+              <strong className={avgDelta < -5 ? 'text-error' : avgDelta < -2 ? 'text-mtn-yellow' : 'text-green-400'}>
+                {avgDelta > 0 ? '+' : ''}{avgDelta.toFixed(1)}%
+              </strong>{' '}
+              from base values. {tone}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Risk count chips */}
+      <div className="grid grid-cols-4 gap-3">
+        {(['Critical', 'Warning', 'Watch', 'Safe'] as const).map(level => {
+          const cfg = STATUS_CONFIG[level];
+          const Icon = cfg.icon;
+          return (
+            <div key={level} className={`rounded-xl border ${cfg.border} ${cfg.bg} p-3 text-center`}>
+              <Icon className={`w-4 h-4 ${cfg.color} mx-auto mb-1`} />
+              <p className={`font-mono text-2xl font-bold ${cfg.color}`}>{counts[level]}</p>
+              <p className={`font-mono text-[8px] uppercase tracking-widest ${cfg.color} mt-0.5`}>{cfg.label}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Most impacted KPI */}
+      <div className="rounded-xl border border-error/30 bg-error/5 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <TrendingDown className="w-4 h-4 text-error" />
+          <span className="font-mono text-[9px] uppercase tracking-widest text-error">Most Impacted KPI</span>
+        </div>
+        <div className="flex items-end justify-between gap-4">
+          <div className="min-w-0">
+            <p className="font-sans text-base font-bold text-on-surface truncate">{worstKpi?.name ?? worst.kpiId}</p>
+            <p className="font-mono text-[10px] text-on-surface-variant mt-0.5">
+              Base: {worst.baseValue.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+              {' '}→ Scenario: {worst.scenarioValue.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+              {worstKpi ? ` ${worstKpi.unit}` : ''}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="font-mono text-2xl font-bold text-error">
+              {worst.deltaPct > 0 ? '+' : ''}{worst.deltaPct.toFixed(1)}%
+            </p>
+            <p className="font-mono text-[8px] text-on-surface-variant uppercase">vs base</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ScenariosPage() {
   const searchParams = useSearchParams();
@@ -245,7 +357,27 @@ export default function ScenariosPage() {
               {/* Results */}
               {output && (
                 <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {/* Narrative summary banner */}
+                  <ScenarioResultsBanner output={output} scenario={active} severity={severity} />
+
+                  {/* Section label */}
+                  <div className="flex items-center gap-3 pt-1">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant">
+                      KPI Impact Analysis — {output.results.length} Indicators
+                    </p>
+                    <div className="flex-1 h-px bg-outline/15" />
+                  </div>
+
                   <KpiImpactGrid results={output.results} severityScore={active.severity * severity} />
+
+                  {/* Waterfall divider */}
+                  <div className="flex items-center gap-3 pt-1">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant">
+                      Revenue & EBITDA Decomposition
+                    </p>
+                    <div className="flex-1 h-px bg-outline/15" />
+                  </div>
+
                   {output.results.find(r => r.kpiId === 'FIN01') && (
                     <WaterfallChart
                       title="REVENUE WATERFALL — Base → Scenario"
@@ -262,7 +394,28 @@ export default function ScenariosPage() {
                       attributions={output.shapAttributions}
                     />
                   )}
+
+                  {/* SHAP divider */}
+                  <div className="flex items-center gap-3 pt-1">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant">
+                      Driver Attribution (XGBoost SHAP)
+                    </p>
+                    <div className="flex-1 h-px bg-outline/15" />
+                  </div>
+
                   <ShapAttributionCard attributions={output.shapAttributions} />
+
+                  {/* Reading guide */}
+                  <div className="rounded-xl border border-outline/10 bg-surface-container-low/50 p-4 flex gap-3">
+                    <Info className="w-4 h-4 text-on-surface-variant shrink-0 mt-0.5" />
+                    <p className="font-sans text-[10px] text-on-surface-variant leading-relaxed">
+                      <strong className="text-on-surface">Reading this report:</strong>{' '}
+                      Red tiles indicate KPIs breaching critical thresholds; yellow tiles flag warning-level exposure.
+                      The waterfall charts show which macro and operational drivers contributed most to the revenue and EBITDA shift.
+                      The SHAP panel ranks input features by marginal impact — positive bars push KPIs up, negative bars pull them down.
+                      Re-run with a higher severity multiplier or different macro overlays to explore more extreme but plausible outcomes.
+                    </p>
+                  </div>
                 </div>
               )}
             </>
