@@ -1,0 +1,1479 @@
+================================================================================
+  MTN QUANTRISK INTELLIGENCE PLATFORM — COMPLETE BEGINNER'S GUIDE
+  Everything You Need to Know: Frontend, Backend, Models, and How to Read Results
+================================================================================
+
+Written in plain English. No prior finance or computer science background required.
+Last updated: June 2026
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 1 — WHAT IS THIS APP AND WHY DOES IT EXIST?
+────────────────────────────────────────────────────────────────────────────────
+
+MTN Ghana is a large mobile phone company. Like every big company, it faces risks —
+things that can go wrong and hurt its finances. Some examples:
+
+  - The Ghanaian Cedi (GHS) weakens against the US Dollar, making imported equipment
+    more expensive.
+  - The Bank of Ghana raises interest rates, making it harder to borrow money cheaply.
+  - A competitor cuts prices sharply, and MTN loses customers.
+  - A new government regulation forces MTN to cut certain fees.
+
+The MTN QuantRisk platform is a dashboard that helps the risk and finance team at MTN
+Ghana answer one core question:
+
+  "If something bad happens, how badly hurt would we be — and how likely is that?"
+
+Instead of just guessing or relying on gut feeling, the platform uses real historical
+financial data + mathematical models to give numbers, probabilities, and charts.
+
+This is called QUANTITATIVE RISK ANALYSIS — turning "what if?" questions into
+actual numbers you can act on.
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 2 — THE BIG PICTURE: HOW THE APP IS BUILT
+────────────────────────────────────────────────────────────────────────────────
+
+The platform has two main pieces that talk to each other:
+
+  ┌─────────────────────────────────┐      ┌──────────────────────────────────┐
+  │         FRONTEND                │◄────►│         BACKEND                  │
+  │  (what you see in the browser)  │      │  (the engine that does the math) │
+  │                                 │      │                                  │
+  │  Built with: Next.js + React    │      │  Built with: Python + FastAPI     │
+  │  Language: TypeScript           │      │  Language: Python                 │
+  │  Runs on: Port 3000             │      │  Runs on: Port 8001               │
+  └─────────────────────────────────┘      └──────────────────────────────────┘
+
+Think of it like a restaurant:
+  - The FRONTEND is the dining room — beautiful, easy to use, shows you the menu
+    and brings you the food.
+  - The BACKEND is the kitchen — all the actual cooking (math, models, calculations)
+    happens here. You never see it directly.
+
+When you click "Execute Simulation" on the screen, here is what actually happens:
+
+  1. The frontend sends a REQUEST to the backend: "Run scenario S01 at 1.5× severity"
+  2. The backend reads the data files, runs the math, and sends back the RESULTS
+  3. The frontend takes those numbers and draws the charts and cards you see
+
+This communication uses a system called REST API (a standard way for programs to
+talk to each other over the internet).
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 3 — THE DATA: WHERE DO THE NUMBERS COME FROM?
+────────────────────────────────────────────────────────────────────────────────
+
+The backend reads from several CSV files stored in the "data/structured/" folder:
+
+  base_case.csv
+  → The "normal" values for every KPI at the start of FY25 (Financial Year 2025).
+    This is the reference point. Everything is compared against this.
+    Example row: FIN03 (EBITDA Margin) = 60.2%
+
+  scenario_library.csv
+  → A table of every risk scenario and how much it affects each KPI.
+    Example row: Scenario S04 "Currency Crisis" → FIN01 (Service Revenue) drops by -8%
+
+  mtn_scenario_library.csv
+  → Metadata about each scenario: its name, which risk pillar it belongs to,
+    how severe it is (1–5 scale), how plausible it is (1–5 scale).
+
+  annual.csv, quarterly.csv, monthly.csv
+  → Historical financial data going back several years.
+    Used to train the AI models and to show trend charts.
+
+  macro_context.csv
+  → External economic data: inflation rate, Bank of Ghana policy rate,
+    GDP growth, Cedi/USD exchange rate, mobile penetration, data penetration.
+    These are the INPUTS to the machine learning models.
+
+  segments_annual.csv, operational_annual.csv
+  → Segment-level and operational data (MoMo revenue, subscribers, ARPU, etc.)
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 4 — THE KPIs: WHAT ARE WE TRACKING?
+────────────────────────────────────────────────────────────────────────────────
+
+KPI stands for Key Performance Indicator. These are the 14 numbers the platform
+monitors most carefully. They are split into 4 groups:
+
+FINANCIAL KPIs — "How much money is the company making?"
+  FIN01 — Service Revenue (unit: GHSm = millions of Ghana Cedis)
+           The total money MTN earns from services (calls, data, MoMo, etc.)
+           FY25 Base: ~24,000–25,000 GHSm
+           Safe range: 23,000 to 26,000 GHSm
+
+  FIN02 — EBITDA (unit: GHSm)
+           Earnings Before Interest, Taxes, Depreciation, Amortisation.
+           Think of it as "how much money did we make before paying certain costs".
+           Safe range: 14,000 to 15,500 GHSm
+
+  FIN03 — EBITDA Margin (unit: %)
+           EBITDA divided by Revenue, as a percentage.
+           Example: if Revenue = 24,000 and EBITDA = 14,400, then Margin = 60%.
+           This tells you how efficiently MTN converts revenue into profit.
+           Safe range: 58% to 62%
+
+  FIN04 — PAT (unit: GHSm)
+           Profit After Tax — what's left after ALL expenses and taxes.
+           Safe range: 7,500 to 8,500 GHSm
+
+  FIN05 — PAT Margin (unit: %)
+           PAT as a % of Revenue. Tells you the final profitability.
+           Safe range: 31% to 35%
+
+  FIN06 — Revenue Growth YoY (unit: %)
+           How much revenue grew compared to last year.
+           Safe range: 30% to 40%
+
+SEGMENT KPIs — "Which part of the business is performing?"
+  SEG01 — Data Revenue (unit: GHSm)
+           Money specifically from internet/data services.
+           Safe range: 8,000 to 9,000 GHSm
+
+  SEG03 — MoMo Revenue (unit: GHSm)
+           Money from Mobile Money (MoMo) services (like MTN's payment system).
+           Safe range: 5,500 to 6,500 GHSm
+
+OPERATIONAL KPIs — "How is the network and customer base doing?"
+  OPS01 — Total Subscribers (unit: M = millions)
+           Total number of active SIM cards / customers.
+           Safe range: 29M to 32M subscribers
+
+  OPS04 — ARPU (unit: GHS)
+           Average Revenue Per User — how much each customer pays per month.
+           Safe range: 64 to 70 GHS
+
+  OPS07 — 4G Coverage (unit: %)
+           Percentage of Ghana covered by 4G network.
+           Safe range: 98% to 100%
+
+EXTERNAL KPIs — "What is the economic environment doing?"
+  EXT01 — Inflation (unit: %)
+           Annual inflation rate in Ghana.
+           Note: HIGHER is WORSE. Safe range: 4% to 10%
+
+  EXT02 — BoG Policy Rate (unit: %)
+           The Bank of Ghana's benchmark interest rate.
+           Note: HIGHER is WORSE. Safe range: 25% to 30%
+
+  EXT03 — Cedi/USD Exchange Rate (unit: GHS per 1 USD)
+           How many Cedis you need to buy 1 US Dollar.
+           Note: HIGHER is WORSE (more Cedis needed = weaker Cedi).
+           Safe range: 11 to 13 GHS/USD
+
+HOW STATUS LEVELS WORK:
+For financial KPIs (FIN, SEG, OPS), LOWER values are bad:
+  - CRITICAL: value is more than 5% below the lower threshold
+  - WARNING:  value is below the lower threshold
+  - WATCH:    value is between warning and safe
+  - SAFE:     value is comfortably above the lower threshold
+
+For external KPIs (EXT), HIGHER values are bad:
+  - CRITICAL: value is above the upper threshold
+  - WARNING:  value is above the lower threshold
+  - SAFE:     value is below the lower threshold
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 5 — THE RISK PILLARS
+────────────────────────────────────────────────────────────────────────────────
+
+The 56+ scenarios in the library are grouped into 7 "pillars" — categories of risk:
+
+  A — Macro & FX
+      Risks from the economy and exchange rates.
+      Examples: "Cedi depreciates 25% against USD", "Inflation spikes to 35%"
+
+  B — Regulatory
+      Risks from new government rules or laws.
+      Examples: "NCA mandates service price caps", "New mobile money tax introduced"
+
+  C — Tech & Cyber
+      Risks from technology failures or cyberattacks.
+      Examples: "Core network outage", "Ransomware attack on billing systems"
+
+  D — Competitive
+      Risks from competitors gaining market share.
+      Examples: "Telecel aggressively cuts data prices", "New competitor enters market"
+
+  E — Operational & Climate
+      Risks from internal operations or natural events.
+      Examples: "Tower damage from flooding", "Staff strike disrupts operations"
+
+  F — Upside
+      Positive scenarios (opportunities, not threats).
+      Examples: "Government accelerates broadband rollout", "GDP grows faster than expected"
+
+  G — Tail Risk
+      Very severe but unlikely scenarios.
+      Examples: "Banking system collapse", "Mass subscriber exodus"
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 6 — PAGE-BY-PAGE GUIDE
+────────────────────────────────────────────────────────────────────────────────
+
+========================================
+PAGE 1: CORE ANCHORS (Dashboard) — /dashboard
+========================================
+
+WHAT IT SHOWS:
+The main overview page. Think of it as the "cockpit" of the platform. You see the
+most important KPIs at a glance with their current status (Safe/Watch/Warning/Critical).
+
+HOW IT WORKS:
+When you load this page, the frontend calls the backend at:
+  GET /api/kpis
+The backend reads base_case.csv and returns all 14 KPIs with their current values
+and computed status levels.
+
+WHAT YOU SEE:
+  - KPI cards: each shows the current value, status colour (green/yellow/orange/red),
+    and a small sparkline (mini chart) showing the last 24 months of trend.
+  - Status badges: Safe (green), Watch (orange), Warning (yellow), Critical (red)
+
+HOW TO READ IT:
+  - Green = all good, no action needed
+  - Yellow = keep an eye on this
+  - Orange = starting to be a problem
+  - Red = this needs immediate attention
+
+EXAMPLE:
+  If FIN03 (EBITDA Margin) shows 57.5% in RED, it means the current margin
+  has fallen below the 58% lower threshold — the company is less profitable
+  than its own target and action may be needed.
+
+
+========================================
+PAGE 2: FULL KRI BOOK — /kri-register
+========================================
+
+WHAT IT SHOWS:
+KRI stands for Key Risk Indicator. This page shows ALL 14 KPIs in a detailed table
+format, with more information than the dashboard.
+
+HOW IT WORKS:
+Same backend call as the dashboard: GET /api/kpis
+But here you see more detail: the exact thresholds, the full category name,
+units, and current status with exact numbers.
+
+WHAT YOU SEE:
+  - A searchable/filterable table of all KPIs
+  - For each KPI: ID, name, category, current value, lower threshold, upper threshold,
+    status, and unit
+
+HOW TO READ IT:
+This is useful when you want to check exact threshold values.
+Example: "ARPU is 63.5 GHS — the lower threshold is 64 GHS, so we are 0.5 GHS
+below safe territory. Status: Warning."
+
+
+========================================
+PAGE 3: QUARTERLY TRENDS — /quarterly
+========================================
+
+WHAT IT SHOWS:
+How the KPIs have changed quarter by quarter over the past several years.
+This helps you see if the business is improving or declining over time.
+
+HOW IT WORKS:
+The frontend calls: GET /api/history/quarterly
+The backend reads quarterly.csv and returns data grouped by year and quarter
+(Q1, Q2, Q3, Q4).
+
+WHAT YOU SEE:
+  - Line charts showing KPI values across multiple quarters
+  - You can select which KPI to view
+
+HOW TO READ IT:
+Look for trends:
+  - Consistently rising Revenue Growth = healthy
+  - EBITDA Margin dropping each quarter = potential efficiency problem
+  - Sharp dip in one quarter = possible external shock (like a rate hike or FX move)
+
+EXAMPLE:
+"Service Revenue was 5,800 GHSm in Q1 2024, then 6,100 in Q2, then fell to
+5,950 in Q3 — that dip in Q3 might correspond to the September Cedi depreciation."
+
+
+========================================
+PAGE 4: MONTHLY TRENDS — /monthly
+========================================
+
+WHAT IT SHOWS:
+Same idea as quarterly, but at month-by-month granularity.
+Useful for spotting very short-term changes or seasonal patterns.
+
+HOW IT WORKS:
+The frontend calls: GET /api/history/monthly
+The backend reads monthly.csv.
+
+HOW TO READ IT:
+Monthly charts are noisier (more ups and downs) than quarterly.
+Focus on the general direction over 6–12 months rather than individual months.
+
+
+========================================
+PAGE 5: PREDICTIVE FORECASTS — /forecasts
+========================================
+
+WHAT IT SHOWS:
+The app's predictions for where KPIs will go over the next 90 days (approximately
+2–3 months into the future).
+
+HOW IT WORKS — THE ARIMA MODEL:
+For Service Revenue forecasting, the backend uses an ARIMA model.
+
+WHAT IS ARIMA?
+ARIMA stands for Auto-Regressive Integrated Moving Average. That sounds complex,
+but here is the simple idea:
+
+Imagine you are tracking revenue every quarter:
+  Q1: 5,800  Q2: 6,100  Q3: 5,950  Q4: 6,300  → What will Q5 be?
+
+ARIMA looks at three things:
+  1. AUTO-REGRESSIVE (AR): "The value now tends to depend on recent values."
+     Example: If revenue was high last quarter, it probably won't crash to zero.
+  2. INTEGRATED (I): It first "differences" the data (subtracts one period from
+     the previous) to remove long-term trends, making it easier to model patterns.
+  3. MOVING AVERAGE (MA): It also looks at past "errors" (how wrong previous
+     predictions were) to correct itself.
+
+ARIMA(2,1,1) means:
+  - Look back 2 periods for the AR component
+  - Difference the data once (the "1" in the middle)
+  - Use 1 period of past errors for correction
+
+HOW IT IS TRAINED:
+  - The model is trained on historical quarterly revenue data from quarterly.csv
+  - Training is done once by running: python models/train_lstm.py
+  - The trained model is saved as a file: models/artefacts/arima_revenue.joblib
+  - When you view the forecasts page, the backend loads this saved file and asks it
+    to predict the next 2–3 quarters
+
+OPTIONAL LSTM MODEL:
+There is also an optional LSTM (Long Short-Term Memory neural network) model.
+LSTM is a type of AI that is good at learning patterns in sequences of data.
+It requires TensorFlow to be installed. If available, it can potentially give better
+predictions than ARIMA for complex non-linear patterns. If not available, the system
+falls back to ARIMA.
+
+WHAT YOU SEE ON THE PAGE:
+  - Select a KPI from the dropdown
+  - See a chart with:
+    * Historical data (solid line going left)
+    * Forecast line (dotted going right) showing median, P05, and P95 bands
+  - The SHADED AREA between P05 and P95 is the uncertainty band
+    = "we are 90% confident the real value will land in this range"
+
+HOW TO READ THE FORECAST:
+  - P50 (median line): Our best single guess — "most likely outcome"
+  - P05 (lower edge of shaded area): "Only 5% of the time would it be worse than this"
+    = This is your DOWNSIDE RISK floor
+  - P95 (upper edge): "Only 5% of the time would it be better than this"
+    = This is your UPSIDE ceiling
+
+EXAMPLE:
+"The ARPU forecast for next quarter is:
+  P05 = 61.2 GHS   (bad case — only 5% chance it's lower)
+  P50 = 64.8 GHS   (most likely)
+  P95 = 68.1 GHS   (best case — only 5% chance it's higher)
+This means management should plan around 64–65 GHS ARPU, but must be prepared
+for it dipping as low as 61 GHS in a bad scenario."
+
+
+========================================
+PAGE 6: BOARD BRIEFS — /briefs
+========================================
+
+WHAT IT SHOWS:
+Auto-generated written summaries of scenarios, formatted for board-level reading.
+Instead of looking at numbers, the board gets a short paragraph explaining the risk
+in plain English.
+
+HOW IT WORKS:
+When you click "Generate Board Brief" on the Stress Tester page, the frontend calls:
+  POST /api/board-brief
+The backend assembles a text summary based on the scenario name, pillar,
+severity, and KPI impacts.
+
+HOW TO READ IT:
+The briefs page is a library of all previously generated briefs.
+Each brief is dated and linked to the scenario that generated it.
+Useful for board meetings, audit reports, or risk committee submissions.
+
+
+========================================
+PAGE 7: STRESS TESTER — /scenarios
+========================================
+
+This is one of the most important pages. It lets you answer:
+"What happens to our KPIs if a specific bad event occurs?"
+
+─────────────────────────
+LEFT PANEL: Scenario Library
+─────────────────────────
+A list of all 56+ scenarios organised by risk pillar.
+Click any scenario to load it into the workspace.
+
+Each scenario has:
+  - A NAME (e.g., "Cedi/USD Exchange Rate Crisis")
+  - A PILLAR (e.g., "Macro & FX")
+  - A TYPE (Stress / Shock / Combined / Upside)
+  - A SEVERITY RATING (1–5, where 5 = most severe)
+  - A PLAUSIBILITY RATING (1–5, where 5 = most likely to happen)
+  - KPI IMPACTS (e.g., "FIN01 drops -8%, FIN03 drops -3 percentage points")
+
+─────────────────────────
+CENTRE: Simulation Workspace
+─────────────────────────
+
+SEVERITY MULTIPLIER SLIDER:
+  This scales the scenario's impact up or down.
+  - 1.0× = base scenario (as calibrated in the library)
+  - 0.5× = half as bad — a mild version of the scenario
+  - 2.0× = twice as bad — a severe escalation
+  - 2.5× and above = extreme tail-risk territory (shown with a red warning)
+
+MACRO OVERLAYS:
+Three additional sliders let you layer extra economic shocks on top of the scenario:
+  - Cedi/USD Shock (%): Additional currency depreciation or appreciation
+  - Inflation Overlay (pp): Extra percentage points of inflation
+  - Policy Rate Overlay (pp): Extra basis points on the Bank of Ghana's rate
+
+WHY MACRO OVERLAYS?
+Because real-world crises rarely come alone. A currency crisis might also trigger
+higher inflation and force a policy rate increase simultaneously. The overlays let you
+model these "compound" scenarios.
+
+─────────────────────────
+HOW THE MATH WORKS (Scenario Engine):
+─────────────────────────
+
+Step 1: Load the base case
+  The backend reads base_case.csv to get the starting value for every KPI.
+  Example: FIN01_base = 24,500 GHSm
+
+Step 2: Read the scenario impacts from scenario_library.csv
+  Example row: S04, FIN01, pct, -8.0
+  This means: "Under scenario S04, Service Revenue changes by -8%"
+
+Step 3: Multiply by the severity multiplier
+  If you set severity = 1.5×:
+  Actual impact applied = -8.0% × 1.5 = -12.0%
+
+Step 4: Apply the impact to the base value
+  Three types of impacts:
+  - pct  (percentage change): new_value = base × (1 + impact/100)
+    Example: 24,500 × (1 + (-12)/100) = 24,500 × 0.88 = 21,560 GHSm
+  - delta (absolute change): new_value = base + impact
+    Example: EBITDA Margin 60.2% + (-2.5pp) = 57.7%
+  - abs  (set to absolute value): new_value = impact value
+
+Step 5: Apply macro overlays
+  If you added a 10% Cedi shock:
+  The Cedi/USD rate (EXT03) is also adjusted, AND Service Revenue gets an additional
+  small penalty (because a weaker Cedi makes USD-denominated costs more expensive).
+
+Step 6: Compute the delta % for each KPI
+  delta_pct = (scenario_value - base_value) / base_value × 100
+
+Step 7: Determine the status (Safe/Watch/Warning/Critical)
+  Compares the stressed value against the KPI's threshold bands.
+
+─────────────────────────
+RESULTS: What You See
+─────────────────────────
+
+NARRATIVE BANNER (at the top of results):
+  "Stress Test Complete — Cedi/USD Exchange Rate Crisis
+   Scenario applied at 1.5× effective severity across 7 KPIs.
+   Average portfolio delta is -4.3% from base values.
+   2 KPIs are in critical territory — immediate board-level review is recommended."
+
+This translates all the numbers into a plain-English sentence you can read instantly.
+
+RISK CHIPS (4 boxes: Critical / Warning / Watch / Resilient):
+  Shows how many of the 7 tracked KPIs fall into each risk bucket.
+  Example: Critical: 2 | Warning: 3 | Watch: 1 | Resilient: 1
+
+MOST IMPACTED KPI panel:
+  The single KPI with the largest negative delta is highlighted.
+  Example: "EBITDA — Base: 14,300 GHSm → Scenario: 12,150 GHSm  -15.0% vs base"
+
+KPI IMPACT TILES (the grid of cards):
+  Each tile shows one KPI with:
+  - The base value → scenario value (with an arrow between them)
+  - The % change as a coloured chip
+  - An interpretation sentence: "EBITDA Margin falls 5.2% — enters warning territory."
+  - The status colour (red border = critical, yellow = warning, etc.)
+
+WATERFALL CHARTS:
+  These charts decompose the revenue and EBITDA drops into their individual drivers.
+  Instead of just saying "Revenue fell 15%", the waterfall shows:
+    Base: 24,500
+    − Cedi/USD effect:        -2,100
+    − Inflation effect:         -800
+    − Policy rate effect:       -350
+    − GDP growth offset:        +200
+    = Stressed: 21,450
+
+  This tells you WHICH factor caused the most damage.
+
+SHAP ATTRIBUTION CHART:
+  This uses the XGBoost AI model (explained in Part 7) to rank the features
+  by how much they each contributed to the EBITDA Margin change.
+  - Yellow/positive bars: this factor HELPS (pushes margin up)
+  - Red/negative bars: this factor HURTS (pushes margin down)
+  - The longer the bar, the more powerful the effect
+
+EXAMPLE INTERPRETATION:
+"We ran scenario S04 (Cedi Crisis) at 1.5×. Service Revenue fell from 24,500 to
+21,560 GHSm (-11.9%). EBITDA Margin dropped from 60.2% to 55.1% — entering
+critical territory. The SHAP chart shows Cedi/USD was the single biggest driver,
+responsible for 38% of the EBITDA Margin decline. This makes sense — MTN has
+significant USD-denominated costs for network equipment and roaming agreements."
+
+
+========================================
+PAGE 8: SCENARIO COMPARE — /compare
+========================================
+
+WHAT IT SHOWS:
+Side-by-side comparison of two scenarios.
+Useful question: "Is a Currency Crisis worse than a Regulatory Shock for our revenue?"
+
+HOW IT WORKS:
+You pick Scenario A and Scenario B. The platform runs both (or uses already-run results)
+and shows the KPI impacts side by side.
+
+HOW TO READ IT:
+  - Look at the same KPI row for both scenarios
+  - The scenario with the more negative (red) delta is the bigger risk for that KPI
+  - Use this to prioritise which risks to mitigate first
+
+
+========================================
+PAGE 9: REVERSE STRESS — /reverse
+========================================
+
+This is the most mathematically sophisticated page. It flips the question around:
+
+Instead of: "If scenario X happens at severity Y, what happens to our KPIs?"
+It asks:    "How bad does a scenario need to get before KPI Z breaches its limit?"
+
+─────────────────────────
+HOW TO USE IT:
+─────────────────────────
+
+STEP 1: Define your "unacceptable outcome" in the Target Builder:
+  - Choose the KPI you care about (e.g., EBITDA Margin - FIN03)
+  - Choose the threshold type:
+    * "Drops below" a specific value (e.g., drops below 55%)
+    * "Drops by X%" from base (e.g., drops by 10%)
+    * "Rises above" a value (for external KPIs like inflation)
+  - Optionally choose a specific scenario to solve for
+
+STEP 2: Choose solve mode:
+  - Single Scenario: "How bad does scenario S04 need to get to breach 55% EBITDA Margin?"
+  - Cross-Scenario Sweep: "Across ALL scenarios, which ones can breach 55% EBITDA Margin
+    and at what severity?"
+
+─────────────────────────
+HOW THE MATH WORKS — BINARY SEARCH:
+─────────────────────────
+
+The engine uses a technique called BINARY SEARCH to find the exact severity level
+that causes the breach. Here is how binary search works:
+
+Imagine you're trying to find the exact floor level in a 10-story building where
+the temperature drops below 20°C (you can only check one floor at a time):
+
+  Start: Check floor 5 → too warm (25°C)
+  → Must be higher. Check floor 8 → too cold (18°C)
+  → Somewhere between 5 and 8. Check floor 6 → perfect (19.9°C)
+  → Between 6 and 8. Check floor 7 → just cold (20.1°C)
+  → Between 6 and 7. We have our answer: floor 6.5!
+
+The risk engine does the same thing with severity multipliers:
+
+  Start: Does severity = 3.0× breach the threshold? Yes
+  → The breach happens somewhere below 3.0×. Try 1.5×
+  → Does 1.5× breach? No.
+  → Try 2.25× (midpoint between 1.5 and 3.0). Yes.
+  → Try 1.875× (midpoint between 1.5 and 2.25). No.
+  → Try 2.0625×. Yes.
+  → ... keeps halving the gap, 40 times total.
+  → Final answer: you need 2.04× severity to breach the threshold.
+
+The app runs the full scenario calculation (from Page 7) at each test point,
+so it is doing many simulations inside the binary search.
+
+─────────────────────────
+WHAT YOU SEE IN RESULTS:
+─────────────────────────
+
+SINGLE SCENARIO SOLVER:
+  "Breach Analysis — Cedi/USD Exchange Rate Crisis
+   Required Severity Multiplier to breach 55% EBITDA Margin: 2.04×
+   At that severity, EBITDA Margin = 54.87%"
+
+  Plus a chart showing the BINARY SEARCH TRAJECTORY:
+  Each iteration's (severity, KPI value) point is plotted, showing the search
+  converging to the exact breach point. This is like watching the algorithm think.
+
+CROSS-SCENARIO SWEEP TABLE:
+  When you run without selecting a specific scenario, the engine runs the binary
+  search for EVERY scenario in the library. The results are sorted from most
+  dangerous (lowest required severity to cause breach) to least dangerous.
+
+  Example output table:
+  Rank | Scenario               | Required Severity | EBITDA at Breach
+  ─────┼────────────────────────┼───────────────────┼──────────────────
+  1    | Cedi/USD Crisis        | 1.83×             | 54.91%
+  2    | Regulatory Fee Caps    | 2.04×             | 54.87%
+  3    | Competitor Price War   | 2.31×             | 54.78%
+  4    | Tech Outage            | 2.87×             | 54.93%
+
+  Reading this: The Cedi/USD Crisis is the most dangerous scenario for EBITDA Margin
+  because it only needs to escalate to 1.83× its calibrated severity to cause a breach.
+  A Tech Outage needs 2.87× — you have much more buffer against that.
+
+TOP DANGEROUS SCENARIOS CARD:
+  Visual ranking of the top 5 most dangerous scenarios (those needing the lowest
+  severity multiplier to cause a breach) shown as a ranked leaderboard.
+
+WHY IS THIS USEFUL?
+  This tells you where your BUFFER is. If the Cedi/USD Crisis only needs 1.83×
+  severity to breach your EBITDA Margin floor, but you historically see Cedi shocks
+  of up to 1.5×, then you have a buffer of 0.33× — relatively thin. You should
+  probably hedge your FX exposure.
+
+
+========================================
+PAGE 10: MONTE CARLO SIMULATION — /monte-carlo
+========================================
+
+This page answers a different kind of question:
+"We know the scenario impacts are uncertain. What is the RANGE of possible outcomes,
+and how probable is each outcome?"
+
+The Stress Tester gives you ONE answer. Monte Carlo gives you a DISTRIBUTION of answers.
+
+─────────────────────────
+THE KEY INSIGHT: Uncertainty
+─────────────────────────
+
+When the scenario library says "Cedi Crisis causes -8% Revenue Impact", that -8%
+is not a precise number — it is an estimate. The real impact could be -5%, or -12%,
+or -9.5%. We do not know exactly.
+
+Monte Carlo embraces this uncertainty by running the simulation THOUSANDS of times,
+each time with slightly different impact values, to see all possible outcomes.
+
+─────────────────────────
+HOW TO USE IT:
+─────────────────────────
+
+You configure 4 parameters:
+
+1. STRESS SCENARIO: Which scenario to simulate (same library as Stress Tester)
+
+2. NUMBER OF SIMULATIONS (N):
+   - 200:  Fast (< 1 second). Good for exploration.
+   - 500:  Moderate speed, reasonable accuracy.
+   - 1000: Balanced — this is the recommended default.
+   - 2000: Slow but most accurate percentile estimates.
+
+3. UNCERTAINTY BAND (±%):
+   How much can each impact value vary from its stated value?
+   - ±5%:  Tight — you trust the impact estimates closely
+   - ±20%: Moderate — standard uncertainty assumption (default)
+   - ±40%: Wide — very uncertain, many possible outcomes
+
+4. SEVERITY MULTIPLIER:
+   Same as in Stress Tester — scales the base scenario magnitude.
+
+─────────────────────────
+HOW THE MATH WORKS — MONTE CARLO ENGINE:
+─────────────────────────
+
+The engine does this N times (e.g., 1000 times):
+
+  Run #1:
+    Take each scenario impact (e.g., FIN01: -8%)
+    ADD RANDOM NOISE using a Gaussian (bell curve) distribution:
+      perturbed_impact = -8% × (1 + noise)
+      where noise is random, centered at 0, with standard deviation = uncertainty_band
+      Example: noise = +0.15, so perturbed = -8% × 1.15 = -9.2%
+    Apply this perturbed impact to the base case → get stressed KPI value
+    Record the result for every KPI.
+
+  Run #2: Same, but a different random noise:
+    perturbed = -8% × 0.92 = -7.36%
+    → Different stressed value
+
+  Run #3: noise = +0.31 → -8% × 1.31 = -10.48% → Different result again
+
+  ...repeat 1000 times...
+
+  After 1000 runs: Sort all 1000 results for each KPI and calculate PERCENTILES.
+
+WHAT ARE PERCENTILES?
+Imagine you ran 1000 races and sorted the finishing times from slowest to fastest.
+The 5th percentile (P05) is the time that was slower than 95% of races — the rare,
+bad run. The 50th percentile (P50) is right in the middle — the median performance.
+
+Applied to KPIs:
+  P05 = "In the worst 5% of our 1000 simulations, the KPI fell to this value"
+       This is your RISK FLOOR — the severe downside you need to plan against.
+  P25 = "In the worst 25% of simulations, the KPI was at or below this"
+       An adverse but more common scenario.
+  P50 = "Half of simulations were below this, half above" = THE MEDIAN
+       Your best single estimate of what will happen.
+  P75 = "In the best 75% of simulations, the KPI exceeded this"
+  P95 = "In the best 5% of simulations, the KPI reached this"
+       Your BEST CASE ceiling.
+
+─────────────────────────
+WHAT YOU SEE IN RESULTS:
+─────────────────────────
+
+NARRATIVE BANNER:
+  "Simulation Complete — 1,000 Scenarios Modelled
+   Under the Cedi/USD Crisis with ±20% uncertainty, the engine ran 1,000 independent
+   simulations. Average downside at P05 is -6.8% below base. 2 KPIs face critical
+   exposure — immediate attention is recommended."
+
+4 RISK COUNT CHIPS:
+  Shows how many KPIs are Critical/Warning/Watch/Resilient at the P05 level.
+
+MOST EXPOSED KPI PANEL:
+  The KPI with the worst P05 (i.e., worst downside in 5% scenarios).
+
+KPI ROWS (expandable):
+  Each KPI has a row showing:
+  - Coloured dot: Critical (red) / Warning (yellow) / Watch (orange) / Resilient (green)
+  - KPI name
+  - P05 downside %: "how much can it fall in the worst 5% of scenarios"
+  - P95 upside %: "how much can it rise in the best 5% of scenarios"
+  - Risk label
+
+  Click any row to EXPAND IT and see:
+
+  INTERPRETATION SENTENCE:
+  "In the worst 5% of 1,000 simulated outcomes, EBITDA Margin could fall by 8.4%
+   to 55.1%. The median outcome sits at 58.7%, while the most favourable 5% of
+   simulations see it reach 62.0% (+3.0% above base)."
+
+  DISTRIBUTION BAR (visual):
+  A horizontal bar showing the full range of outcomes:
+  - Dark yellow shaded band = IQR (P25–P75): where the middle 50% of outcomes land
+  - Light yellow shaded band = P05–P95: where 90% of outcomes land
+  - Bright yellow vertical line = P50 (median)
+  - Dashed line = base value
+
+  PERCENTILE TABLE:
+  Shows the 5 key percentile values with labels and their % deviation from base:
+  P05 = Severe Downside  | -8.4% | 55.1%
+  P25 = Adverse          | -3.2% | 58.3%
+  P50 = Median           | -1.5% | 59.3%
+  P75 = Favourable       | +1.8% | 61.3%
+  P95 = Best Case        | +3.0% | 62.0%
+
+─────────────────────────
+READING GUIDE AT THE BOTTOM:
+─────────────────────────
+
+  P05 = Your key risk metric. Only 5% of simulations are worse than this.
+         This is the "stress floor" — plan against this, not the median.
+  IQR Band = Where half of outcomes land. Expect the real outcome to be here.
+  Std Deviation = Higher value = more uncertainty in that KPI's outcomes.
+  Re-run with different settings to test your assumptions.
+
+─────────────────────────
+KEY DIFFERENCE: STRESS TESTER vs MONTE CARLO
+─────────────────────────
+
+  Stress Tester:
+  - Runs ONCE with exact impact values
+  - Gives one answer: "Revenue falls exactly -11.9%"
+  - Good for: "What is our base-case exposure to scenario X?"
+
+  Monte Carlo:
+  - Runs THOUSANDS of times with varied impact values
+  - Gives a distribution: "Revenue most likely falls 10-13%, worst case -18%"
+  - Good for: "What is the full range of outcomes, including tail risks?"
+
+Both tools are needed. Use Stress Tester first to understand the scenario, then
+Monte Carlo to understand the uncertainty around that outcome.
+
+
+========================================
+PAGE 11: HELP & SUPPORT — /help
+========================================
+
+WHAT IT SHOWS:
+Three tabs of educational content:
+
+GUIDES TAB (8 guides):
+  Step-by-step tutorials for using each major feature.
+  Examples: "How to run your first stress test", "Understanding Monte Carlo output"
+
+Q&A TAB (45 questions):
+  Common questions organised into 7 categories:
+  - General (what is the platform, who is it for)
+  - Data (where does the data come from, how fresh is it)
+  - Scenarios (how are scenarios created, what is severity)
+  - Monte Carlo (what is P05, how many simulations to use)
+  - Forecasts (how accurate is the ARIMA model)
+  - Reverse Stress (when to use it, how binary search works)
+  - Technical (browser requirements, data privacy)
+
+GLOSSARY TAB (32 terms):
+  Definitions of every technical term used in the platform.
+  Categories: Financial, Risk, Statistical, ML (Machine Learning), Platform
+
+You can SEARCH across all three tabs at once using the search bar at the top.
+
+
+========================================
+PAGE 12: SETTINGS — /settings
+========================================
+
+WHAT IT SHOWS:
+Configuration options for the platform. Key sections:
+
+DATA UPLOAD:
+  Upload a new CSV or PDF with updated financial data.
+  The backend processes it and updates the base_case.csv if the format is correct.
+
+BASE CASE LOGS:
+  Shows the last 30 lines from the backend log file, so you can see what the
+  pipeline has been doing (data loads, model runs, errors).
+
+MODEL RETRAINING:
+  Trigger retraining of the XGBoost models when new data has been uploaded.
+  This calls: POST /api/retrain
+  The backend re-runs train_impact_model.py on the new data.
+
+FEEDBACK WIDGET:
+  Submit feedback about a specific forecast or model output.
+  Stored in feedback.json for the data team to review.
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 7 — THE AI MODELS: HOW DOES THE MACHINE LEARNING WORK?
+────────────────────────────────────────────────────────────────────────────────
+
+The platform uses three types of machine learning models:
+
+========================================
+MODEL 1: XGBoost (for SHAP attributions and KPI prediction)
+========================================
+
+WHAT IT DOES:
+XGBoost learns the relationship between MACRO ECONOMIC FACTORS and KPI OUTCOMES.
+Once trained, it can:
+  a) Predict KPI values given a set of macro inputs
+  b) Explain WHY it made that prediction (via SHAP)
+
+THE 6 INPUT FEATURES (macro factors):
+  1. Inflation_YoY_Pct         — annual inflation rate
+  2. Policy_Rate_Pct           — Bank of Ghana policy rate
+  3. Cedi_USD_Avg              — average Cedi to Dollar exchange rate
+  4. GDP_Growth_Pct            — Ghana GDP growth rate
+  5. Mobile_Penetration_Pct    — mobile phone penetration in Ghana
+  6. Data_Penetration_Pct      — internet/data penetration in Ghana
+
+THE 6 TARGET KPIs (what it predicts):
+  FIN01 — Service Revenue Growth
+  FIN03 — EBITDA Margin
+  FIN05 — PAT Margin
+  SEG03 — MoMo Revenue
+  OPS04 — ARPU (Average Revenue Per User)
+  DATA  — Data Revenue Growth
+
+HOW XGBOOST WORKS — SIMPLE EXPLANATION:
+XGBoost builds a "forest" of decision trees. Each tree is a series of IF-THEN
+rules that map inputs to outputs:
+
+  Tree example (very simplified):
+  IF Cedi_USD > 13 AND Inflation > 20%
+    THEN predict EBITDA_Margin = 55%
+  ELSE IF Cedi_USD < 12 AND GDP_Growth > 6%
+    THEN predict EBITDA_Margin = 62%
+  ELSE
+    THEN predict EBITDA_Margin = 59%
+
+XGBoost builds 200 such trees. Each new tree corrects the mistakes of the previous
+ones (this is called GRADIENT BOOSTING — each round focuses on the errors).
+The final prediction is the average of all 200 trees.
+
+WHY XGBOOST AND NOT SOMETHING SIMPLER (LIKE LINEAR REGRESSION)?
+  - XGBoost captures NON-LINEAR relationships. The impact of currency on margins
+    is not linear — a small depreciation has a small effect, but beyond a threshold,
+    it can compound sharply. XGBoost handles this naturally.
+  - XGBoost is robust to outliers and does not require feature scaling to work well
+    (though we scale anyway for good practice).
+  - It is interpretable via SHAP values (see below).
+
+HOW IT IS TRAINED:
+  1. Read the historical data from annual.csv, macro_context.csv, segments_annual.csv,
+     operational_annual.csv and MERGE them by year.
+  2. Optionally augment with synthetic data points created from the scenario library
+     (each scenario is treated as a data point with its stressed outcome values).
+  3. Scale the input features using StandardScaler (so all features are on the same
+     numerical scale — this helps the model converge).
+  4. Train one separate model for each of the 6 target KPIs.
+  5. Evaluate using Leave-One-Out Cross-Validation (since we have very few real
+     data points — typically only 6 years of annual data).
+  6. Save each model as a .joblib file in models/artefacts/
+
+LEAVE-ONE-OUT CROSS-VALIDATION — WHY:
+With only 6 data points, you cannot split into training/test sets (you'd train
+on 5, test on 1). LOO instead trains on 5 and tests on the 6th, then rotates
+which one is left out, 6 times. This gives you a fair error estimate despite the
+tiny dataset.
+
+SHAP VALUES — HOW THE MODEL EXPLAINS ITSELF:
+After making a prediction, SHAP (SHapley Additive exPlanations) decomposes that
+prediction into the contribution of each input feature.
+
+SIMPLE EXAMPLE:
+Baseline prediction = 60% EBITDA Margin
++ Cedi/USD contribution: -2.1%  (the weak Cedi hurt margins)
++ Inflation contribution: -1.3%  (high inflation raised costs)
++ GDP Growth contribution: +0.8% (good GDP growth helped a bit)
++ Policy Rate contribution: -0.5%
++ Mobile Penetration: +0.1%
++ Data Penetration: +0.2%
+= Final prediction: 57.2% EBITDA Margin
+
+This breakdown is what you see in the SHAP Attribution Chart on the Stress Tester page.
+Positive SHAP = this factor helped. Negative SHAP = this factor hurt.
+
+The MAGNITUDE (length of the bar) tells you how much — Cedi/USD at -2.1% is
+the most important driver in this example.
+
+
+========================================
+MODEL 2: ARIMA (for revenue forecasting)
+========================================
+
+(Already explained in Page 5 above — see "Predictive Forecasts")
+
+Key parameters: ARIMA(2,1,1) — looks back 2 periods, differences once, uses 1
+period of past errors.
+Saved as: models/artefacts/arima_revenue.joblib
+Used on: /forecasts page
+
+
+========================================
+MODEL 3: LSTM (optional neural network forecaster)
+========================================
+
+WHAT IT IS:
+Long Short-Term Memory network — a type of Recurrent Neural Network (RNN)
+designed specifically for sequences of data (like time series).
+
+HOW IT WORKS:
+Unlike ARIMA (which uses a fixed formula), LSTM learns complex patterns from data.
+It has "memory cells" that can remember important past values and forget
+irrelevant ones — this makes it powerful for long-range dependencies.
+
+Architecture used here:
+  Layer 1: LSTM with 64 units (learns broad patterns)
+  Layer 2: Dropout 20% (prevents overfitting — randomly ignores 20% of connections during training)
+  Layer 3: LSTM with 32 units (refines patterns)
+  Layer 4: Dropout 20%
+  Layer 5: Dense(1) output layer (produces the forecast)
+
+Training approach:
+  - Uses a "lookback window" of 4 quarters (looks at the last 4 quarters to predict the next)
+  - Trains for 50 epochs using Adam optimizer
+  - Requires TensorFlow to be installed
+
+WHY BOTH ARIMA AND LSTM:
+  - ARIMA is reliable, fast, and interpretable. It is the primary model.
+  - LSTM can potentially learn more complex patterns but needs more data to work well.
+  - With only 6–7 years of quarterly data (~24–28 data points), ARIMA is often better.
+  - LSTM is included as an optional upgrade path as more data accumulates.
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 8 — HOW THE BACKEND API WORKS
+────────────────────────────────────────────────────────────────────────────────
+
+The backend is a REST API built with FastAPI (a Python web framework).
+It runs on http://127.0.0.1:8001
+
+Every time the frontend needs data, it calls one of these endpoints:
+
+GET  /api/kpis
+  → Returns all 14 KPIs with current values and status
+  → Used by: Dashboard, KRI Register, Forecasts
+
+GET  /api/scenarios
+  → Returns all 56+ scenarios from the library
+  → Used by: Stress Tester, Scenario Compare, Reverse Stress, Monte Carlo
+
+GET  /api/scenarios/{id}
+  → Returns one specific scenario by ID
+  → Used by: When loading a scenario from a URL parameter
+
+POST /api/scenarios/{id}/run
+  Request body: { severityMultiplier: 1.5, macroOverlays: { cediShockPct: 10, ... } }
+  → Runs the scenario engine (Part 6, Stress Tester math)
+  → Returns stressed KPI values + delta % + status + SHAP attributions
+  → Used by: Stress Tester
+
+POST /api/reverse-stress
+  Request body: { kpiId: "FIN03", threshold: 55, operator: "lt", scenarioId: "S04" }
+  → Runs binary search to find breach severity
+  → Returns required severity multiplier + trajectory
+  → Used by: Reverse Stress page
+
+POST /api/monte-carlo
+  Request body: { scenarioId: "S04", nSimulations: 1000, severityMultiplier: 1.0, uncertaintyPct: 0.20 }
+  → Runs the Monte Carlo engine (1000 simulations with Gaussian noise)
+  → Returns P05/P25/P50/P75/P95 distributions for all KPIs
+  → Used by: Monte Carlo page
+
+GET  /api/history/quarterly
+  → Returns quarterly historical data for trend charts
+  → Used by: Quarterly Trends page
+
+GET  /api/history/monthly
+  → Returns monthly historical data
+  → Used by: Monthly Trends page
+
+POST /api/forecasts/{kpi_id}
+  → Loads the trained ARIMA model and generates a forecast
+  → Returns forecast points with P05/P50/P95 values
+  → Used by: Forecasts page
+
+POST /api/board-brief
+  Request body: { scenarioIds: ["S04"] }
+  → Generates a written board-level summary
+  → Used by: Board Briefs page, "Generate Board Brief" button on Stress Tester
+
+POST /api/upload/csv and POST /api/upload/pdf
+  → Handles data file uploads
+  → Used by: Settings page
+
+POST /api/retrain
+  → Triggers retraining of XGBoost models
+  → Used by: Settings page
+
+POST /api/feedback
+  → Stores analyst feedback about model outputs
+  → Used by: Forecasts page feedback widget
+
+GET  /api/logs/base-case
+  → Returns recent pipeline log lines
+  → Used by: Settings page
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 9 — HOW TO INTERPRET RESULTS: A COMPLETE EXAMPLE
+────────────────────────────────────────────────────────────────────────────────
+
+Let's walk through a complete example from start to finish.
+
+SCENARIO: "Ghana Currency Shock" (S04 — Cedi/USD Exchange Rate Crisis)
+The Cedi depreciates sharply. The library says this causes:
+  FIN01 (Service Revenue): -8% impact
+  FIN02 (EBITDA):          -5% impact
+  FIN03 (EBITDA Margin):   -3pp delta
+  FIN04 (PAT):             -7% impact
+  FIN05 (PAT Margin):      -2pp delta
+  EXT03 (Cedi/USD):        +15% (Cedi weakens = rate rises)
+
+BASE CASE (from base_case.csv):
+  FIN01 = 24,500 GHSm
+  FIN02 = 14,300 GHSm
+  FIN03 = 60.2%
+  FIN04 =  8,100 GHSm
+  FIN05 = 33.1%
+  EXT03 = 11.6 GHS/USD (safe range: 11–13)
+
+────────────────────────────
+STRESS TESTER (severity = 1.5×):
+────────────────────────────
+
+Actual impacts applied (multiplied by 1.5):
+  FIN01: -8% × 1.5 = -12%    → 24,500 × 0.88 = 21,560 GHSm  → delta = -11.99%
+  FIN02: -5% × 1.5 = -7.5%   → 14,300 × 0.925 = 13,228 GHSm → delta = -7.50%
+  FIN03: -3pp × 1.5 = -4.5pp → 60.2 - 4.5 = 55.7%           → delta = -4.5pp
+  FIN04: -7% × 1.5 = -10.5%  → 8,100 × 0.895 = 7,249 GHSm  → delta = -10.50%
+  FIN05: -2pp × 1.5 = -3pp   → 33.1 - 3.0 = 30.1%           → delta = -3.0pp
+  EXT03: +15% × 1.5 = +22.5% → 11.6 × 1.225 = 14.21 GHS/USD → CRITICAL (above 13)
+
+Status checks:
+  FIN01 = 21,560 GHSm vs lower threshold 23,000 → CRITICAL (21,560 < 23,000 × 0.95 = 21,850)
+  FIN02 = 13,228 GHSm vs lower threshold 14,000 → CRITICAL (13,228 < 14,000 × 0.95 = 13,300)
+    Actually 13,228 < 13,300 = CRITICAL
+  FIN03 = 55.7% vs lower threshold 58% → CRITICAL (55.7 < 58 × 0.95 = 55.1). Borderline.
+    55.7 > 55.1 so actually WARNING (below lower threshold, not below 95% of it)
+  FIN04 = 7,249 GHSm vs lower threshold 7,500 → WARNING (7,249 < 7,500 but > 7,125)
+  FIN05 = 30.1% vs lower threshold 31% → WARNING
+  EXT03 = 14.21 GHS/USD vs upper threshold 13 → CRITICAL (higher is worse)
+
+Result summary:
+  Critical: 3 (FIN01, FIN02, EXT03)
+  Warning: 3 (FIN03, FIN04, FIN05)
+  Watch: 0
+  Resilient: 1 (other KPIs not impacted)
+
+The narrative banner would say:
+  "Stress Test Complete — Ghana Currency Shock
+   Applied at 1.5× severity across 7 KPIs.
+   Average portfolio delta: -7.5% from base.
+   3 KPIs are in critical territory — immediate board-level review is recommended."
+
+────────────────────────────
+MONTE CARLO (1000 simulations, ±20% uncertainty):
+────────────────────────────
+
+For EBITDA Margin, after 1000 runs with random noise on the -4.5pp impact:
+  Some runs produce -3.8pp, some -5.2pp, some -4.9pp...
+
+  Sort all 1000 outcomes:
+  P05 = 52.3%  (5% of sims were at or below 52.3%)
+  P25 = 54.8%  (25% of sims were at or below 54.8%)
+  P50 = 55.7%  (median — matches our stress tester result closely)
+  P75 = 56.6%  (75% of sims were at or below 56.6%)
+  P95 = 57.9%  (95% of sims were at or below 57.9%)
+
+Interpretation sentence:
+  "In the worst 5% of 1,000 simulated outcomes, EBITDA Margin could fall by 12.4%
+   to 52.3%. The median outcome sits at 55.7%, while the most favourable 5% of
+   simulations see it reach 57.9% (-0.5% below base — still not quite recovering)."
+
+Key takeaway: Even in the BEST 5% of simulations, EBITDA Margin is still below the
+58% safe threshold. This means there is essentially no scenario where this currency
+shock leaves EBITDA Margin unscathed. The board should prepare mitigation measures.
+
+────────────────────────────
+REVERSE STRESS (target: EBITDA Margin drops below 55%):
+────────────────────────────
+
+Binary search finds: Required severity = 1.37×
+Interpretation:
+  "The Ghana Currency Shock only needs to escalate to 1.37× its calibrated severity
+   before EBITDA Margin breaches the 55% floor. Given that the scenario's baseline
+   calibration corresponds to a moderate Cedi depreciation, a 1.37× event is
+   considered plausible. Management should have a contingency plan ready."
+
+Cross-Scenario ranking shows this scenario is the 2nd most dangerous for EBITDA Margin
+across all 56 scenarios — only the "Combined Macro Shock" scenario is more dangerous
+(requiring just 1.21× severity to breach the same threshold).
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 10 — GLOSSARY OF ALL TECHNICAL TERMS
+────────────────────────────────────────────────────────────────────────────────
+
+ARIMA — Auto-Regressive Integrated Moving Average. A statistical model for forecasting
+time series data. Uses past values and past errors to predict future values.
+
+ARPU — Average Revenue Per User. Total revenue divided by number of subscribers.
+A higher ARPU means each customer is paying more on average.
+
+Binary Search — A mathematical technique for finding an exact value by repeatedly
+halving a search range until the answer is found. Used in Reverse Stress to find
+the exact breach severity.
+
+BoG — Bank of Ghana. Ghana's central bank, which sets the policy interest rate.
+
+Calibration — The process of adjusting a scenario's impact values to match historical
+data or expert judgement. "Calibrated to FY22" means the impacts are based on what
+actually happened during 2022.
+
+Cedi (GHS) — Ghana's currency. GHSm means millions of Ghana Cedis.
+
+Cross-Validation — A technique for testing model accuracy when you have limited data.
+Leave-One-Out (LOO) cross-validation tests each data point once by training without it.
+
+Delta — The difference between two values. "A delta of -8%" means the value fell by 8%.
+
+Distribution — The spread of all possible outcomes. A distribution tells you both the
+likely outcome AND how much variation to expect.
+
+Downside Risk — How bad things could get in a negative scenario.
+
+EBITDA — Earnings Before Interest, Taxes, Depreciation, and Amortisation. A measure
+of a company's core operating profitability, before financial/accounting adjustments.
+
+Epoch — One full pass through all training data during neural network training.
+"50 epochs" means the neural network saw all the data 50 times.
+
+FX — Foreign Exchange. "FX risk" means risk from currency rate changes.
+
+Gaussian Noise — Random variations that follow a bell curve (normal distribution).
+Most noise is small and close to zero; very large noise values are rare.
+
+GDP — Gross Domestic Product. The total economic output of a country. A growth proxy.
+
+IQR — Interquartile Range. The range from P25 to P75. The middle 50% of outcomes.
+This is where "typical" outcomes land — not too good, not too bad.
+
+KPI — Key Performance Indicator. A number the company tracks to measure performance.
+
+KRI — Key Risk Indicator. A KPI specifically focused on measuring or signalling risk.
+
+LSTM — Long Short-Term Memory. A type of neural network designed for learning from
+sequences of data. Has "memory cells" that can retain important historical patterns.
+
+Macro Overlay — An additional shock layered on top of a scenario. E.g., adding
+"Cedi depreciates another 10%" on top of a "Competitor Price War" scenario.
+
+Monte Carlo — A simulation technique that runs thousands of scenarios with random
+variations to produce a probability distribution of outcomes. Named after the casino
+in Monaco because it uses randomness (like gambling).
+
+NCA — National Communications Authority. Ghana's telecom regulator.
+
+Neural Network — A machine learning model inspired by the human brain. Consists of
+layers of interconnected mathematical "neurons" that learn patterns from data.
+
+Overfitting — When a model learns the training data too perfectly and fails to
+generalise to new data. Prevented by Dropout layers and regularisation.
+
+PAT — Profit After Tax. The final "bottom line" profit after all deductions.
+
+Percentile — A value that separates a data set at a given percentage.
+P05 = 5th percentile = only 5% of values are below this.
+P50 = 50th percentile = median = exactly half are above, half below.
+P95 = 95th percentile = 95% of values are below this.
+
+Pillar — One of the 7 categories of risk: Macro & FX, Regulatory, Tech & Cyber,
+Competitive, Operational & Climate, Upside, Tail Risk.
+
+Plausibility — How likely a scenario is to occur in reality. Rated 1–5 (5 = very likely).
+
+Random Seed — A starting number for a random number generator. Using the same seed
+produces the same "random" sequence, making simulations reproducible.
+
+REST API — Representational State Transfer Application Programming Interface.
+A standardised way for software programs to communicate over the internet using
+HTTP requests (GET, POST, PUT, DELETE).
+
+Reverse Stress Testing — Finding the severity level at which a given outcome (like
+breaching a KPI threshold) would occur. The opposite of regular stress testing.
+
+SHAP — SHapley Additive exPlanations. A technique from game theory adapted for AI.
+It assigns each input feature a "contribution score" explaining how much it influenced
+a prediction.
+
+Severity Multiplier — A scaling factor applied to a scenario's impact values.
+1.0× = calibrated base severity. 2.0× = twice as severe. 0.5× = half as severe.
+
+Sparkline — A tiny line chart shown within a table or card. Shows the general trend
+direction without taking up much space.
+
+Standard Deviation (Std) — A measure of how spread out values are. Higher std =
+more uncertainty. In Monte Carlo, a KPI with high std has more variable outcomes.
+
+Stress Testing — Applying an adverse scenario to financial data to see how badly it
+would impact key metrics. A standard requirement for financial institutions.
+
+Tail Risk — Very severe but unlikely events. The "tail" of a probability distribution.
+Scenarios in the G pillar are tail risks.
+
+TreeExplainer — The specific SHAP algorithm used with XGBoost (tree-based) models.
+It efficiently computes exact SHAP values for decision trees.
+
+Waterfall Chart — A chart that shows how a final value is built up from or broken down
+into components. Shows the contribution of each driver to a total change.
+
+XGBoost — eXtreme Gradient Boosting. An ensemble machine learning algorithm that
+builds many decision trees sequentially, each correcting the previous one's errors.
+Known for high accuracy on tabular data and fast computation.
+
+YoY — Year on Year. A comparison of the current period against the same period last year.
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 11 — UNDERSTANDING THE COLOUR CODE SYSTEM
+────────────────────────────────────────────────────────────────────────────────
+
+The platform uses consistent colours throughout:
+
+  RED (error)      → Critical — a threshold has been breached. Action required now.
+  YELLOW (mtn-yellow) → Warning — approaching a threshold. Monitor closely.
+  ORANGE           → Watch — slightly elevated risk. Keep an eye on.
+  GREEN            → Safe / Resilient — within safe bounds. No action needed.
+  BLUE             → Informational — neutral data, no risk implication.
+
+These colours appear in:
+  - Status badges on KPI cards (Dashboard, KRI Register)
+  - Left borders on KPI tiles in the Stress Tester
+  - Risk count chips on Monte Carlo and Stress Tester
+  - Distribution bar colours in Monte Carlo
+  - Scenario risk dots in Monte Carlo KPI rows
+  - Section headers and chart elements
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 12 — RUNNING THE PLATFORM (QUICK SETUP GUIDE)
+────────────────────────────────────────────────────────────────────────────────
+
+BACKEND (Python):
+  1. Install Python 3.11+
+  2. Navigate to the mtn_quantrisk/ folder
+  3. Create a Conda environment: conda env create -f environment.yml
+     OR install manually: pip install fastapi uvicorn pandas xgboost shap
+                          joblib scikit-learn statsmodels python-multipart
+  4. Start the backend:
+     ./start_backend.sh  (on Mac/Linux)
+     OR: python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8001 --reload
+  5. The backend is ready when you see: "Uvicorn running on http://127.0.0.1:8001"
+
+TRAIN THE MODELS (first time only):
+  python models/train_lstm.py       (trains ARIMA for forecasting)
+  python models/train_impact_model.py  (trains XGBoost for SHAP attribution)
+
+FRONTEND (Next.js):
+  1. Install Node.js 18+
+  2. Navigate to mtn_quantrisk/frontend/
+  3. Run: npm install
+  4. Start: npm run dev
+  5. Open browser at: http://localhost:3000
+
+BOTH must be running simultaneously for the app to work.
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 13 — FREQUENTLY ASKED QUESTIONS
+────────────────────────────────────────────────────────────────────────────────
+
+Q: The numbers don't seem real. Are they real MTN data?
+A: The base_case.csv contains representative FY25 figures for MTN Ghana. Some values
+   may be rounded or slightly adjusted for confidentiality. The models and scenarios
+   are calibrated to be directionally accurate, not necessarily the exact published
+   figures.
+
+Q: Why does the Forecasts page sometimes not load?
+A: The ARIMA model must be trained first. Run: python models/train_lstm.py
+   If the model file doesn't exist at models/artefacts/arima_revenue.joblib,
+   the API will return an error.
+
+Q: Why does the SHAP chart show the same values every time?
+A: The SHAP calculation runs on the trained XGBoost model at the default macro values.
+   If the model hasn't been trained, the backend uses heuristic fallback values.
+   Train the model to get real SHAP values.
+
+Q: What does "calibrated to trailing 36-month internal shock bounds" mean?
+A: The scenario impact values were set based on looking at what actually happened to
+   MTN's KPIs over the past 3 years of historical data. The range of shocks observed
+   in that period defines the "calibration bounds".
+
+Q: How accurate is the ARIMA forecast?
+A: With ~6 years of annual data and ~24 quarters of quarterly data, the ARIMA model
+   has limited data to learn from. Treat the forecast as directional guidance, not
+   a precise prediction. The uncertainty bands (P05–P95) reflect this.
+
+Q: Can I add my own scenarios?
+A: Yes. On the Stress Tester page, click "+" next to the scenario library to open
+   the Create Scenario form. Fill in the KPI impacts, severity, and plausibility.
+   The new scenario is saved to scenario_library.csv and immediately available.
+
+Q: Why does Monte Carlo sometimes give slightly different results when run twice?
+A: Monte Carlo uses random number generation. If you don't set a fixed random seed,
+   each run produces slightly different results. Run 1000+ simulations to get
+   stable percentile estimates.
+
+Q: What is the difference between "severity" and "severity multiplier"?
+A: "Severity" (rated 1–5) is a qualitative rating of how serious a scenario is.
+   "Severity Multiplier" (0.5× to 3.0×) is the numerical scaling factor you set
+   when running a simulation to scale the impacts up or down.
+
+Q: What is a "good" EBITDA Margin for MTN Ghana?
+A: MTN Ghana historically targets 58–62%. A margin below 58% triggers a Warning;
+   below 55.1% (5% below the lower threshold) triggers Critical. Global telecom
+   companies typically have EBITDA margins between 35–60%, so MTN Ghana's targets
+   are ambitious and reflect its strong market position.
+
+
+────────────────────────────────────────────────────────────────────────────────
+APPENDIX — FILE STRUCTURE MAP
+────────────────────────────────────────────────────────────────────────────────
+
+mtn_quantrisk/
+│
+├── data/
+│   └── structured/
+│       ├── base_case.csv         ← Current KPI values (the "normal" state)
+│       ├── scenario_library.csv  ← All scenario impacts on each KPI
+│       ├── annual.csv            ← Year-by-year historical financials
+│       ├── quarterly.csv         ← Quarter-by-quarter historical data
+│       ├── monthly.csv           ← Month-by-month historical data
+│       ├── macro_context.csv     ← Economic indicators by year
+│       ├── segments_annual.csv   ← MoMo, Data segment data
+│       └── operational_annual.csv ← Subscribers, ARPU, coverage data
+│
+├── mtn_scenario_library.csv      ← Scenario metadata (names, pillars, types)
+│
+├── models/
+│   ├── monte_carlo.py            ← Monte Carlo simulation engine
+│   ├── explain.py                ← SHAP explainability module
+│   ├── train_impact_model.py     ← XGBoost training script
+│   ├── train_lstm.py             ← ARIMA + LSTM training script
+│   └── artefacts/
+│       ├── arima_revenue.joblib  ← Trained ARIMA model (created by train_lstm.py)
+│       ├── ebitda_margin.joblib  ← Trained XGBoost for EBITDA Margin
+│       ├── revenue_growth.joblib ← Trained XGBoost for Revenue Growth
+│       ├── pat_margin.joblib     ← Trained XGBoost for PAT Margin
+│       ├── momo_revenue.joblib   ← Trained XGBoost for MoMo Revenue
+│       ├── arpu.joblib           ← Trained XGBoost for ARPU
+│       ├── data_revenue_growth.joblib ← Trained XGBoost for Data Growth
+│       └── feature_scaler.joblib ← StandardScaler (for XGBoost input normalisation)
+│
+├── backend/
+│   └── app/
+│       ├── main.py               ← FastAPI app entry point
+│       ├── schemas.py            ← API request/response data structures
+│       ├── api/
+│       │   └── routes.py         ← All API endpoint definitions
+│       └── services/
+│           ├── data_loader.py    ← Reads CSVs, defines KPI metadata & thresholds
+│           ├── scenario_service.py ← Stress test engine (applies scenario impacts)
+│           ├── reverse_service.py  ← Binary search reverse stress solver
+│           ├── history_service.py  ← Returns quarterly/monthly historical data
+│           ├── log_service.py      ← Returns backend log lines
+│           ├── feedback_service.py ← Stores analyst feedback
+│           └── upload_service.py   ← Handles CSV/PDF uploads and model retraining
+│
+└── frontend/
+    └── app/
+        └── (app)/
+            ├── dashboard/page.tsx     ← Core Anchors dashboard
+            ├── kri-register/page.tsx  ← Full KRI Book table
+            ├── quarterly/page.tsx     ← Quarterly trend charts
+            ├── monthly/page.tsx       ← Monthly trend charts
+            ├── forecasts/page.tsx     ← ARIMA/LSTM predictive forecasts
+            ├── briefs/page.tsx        ← Board brief library
+            ├── scenarios/page.tsx     ← Stress Tester
+            ├── compare/page.tsx       ← Scenario comparison
+            ├── reverse/page.tsx       ← Reverse Stress
+            ├── monte-carlo/page.tsx   ← Monte Carlo simulation
+            ├── help/page.tsx          ← Help & Q&A & Glossary
+            └── settings/page.tsx      ← Data upload & model retraining
+
+
+================================================================================
+END OF GUIDE
+================================================================================
+This document covers everything from the user interface to the mathematics behind
+each model. If anything is still unclear, the /help page inside the app has
+a searchable Q&A with 45 questions and a 32-term glossary. The BACKEND.md file
+in the project root covers detailed API documentation with request/response examples.
+================================================================================

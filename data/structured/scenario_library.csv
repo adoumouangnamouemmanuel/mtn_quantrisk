@@ -1,188 +1,180 @@
-Scenario ID,Type,Scenario Name,Description,KPI ID,Impact Type,Impact Value,Plausibility,Severity,Recovery Qtrs,Mitigation Lever,Calibration Source
-S01,Stress,Cedi devaluation -25%,"Cedi drops 25% vs USD over 2 quarters",FIN01,pct,-8,3,4,3,Emergency tariff repricing,FY22 analogue 0.32 elasticity
-S01,Stress,Cedi devaluation -25%,"Cedi drops 25% vs USD over 2 quarters",FIN03,delta,-2,3,4,3,Emergency tariff repricing,FY22 analogue 0.32 elasticity
-S01,Stress,Cedi devaluation -25%,"Cedi drops 25% vs USD over 2 quarters",OPS04,pct,-15,3,4,3,Emergency tariff repricing,FY22 analogue 0.32 elasticity
-S01,Stress,Cedi devaluation -25%,"Cedi drops 25% vs USD over 2 quarters",FIN02,pct,-12,3,4,3,Emergency tariff repricing,FY22 analogue 0.32 elasticity
-S02,Stress,Inflation resurgence to 25%,"CPI hits 25% due to fiscal slippage",FIN03,delta,-3,3,3,2,Cost optimisation,FY22 inflation impact
-S02,Stress,Inflation resurgence to 25%,"CPI hits 25% due to fiscal slippage",FIN01,pct,-4,3,3,2,Cost optimisation,FY22 inflation impact
-S02,Stress,Inflation resurgence to 25%,"CPI hits 25% due to fiscal slippage",Opex,delta,18,3,3,2,Cost optimisation,operating leverage
-S03,Stress,MoMo e-levy increase to 1.5%,"Govt raises e-levy from 1% to 1.5%",SEG03,pct,-25,3,4,2,Pricing strategy,Q2 2022 e-levy impact
-S03,Stress,MoMo e-levy increase to 1.5%,"Govt raises e-levy from 1% to 1.5%",OPS01,pct,-15,3,4,2,Pricing strategy,user decline observed
-S03,Stress,MoMo e-levy increase to 1.5%,"Govt raises e-levy from 1% to 1.5%",FIN01,pct,-2,3,4,2,Pricing strategy,indirect revenue loss
-S04,Stress,Sovereign debt freeze,"IMF programme stalls, donors cut aid",Dividend,abs,-50,2,4,6,Repatriation planning,FY22 dividend freeze
-S04,Stress,Sovereign debt freeze,"IMF programme stalls, donors cut aid",WorkingCapital,delta,15,2,4,6,Repatriation planning,FY22 working capital impact
-S05,Stress,ECG tariff +40%,"Power utility raises tariffs 40%",Opex,pct,12,3,3,1,Energy efficiency,FY23 tariff hike
-S05,Stress,ECG tariff +40%,"Power utility raises tariffs 40%",FIN03,delta,-2,3,3,1,Energy efficiency,pass-through cost
-S06,Shock,Major cyber breach - 5-day MoMo outage,"Ransomware locks MoMo platform for 5 days",SEG03,pct,-12,2,5,3,Cyber resilience,industry benchmark
-S06,Shock,Major cyber breach - 5-day MoMo outage,"Ransomware locks MoMo platform for 5 days",FIN02,pct,-3,2,5,3,Cyber resilience,revenue loss + fines
-S06,Shock,Major cyber breach - 5-day MoMo outage,"Ransomware locks MoMo platform for 5 days",Reputation,delta,-2,2,5,3,Cyber resilience,qualitative
-S07,Shock,Spectrum dispute - 4G degradation,"Regulator forces spectrum reallocation, 4G speeds drop",FIN01,pct,-8,2,4,2,Litigation & lobbying,MTN Nigeria precedent
+﻿Scenario_ID,Type,Scenario_Name,Description,KPI_ID,Impact_Type,Impact_Value,Plausibility,Severity,Recovery_Qtrs,Mitigation_Lever,Calibration_Source
+S02,Stress,Inflation resurgence to 25%,CPI hits 25% due to fiscal slippage,FIN03,delta,-3.0,3,3,2,Cost optimisation,FY22 inflation impact
+S02,Stress,Inflation resurgence to 25%,CPI hits 25% due to fiscal slippage,FIN01,pct,-4.0,3,3,2,Cost optimisation,FY22 inflation impact
+S02,Stress,Inflation resurgence to 25%,CPI hits 25% due to fiscal slippage,Opex,delta,18.0,3,3,2,Cost optimisation,operating leverage
+S03,Stress,MoMo e-levy increase to 1.5%,Govt raises e-levy from 1% to 1.5%,SEG03,pct,-25.0,3,4,2,Pricing strategy,Q2 2022 e-levy impact
+S03,Stress,MoMo e-levy increase to 1.5%,Govt raises e-levy from 1% to 1.5%,OPS01,pct,-15.0,3,4,2,Pricing strategy,user decline observed
+S03,Stress,MoMo e-levy increase to 1.5%,Govt raises e-levy from 1% to 1.5%,FIN01,pct,-2.0,3,4,2,Pricing strategy,indirect revenue loss
+S04,Stress,Sovereign debt freeze,"IMF programme stalls, donors cut aid",Dividend,abs,-50.0,2,4,6,Repatriation planning,FY22 dividend freeze
+S04,Stress,Sovereign debt freeze,"IMF programme stalls, donors cut aid",WorkingCapital,delta,15.0,2,4,6,Repatriation planning,FY22 working capital impact
+S05,Stress,ECG tariff +40%,Power utility raises tariffs 40%,Opex,pct,12.0,3,3,1,Energy efficiency,FY23 tariff hike
+S05,Stress,ECG tariff +40%,Power utility raises tariffs 40%,FIN03,delta,-2.0,3,3,1,Energy efficiency,pass-through cost
+S06,Shock,Major cyber breach - 5-day MoMo outage,Ransomware locks MoMo platform for 5 days,SEG03,pct,-12.0,2,5,3,Cyber resilience,industry benchmark
+S06,Shock,Major cyber breach - 5-day MoMo outage,Ransomware locks MoMo platform for 5 days,FIN02,pct,-3.0,2,5,3,Cyber resilience,revenue loss + fines
+S06,Shock,Major cyber breach - 5-day MoMo outage,Ransomware locks MoMo platform for 5 days,Reputation,delta,-2.0,2,5,3,Cyber resilience,qualitative
+S07,Shock,Spectrum dispute - 4G degradation,"Regulator forces spectrum reallocation, 4G speeds drop",FIN01,pct,-8.0,2,4,2,Litigation & lobbying,MTN Nigeria precedent
 S07,Shock,Spectrum dispute - 4G degradation,"Regulator forces spectrum reallocation, 4G speeds drop",OPS07,delta,-2.5,2,4,2,Litigation & lobbying,coverage reduction
-S07,Shock,Spectrum dispute - 4G degradation,"Regulator forces spectrum reallocation, 4G speeds drop",DataUsage,pct,-15,2,4,2,Litigation & lobbying,user experience decline
-S08,Shock,Major flood - 300+ sites down,"Heavy rains damage 300 cell sites across south",FIN01,pct,-2,2,3,2,Disaster recovery,FY21 flooding impact
-S08,Shock,Major flood - 300+ sites down,"Heavy rains damage 300 cell sites across south",Capex,pct,15,2,3,2,Disaster recovery,replacement cost
-S08,Shock,Major flood - 300+ sites down,"Heavy rains damage 300 cell sites across south",OPS01,pct,-1,2,3,2,Disaster recovery,subscriber disruption
-S09,Shock,Mass data privacy breach,"Customer data of 5M users leaked online",Reputation,delta,-3,2,4,4,Data governance,GDPR analogue
-S09,Shock,Mass data privacy breach,"Customer data of 5M users leaked online",Fine,abs,200,2,4,4,Data governance,regulatory penalty
-S09,Shock,Mass data privacy breach,"Customer data of 5M users leaked online",Churn,pct,5,2,4,4,Data governance,customer flight
-S10,Shock,Competitive intensification (ARPU pressure),"Price war cuts data tariffs 30% across market",OPS04,pct,-12,3,4,2,Product differentiation,FY19 competition
-S10,Shock,Competitive intensification (ARPU pressure),"Price war cuts data tariffs 30% across market",FIN01,pct,-6,3,4,2,Product differentiation,revenue erosion
-S10,Shock,Competitive intensification (ARPU pressure),"Price war cuts data tariffs 30% across market",OPS01,pct,-2.5,3,4,2,Product differentiation,subscriber churn
-S11,Combined,Ghana macro reversal,"IMF suspension, cedi collapse, inflation spike",FIN01,pct,-12,3,5,6,Diversification,compound FY22-FY23
-S11,Combined,Ghana macro reversal,"IMF suspension, cedi collapse, inflation spike",FIN03,delta,-4,3,5,6,Diversification,compound margin impact
+S07,Shock,Spectrum dispute - 4G degradation,"Regulator forces spectrum reallocation, 4G speeds drop",DataUsage,pct,-15.0,2,4,2,Litigation & lobbying,user experience decline
+S08,Shock,Major flood - 300+ sites down,Heavy rains damage 300 cell sites across south,FIN01,pct,-2.0,2,3,2,Disaster recovery,FY21 flooding impact
+S08,Shock,Major flood - 300+ sites down,Heavy rains damage 300 cell sites across south,Capex,pct,15.0,2,3,2,Disaster recovery,replacement cost
+S08,Shock,Major flood - 300+ sites down,Heavy rains damage 300 cell sites across south,OPS01,pct,-1.0,2,3,2,Disaster recovery,subscriber disruption
+S09,Shock,Mass data privacy breach,Customer data of 5M users leaked online,Reputation,delta,-3.0,2,4,4,Data governance,GDPR analogue
+S09,Shock,Mass data privacy breach,Customer data of 5M users leaked online,Fine,abs,200.0,2,4,4,Data governance,regulatory penalty
+S09,Shock,Mass data privacy breach,Customer data of 5M users leaked online,Churn,pct,5.0,2,4,4,Data governance,customer flight
+S10,Shock,Competitive intensification (ARPU pressure),Price war cuts data tariffs 30% across market,OPS04,pct,-12.0,3,4,2,Product differentiation,FY19 competition
+S10,Shock,Competitive intensification (ARPU pressure),Price war cuts data tariffs 30% across market,FIN01,pct,-6.0,3,4,2,Product differentiation,revenue erosion
+S10,Shock,Competitive intensification (ARPU pressure),Price war cuts data tariffs 30% across market,OPS01,pct,-2.5,3,4,2,Product differentiation,subscriber churn
+S11,Combined,Ghana macro reversal,"IMF suspension, cedi collapse, inflation spike",FIN01,pct,-12.0,3,5,6,Diversification,compound FY22-FY23
+S11,Combined,Ghana macro reversal,"IMF suspension, cedi collapse, inflation spike",FIN03,delta,-4.0,3,5,6,Diversification,compound margin impact
 S11,Combined,Ghana macro reversal,"IMF suspension, cedi collapse, inflation spike",OPS01,pct,-2.5,3,5,6,Diversification,population impact
-S12,Combined,Fintech disruption + regulatory pressure,"Bank-led wallets capture MoMo share + e-levy hike",SEG03,pct,-30,3,4,4,Fintech strategy,industry analysis
-S12,Combined,Fintech disruption + regulatory pressure,"Bank-led wallets capture MoMo share + e-levy hike",FIN02,pct,-5.5,3,4,4,Fintech strategy,earnings impact
-S13,Combined,Network crisis + climate compound,"Major outage + flooding + diesel shortage",Sites,delta,-400,2,5,6,Resilience investment,worst-case scenario
-S13,Combined,Network crisis + climate compound,"Major outage + flooding + diesel shortage",OPS07,delta,-3,2,5,6,Resilience investment,coverage loss
-S13,Combined,Network crisis + climate compound,"Major outage + flooding + diesel shortage",FIN03,delta,-3.5,2,5,6,Resilience investment,cost overrun
-S14,Combined,Reverse-FY25 - all tailwinds vanish,"Cedi weakens, inflation rises, regulatory crackdown",FIN01,pct,-5,3,5,4,Base case review,FY22 data
-S14,Combined,Reverse-FY25 - all tailwinds vanish,"Cedi weakens, inflation rises, regulatory crackdown",FIN03,delta,-5,3,5,4,Base case review,opposite of FY25
-S14,Combined,Reverse-FY25 - all tailwinds vanish,"Cedi weakens, inflation rises, regulatory crackdown",Opex,pct,20,3,5,4,Base case review,cost pressure
-S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",FIN01,pct,-14,2,5,4,Emergency tariff repricing,FY22 0.32 elasticity compounded
-S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",FIN03,delta,-4,2,5,4,Emergency tariff repricing,USD cost pass-through
-S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",FIN02,pct,-20,2,5,4,Emergency tariff repricing,EBITDA erosion
-S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",OPS04,pct,-25,2,5,4,Emergency tariff repricing,ARPU collapse
-S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",Capex,pct,-25,2,5,4,Emergency tariff repricing,investment pause
-S16,Stress,Hyperinflation return - 50%+,"Inflation exceeds 50%, currency crisis deepens",Opex,pct,35,2,5,6,Cost pass-through,FY22 extreme
-S16,Stress,Hyperinflation return - 50%+,"Inflation exceeds 50%, currency crisis deepens",FIN03,delta,-6,2,5,6,Cost pass-through,operating leverage
-S16,Stress,Hyperinflation return - 50%+,"Inflation exceeds 50%, currency crisis deepens",OPS01,pct,-4,2,5,6,Cost pass-through,reduced affordability
-S17,Stress,BoG emergency rate hike to 35%,"MPC hikes policy rate to 35% in emergency meeting",CapexFinancing,pct,40,2,4,2,Refinancing,FY22 rate spike
-S17,Stress,BoG emergency rate hike to 35%,"MPC hikes policy rate to 35% in emergency meeting",WorkingCapital,delta,20,2,4,2,Refinancing,interest cost
-S17,Stress,BoG emergency rate hike to 35%,"MPC hikes policy rate to 35% in emergency meeting",Dividend,pct,-60,2,4,2,Refinancing,cash preservation
-S18,Stress,Ghana sovereign downgrade to junk,"Moody's cuts Ghana to Caa1, foreign debt frozen",FXRepatriation,delta,1,2,4,6,Onshore reinvestment,FY22 freeze
-S18,Stress,Ghana sovereign downgrade to junk,"Moody's cuts Ghana to Caa1, foreign debt frozen",RiskPremium,delta,500,2,4,6,Onshore reinvestment,sovereign spread
-S19,Upside,Cedi appreciation +30%,"Cedi strengthens 30% on oil windfall",FIN01,pct,10,3,3,2,Shareholder returns,FY25 tailwind
-S19,Upside,Cedi appreciation +30%,"Cedi strengthens 30% on oil windfall",FIN03,delta,3,3,3,2,Shareholder returns,FY25 tailwind
-S19,Upside,Cedi appreciation +30%,"Cedi strengthens 30% on oil windfall",USDOpex,pct,-15,3,3,2,Shareholder returns,cost relief
-S20,Stress,IMF conditionality tightening,"IMF demands higher tariffs, spending cuts",FIN01,pct,-2,3,3,3,Strategic planning,FY23 IMF programme
-S20,Stress,IMF conditionality tightening,"IMF demands higher tariffs, spending cuts",ConsumerSpending,pct,-5,3,3,3,Strategic planning,disposable income
-S21,Stress,Cocoa/commodity crash - fiscal squeeze,"Cocoa prices fall 40%, export revenues drop",GDP,delta,-2,3,3,2,FX hedging,FY23 cocoa shock
-S21,Stress,Cocoa/commodity crash - fiscal squeeze,"Cocoa prices fall 40%, export revenues drop",MoMoVolumes,pct,-8,3,3,2,FX hedging,transaction value
-S22,Stress,Oil price spike - pass-through inflation,"Crude oil +50%, diesel +80%",DieselCost,pct,40,3,3,1,Energy transition,FY22 fuel price
-S22,Stress,Oil price spike - pass-through inflation,"Crude oil +50%, diesel +80%",GeneratorOpex,pct,30,3,3,1,Energy transition,site costs
-S23,Shock,BoG FX intervention failure - disorderly devaluation,"Cedi hits 18 GHS/USD, BoG runs out of reserves",Cedi,delta,-35,2,5,6,Hard currency reserves,FY22 disorderly
-S23,Shock,BoG FX intervention failure - disorderly devaluation,"Cedi hits 18 GHS/USD, BoG runs out of reserves",USDPayables,pct,25,2,5,6,Hard currency reserves,liquidity crisis
-S24,Combined,Stagflation trap - GDP 1%, inflation 30%,"GDP growth 1%, inflation 30%, policy paralysis",FIN01,pct,-8,2,4,4,Productivity focus,FY22-FY23 average
-S24,Combined,Stagflation trap - GDP 1%, inflation 30%,"GDP growth 1%, inflation 30%, policy paralysis",FIN03,delta,-4,2,4,4,Productivity focus,margin compression
-S24,Combined,Stagflation trap - GDP 1%, inflation 30%,"GDP growth 1%, inflation 30%, policy paralysis",OPS04Real,pct,-20,2,4,4,Productivity focus,purchasing power
-S24,Combined,Stagflation trap - GDP 1%, inflation 30%,"GDP growth 1%, inflation 30%, policy paralysis",Churn,pct,3,2,4,4,Productivity focus,customer attrition
-S25,Stress,NCA universal service levy increase,"Levy raised from 1% to 2% of revenue",Opex,abs,400,3,3,1,Compliance,industry levy rate
-S25,Stress,NCA universal service levy increase,"Levy raised from 1% to 2% of revenue",FIN03,delta,-1.5,3,3,1,Compliance,margin impact
-S26,Stress,Spectrum refarming forced at cost,"Refarming 2G/3G to 4G/5G at NCA's cost",Capex,abs,800,3,3,3,Network planning,MTN SA refarming cost
-S26,Stress,Spectrum refarming forced at cost,"Refarming 2G/3G to 4G/5G at NCA's cost",OPS07,delta,-2,3,3,3,Network planning,coverage gap
-S27,Stress,Parliament social tariff floor,"Minimum data price floor removed, intense price war",FIN01,pct,-6,3,4,2,Pricing strategy,Kenya precedent
-S27,Stress,Parliament social tariff floor,"Minimum data price floor removed, intense price war",ARPU,delta,-3,3,4,2,Pricing strategy,revenue per user
-S28,Stress,BoG MoMo interoperability mandate,"Compulsory low‑cost interoperability with banks",SEG03,pct,-15,4,4,2,Fintech platform,Tanzania analogue
-S28,Stress,BoG MoMo interoperability mandate,"Compulsory low‑cost interoperability with banks",FeeYield,pct,-30,4,4,2,Fintech platform,revenue erosion
-S29,Shock,NCA partial licence revocation,"NCA revokes MTN's data licence in 2 regions",FIN01,pct,-30,1,5,8,Legal defence,extreme tail risk
-S29,Shock,NCA partial licence revocation,"NCA revokes MTN's data licence in 2 regions",SubscriberExodus,pct,-20,1,5,8,Legal defence,market loss
-S29,Shock,NCA partial licence revocation,"NCA revokes MTN's data licence in 2 regions",GroupWriteDown,delta,1,1,5,8,Legal defence,impairment
-S30,Shock,SIM re-registration 2.0 - 6-month disruption,"Mandatory new SIM registration, 6‑month process",ActiveSubs,pct,-8,3,4,6,Stakeholder engagement,Nigeria SIM registration
-S30,Shock,SIM re-registration 2.0 - 6-month disruption,"Mandatory new SIM registration, 6‑month process",DataSubs,pct,-6,3,4,6,Stakeholder engagement,data impact
-S30,Shock,SIM re-registration 2.0 - 6-month disruption,"Mandatory new SIM registration, 6‑month process",MoMoUsers,pct,-10,3,4,6,Stakeholder engagement,fintech impact
-S31,Stress,Data Protection Act fine - major enforcement,"DPC fines MTN GHS 500m for data breach",Fine,abs,500,3,3,2,Data compliance,DPC enforcement guidelines
-S31,Stress,Data Protection Act fine - major enforcement,"DPC fines MTN GHS 500m for data breach",ComplianceOpex,abs,200,3,3,2,Data compliance,remediation cost
-S32,Combined,Regulatory storm (spectrum + e-levy + tariff cap),"Three major regulatory hits simultaneously",FIN01,pct,-15,2,5,6,Unified response,compound effect
-S32,Combined,Regulatory storm (spectrum + e-levy + tariff cap),"Three major regulatory hits simultaneously",SEG03,pct,-30,2,5,6,Unified response,MoMo collapse
-S32,Combined,Regulatory storm (spectrum + e-levy + tariff cap),"Three major regulatory hits simultaneously",FIN03,delta,-5,2,5,6,Unified response,margin crash
-S32,Combined,Regulatory storm (spectrum + e-levy + tariff cap),"Three major regulatory hits simultaneously",Capex,pct,20,2,5,6,Unified response,forced investment
-S33,Shock,Ransomware - core network 10-day outage,"Full network outage due to ransomware, 10 days",FIN01,pct,-20,1,5,4,Cyber insurance,MTN Nigeria 2023 analogue
-S33,Shock,Ransomware - core network 10-day outage,"Full network outage due to ransomware, 10 days",OPS01,pct,-5,1,5,4,Cyber insurance,subscriber loss
-S34,Shock,MoMo vendor insolvency - forced migration,"MoMo platform vendor goes bankrupt, 15‑day migration",EmergencyCapex,abs,1200,2,4,6,Vendor diversification,industry risk
-S34,Shock,MoMo vendor insolvency - forced migration,"MoMo platform vendor goes bankrupt, 15‑day migration",MoMoOutage,delta,15,2,4,6,Vendor diversification,service disruption
-S34,Shock,MoMo vendor insolvency - forced migration,"MoMo platform vendor goes bankrupt, 15‑day migration",MoMoUsers,pct,-12,2,4,6,Vendor diversification,churn
-S35,Stress,5G auction - MTN underbids, competitor wins,"Competitor wins 5G spectrum, MTN lags",DataShare,delta,-3,3,3,2,Strategic bidding,competitive dynamic
-S36,Shock,Subsea cable cut - bandwidth crisis,"International fibre cut, 50% capacity loss for 3 weeks",EnterpriseRevenue,pct,-8,2,3,1,Alternative routing,2024 WACS outage
-S37,Stress,AI-driven MoMo fraud surge +500%,"AI fraud attacks cause massive MoMo losses",FraudLosses,abs,300,3,4,2,AI fraud detection,Kenya fraud trend
-S37,Stress,AI-driven MoMo fraud surge +500%,"AI fraud attacks cause massive MoMo losses",MoMoUsers,pct,-8,3,4,2,AI fraud detection,trust erosion
-S38,Shock,National grid + telecoms cyberattack,"State‑sponsored attack on grid and telcos",SitesOffline,pct,20,1,5,8,National security,extreme scenario
-S38,Shock,National grid + telecoms cyberattack,"State‑sponsored attack on grid and telcos",FIN01,pct,-15,1,5,8,National security,revenue collapse
-S38,Shock,National grid + telecoms cyberattack,"State‑sponsored attack on grid and telcos",EmergencyOpex,pct,25,1,5,8,National security,restoration cost
-S39,Stress,Network sharing collapse - Telecel dispute,"Telecel ends tower sharing, MTN must build own",Capex,abs,600,3,3,3,Infrastructure investment,coverage gap
-S40,Stress,Telecel aggressive bundle reset,"Telecel launches low‑price voice+data bundle",OPS04,pct,-8,4,3,2,Value proposition,competitor analysis
-S40,Stress,Telecel aggressive bundle reset,"Telecel launches low‑price voice+data bundle",DataShare,delta,-2,4,3,2,Value proposition,market share shift
-S40,Stress,Telecel aggressive bundle reset,"Telecel launches low‑price voice+data bundle",CAC,pct,20,4,3,2,Value proposition,customer acquisition
-S41,Shock,New MVNO entry - tech giant,"Amazon or Google launches MVNO in Ghana",DataARPU,pct,-15,2,4,3,Strategic partnership,international MVNO impact
-S41,Shock,New MVNO entry - tech giant,"Amazon or Google launches MVNO in Ghana",Enterprise,pct,-10,2,4,3,Strategic partnership,business segment
-S42,Stress,AT Ghana recapitalisation,"AirtelTigo gets new investor, aggressive marketing",SubsGrowth,delta,-3,3,3,2,Marketing efficiency,historical precedent
-S42,Stress,AT Ghana recapitalisation,"AirtelTigo gets new investor, aggressive marketing",Churn,pct,2,3,3,2,Marketing efficiency,subscriber retention
-S43,Stress,Price war - all operators cut data 40%,"Industry‑wide data price war, 40% cuts",FIN01,pct,-12,3,4,2,Cost leadership,2018 price war
-S43,Stress,Price war - all operators cut data 40%,"Industry‑wide data price war, 40% cuts",FIN03,delta,-4,3,4,2,Cost leadership,EBITDA margin
-S44,Shock,Bank-led mobile wallet captures MoMo share,"Consortium of banks launches unified wallet",MoMoUsers,pct,-15,3,4,3,Fintech partnership,Kenya M-Pesa vs banks
-S44,Shock,Bank-led mobile wallet captures MoMo share,"Consortium of banks launches unified wallet",SEG03,pct,-20,3,4,3,Fintech partnership,revenue loss
-S45,Stress,OTT substitution accelerates - voice collapse,"WhatsApp voice + video kills traditional voice",VoiceRev,pct,-20,4,3,2,OTT monetisation,global trend
-S45,Stress,OTT substitution accelerates - voice collapse,"WhatsApp voice + video kills traditional voice",SMSRev,pct,-30,4,3,2,OTT monetisation,declining usage
-S46,Stress,Starlink Ghana rural expansion,"Starlink launches low‑cost rural satellite broadband",RuralDataSubs,pct,-5,3,3,2,Satellite partnership,competitive threat
-S46,Stress,Starlink Ghana rural expansion,"Starlink launches low‑cost rural satellite broadband",ARPU,delta,-0.5,3,3,2,Satellite partnership,pricing pressure
-S47,Stress,ECG load-shedding Stage 6 - 6 months,"Daily 8‑hour power cuts, diesel costs quadruple",DieselOpex,abs,800,3,4,4,Alternative power,2024 load-shedding
-S47,Stress,ECG load-shedding Stage 6 - 6 months,"Daily 8‑hour power cuts, diesel costs quadruple",SiteAvailability,delta,-3,3,4,4,Alternative power,service uptime
+S12,Combined,Fintech disruption + regulatory pressure,Bank-led wallets capture MoMo share + e-levy hike,SEG03,pct,-30.0,3,4,4,Fintech strategy,industry analysis
+S12,Combined,Fintech disruption + regulatory pressure,Bank-led wallets capture MoMo share + e-levy hike,FIN02,pct,-5.5,3,4,4,Fintech strategy,earnings impact
+S13,Combined,Network crisis + climate compound,Major outage + flooding + diesel shortage,Sites,delta,-400.0,2,5,6,Resilience investment,worst-case scenario
+S13,Combined,Network crisis + climate compound,Major outage + flooding + diesel shortage,OPS07,delta,-3.0,2,5,6,Resilience investment,coverage loss
+S13,Combined,Network crisis + climate compound,Major outage + flooding + diesel shortage,FIN03,delta,-3.5,2,5,6,Resilience investment,cost overrun
+S14,Combined,Reverse-FY25 - all tailwinds vanish,"Cedi weakens, inflation rises, regulatory crackdown",FIN01,pct,-5.0,3,5,4,Base case review,FY22 data
+S14,Combined,Reverse-FY25 - all tailwinds vanish,"Cedi weakens, inflation rises, regulatory crackdown",FIN03,delta,-5.0,3,5,4,Base case review,opposite of FY25
+S14,Combined,Reverse-FY25 - all tailwinds vanish,"Cedi weakens, inflation rises, regulatory crackdown",Opex,pct,20.0,3,5,4,Base case review,cost pressure
+S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",FIN01,pct,-14.0,2,5,4,Emergency tariff repricing,FY22 0.32 elasticity compounded
+S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",FIN03,delta,-4.0,2,5,4,Emergency tariff repricing,USD cost pass-through
+S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",FIN02,pct,-20.0,2,5,4,Emergency tariff repricing,EBITDA erosion
+S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",OPS04,pct,-25.0,2,5,4,Emergency tariff repricing,ARPU collapse
+S15,Stress,Cedi devaluation -40% (severe),"Cedi plummets 40% in 3 months, BoG intervenes",Capex,pct,-25.0,2,5,4,Emergency tariff repricing,investment pause
+S16,Stress,Hyperinflation return - 50%+,"Inflation exceeds 50%, currency crisis deepens",Opex,pct,35.0,2,5,6,Cost pass-through,FY22 extreme
+S16,Stress,Hyperinflation return - 50%+,"Inflation exceeds 50%, currency crisis deepens",FIN03,delta,-6.0,2,5,6,Cost pass-through,operating leverage
+S16,Stress,Hyperinflation return - 50%+,"Inflation exceeds 50%, currency crisis deepens",OPS01,pct,-4.0,2,5,6,Cost pass-through,reduced affordability
+S17,Stress,BoG emergency rate hike to 35%,MPC hikes policy rate to 35% in emergency meeting,CapexFinancing,pct,40.0,2,4,2,Refinancing,FY22 rate spike
+S17,Stress,BoG emergency rate hike to 35%,MPC hikes policy rate to 35% in emergency meeting,WorkingCapital,delta,20.0,2,4,2,Refinancing,interest cost
+S17,Stress,BoG emergency rate hike to 35%,MPC hikes policy rate to 35% in emergency meeting,Dividend,pct,-60.0,2,4,2,Refinancing,cash preservation
+S18,Stress,Ghana sovereign downgrade to junk,"Moody's cuts Ghana to Caa1, foreign debt frozen",FXRepatriation,delta,1.0,2,4,6,Onshore reinvestment,FY22 freeze
+S18,Stress,Ghana sovereign downgrade to junk,"Moody's cuts Ghana to Caa1, foreign debt frozen",RiskPremium,delta,500.0,2,4,6,Onshore reinvestment,sovereign spread
+S19,Upside,Cedi appreciation +30%,Cedi strengthens 30% on oil windfall,FIN01,pct,10.0,3,3,2,Shareholder returns,FY25 tailwind
+S19,Upside,Cedi appreciation +30%,Cedi strengthens 30% on oil windfall,FIN03,delta,3.0,3,3,2,Shareholder returns,FY25 tailwind
+S19,Upside,Cedi appreciation +30%,Cedi strengthens 30% on oil windfall,USDOpex,pct,-15.0,3,3,2,Shareholder returns,cost relief
+S20,Stress,IMF conditionality tightening,"IMF demands higher tariffs, spending cuts",FIN01,pct,-2.0,3,3,3,Strategic planning,FY23 IMF programme
+S20,Stress,IMF conditionality tightening,"IMF demands higher tariffs, spending cuts",ConsumerSpending,pct,-5.0,3,3,3,Strategic planning,disposable income
+S21,Stress,Cocoa/commodity crash - fiscal squeeze,"Cocoa prices fall 40%, export revenues drop",GDP,delta,-2.0,3,3,2,FX hedging,FY23 cocoa shock
+S21,Stress,Cocoa/commodity crash - fiscal squeeze,"Cocoa prices fall 40%, export revenues drop",MoMoVolumes,pct,-8.0,3,3,2,FX hedging,transaction value
+S22,Stress,Oil price spike - pass-through inflation,"Crude oil +50%, diesel +80%",DieselCost,pct,40.0,3,3,1,Energy transition,FY22 fuel price
+S22,Stress,Oil price spike - pass-through inflation,"Crude oil +50%, diesel +80%",GeneratorOpex,pct,30.0,3,3,1,Energy transition,site costs
+S23,Shock,BoG FX intervention failure - disorderly devaluation,"Cedi hits 18 GHS/USD, BoG runs out of reserves",Cedi,delta,-35.0,2,5,6,Hard currency reserves,FY22 disorderly
+S23,Shock,BoG FX intervention failure - disorderly devaluation,"Cedi hits 18 GHS/USD, BoG runs out of reserves",USDPayables,pct,25.0,2,5,6,Hard currency reserves,liquidity crisis
+S25,Stress,NCA universal service levy increase,Levy raised from 1% to 2% of revenue,Opex,abs,400.0,3,3,1,Compliance,industry levy rate
+S25,Stress,NCA universal service levy increase,Levy raised from 1% to 2% of revenue,FIN03,delta,-1.5,3,3,1,Compliance,margin impact
+S26,Stress,Spectrum refarming forced at cost,Refarming 2G/3G to 4G/5G at NCA's cost,Capex,abs,800.0,3,3,3,Network planning,MTN SA refarming cost
+S26,Stress,Spectrum refarming forced at cost,Refarming 2G/3G to 4G/5G at NCA's cost,OPS07,delta,-2.0,3,3,3,Network planning,coverage gap
+S27,Stress,Parliament social tariff floor,"Minimum data price floor removed, intense price war",FIN01,pct,-6.0,3,4,2,Pricing strategy,Kenya precedent
+S27,Stress,Parliament social tariff floor,"Minimum data price floor removed, intense price war",ARPU,delta,-3.0,3,4,2,Pricing strategy,revenue per user
+S28,Stress,BoG MoMo interoperability mandate,Compulsory low‑cost interoperability with banks,SEG03,pct,-15.0,4,4,2,Fintech platform,Tanzania analogue
+S28,Stress,BoG MoMo interoperability mandate,Compulsory low‑cost interoperability with banks,FeeYield,pct,-30.0,4,4,2,Fintech platform,revenue erosion
+S29,Shock,NCA partial licence revocation,NCA revokes MTN's data licence in 2 regions,FIN01,pct,-30.0,1,5,8,Legal defence,extreme tail risk
+S29,Shock,NCA partial licence revocation,NCA revokes MTN's data licence in 2 regions,SubscriberExodus,pct,-20.0,1,5,8,Legal defence,market loss
+S29,Shock,NCA partial licence revocation,NCA revokes MTN's data licence in 2 regions,GroupWriteDown,delta,1.0,1,5,8,Legal defence,impairment
+S30,Shock,SIM re-registration 2.0 - 6-month disruption,"Mandatory new SIM registration, 6‑month process",ActiveSubs,pct,-8.0,3,4,6,Stakeholder engagement,Nigeria SIM registration
+S30,Shock,SIM re-registration 2.0 - 6-month disruption,"Mandatory new SIM registration, 6‑month process",DataSubs,pct,-6.0,3,4,6,Stakeholder engagement,data impact
+S30,Shock,SIM re-registration 2.0 - 6-month disruption,"Mandatory new SIM registration, 6‑month process",MoMoUsers,pct,-10.0,3,4,6,Stakeholder engagement,fintech impact
+S31,Stress,Data Protection Act fine - major enforcement,DPC fines MTN GHS 500m for data breach,Fine,abs,500.0,3,3,2,Data compliance,DPC enforcement guidelines
+S31,Stress,Data Protection Act fine - major enforcement,DPC fines MTN GHS 500m for data breach,ComplianceOpex,abs,200.0,3,3,2,Data compliance,remediation cost
+S32,Combined,Regulatory storm (spectrum + e-levy + tariff cap),Three major regulatory hits simultaneously,FIN01,pct,-15.0,2,5,6,Unified response,compound effect
+S32,Combined,Regulatory storm (spectrum + e-levy + tariff cap),Three major regulatory hits simultaneously,SEG03,pct,-30.0,2,5,6,Unified response,MoMo collapse
+S32,Combined,Regulatory storm (spectrum + e-levy + tariff cap),Three major regulatory hits simultaneously,FIN03,delta,-5.0,2,5,6,Unified response,margin crash
+S32,Combined,Regulatory storm (spectrum + e-levy + tariff cap),Three major regulatory hits simultaneously,Capex,pct,20.0,2,5,6,Unified response,forced investment
+S33,Shock,Ransomware - core network 10-day outage,"Full network outage due to ransomware, 10 days",FIN01,pct,-20.0,1,5,4,Cyber insurance,MTN Nigeria 2023 analogue
+S33,Shock,Ransomware - core network 10-day outage,"Full network outage due to ransomware, 10 days",OPS01,pct,-5.0,1,5,4,Cyber insurance,subscriber loss
+S34,Shock,MoMo vendor insolvency - forced migration,"MoMo platform vendor goes bankrupt, 15‑day migration",EmergencyCapex,abs,1200.0,2,4,6,Vendor diversification,industry risk
+S34,Shock,MoMo vendor insolvency - forced migration,"MoMo platform vendor goes bankrupt, 15‑day migration",MoMoOutage,delta,15.0,2,4,6,Vendor diversification,service disruption
+S34,Shock,MoMo vendor insolvency - forced migration,"MoMo platform vendor goes bankrupt, 15‑day migration",MoMoUsers,pct,-12.0,2,4,6,Vendor diversification,churn
+S36,Shock,Subsea cable cut - bandwidth crisis,"International fibre cut, 50% capacity loss for 3 weeks",EnterpriseRevenue,pct,-8.0,2,3,1,Alternative routing,2024 WACS outage
+S37,Stress,AI-driven MoMo fraud surge +500%,AI fraud attacks cause massive MoMo losses,FraudLosses,abs,300.0,3,4,2,AI fraud detection,Kenya fraud trend
+S37,Stress,AI-driven MoMo fraud surge +500%,AI fraud attacks cause massive MoMo losses,MoMoUsers,pct,-8.0,3,4,2,AI fraud detection,trust erosion
+S38,Shock,National grid + telecoms cyberattack,State‑sponsored attack on grid and telcos,SitesOffline,pct,20.0,1,5,8,National security,extreme scenario
+S38,Shock,National grid + telecoms cyberattack,State‑sponsored attack on grid and telcos,FIN01,pct,-15.0,1,5,8,National security,revenue collapse
+S38,Shock,National grid + telecoms cyberattack,State‑sponsored attack on grid and telcos,EmergencyOpex,pct,25.0,1,5,8,National security,restoration cost
+S39,Stress,Network sharing collapse - Telecel dispute,"Telecel ends tower sharing, MTN must build own",Capex,abs,600.0,3,3,3,Infrastructure investment,coverage gap
+S40,Stress,Telecel aggressive bundle reset,Telecel launches low‑price voice+data bundle,OPS04,pct,-8.0,4,3,2,Value proposition,competitor analysis
+S40,Stress,Telecel aggressive bundle reset,Telecel launches low‑price voice+data bundle,DataShare,delta,-2.0,4,3,2,Value proposition,market share shift
+S40,Stress,Telecel aggressive bundle reset,Telecel launches low‑price voice+data bundle,CAC,pct,20.0,4,3,2,Value proposition,customer acquisition
+S41,Shock,New MVNO entry - tech giant,Amazon or Google launches MVNO in Ghana,DataARPU,pct,-15.0,2,4,3,Strategic partnership,international MVNO impact
+S41,Shock,New MVNO entry - tech giant,Amazon or Google launches MVNO in Ghana,Enterprise,pct,-10.0,2,4,3,Strategic partnership,business segment
+S42,Stress,AT Ghana recapitalisation,"AirtelTigo gets new investor, aggressive marketing",SubsGrowth,delta,-3.0,3,3,2,Marketing efficiency,historical precedent
+S42,Stress,AT Ghana recapitalisation,"AirtelTigo gets new investor, aggressive marketing",Churn,pct,2.0,3,3,2,Marketing efficiency,subscriber retention
+S43,Stress,Price war - all operators cut data 40%,"Industry‑wide data price war, 40% cuts",FIN01,pct,-12.0,3,4,2,Cost leadership,2018 price war
+S43,Stress,Price war - all operators cut data 40%,"Industry‑wide data price war, 40% cuts",FIN03,delta,-4.0,3,4,2,Cost leadership,EBITDA margin
+S44,Shock,Bank-led mobile wallet captures MoMo share,Consortium of banks launches unified wallet,MoMoUsers,pct,-15.0,3,4,3,Fintech partnership,Kenya M-Pesa vs banks
+S44,Shock,Bank-led mobile wallet captures MoMo share,Consortium of banks launches unified wallet,SEG03,pct,-20.0,3,4,3,Fintech partnership,revenue loss
+S45,Stress,OTT substitution accelerates - voice collapse,WhatsApp voice + video kills traditional voice,VoiceRev,pct,-20.0,4,3,2,OTT monetisation,global trend
+S45,Stress,OTT substitution accelerates - voice collapse,WhatsApp voice + video kills traditional voice,SMSRev,pct,-30.0,4,3,2,OTT monetisation,declining usage
+S46,Stress,Starlink Ghana rural expansion,Starlink launches low‑cost rural satellite broadband,RuralDataSubs,pct,-5.0,3,3,2,Satellite partnership,competitive threat
+S46,Stress,Starlink Ghana rural expansion,Starlink launches low‑cost rural satellite broadband,ARPU,delta,-0.5,3,3,2,Satellite partnership,pricing pressure
+S47,Stress,ECG load-shedding Stage 6 - 6 months,"Daily 8‑hour power cuts, diesel costs quadruple",DieselOpex,abs,800.0,3,4,4,Alternative power,2024 load-shedding
+S47,Stress,ECG load-shedding Stage 6 - 6 months,"Daily 8‑hour power cuts, diesel costs quadruple",SiteAvailability,delta,-3.0,3,4,4,Alternative power,service uptime
 S47,Stress,ECG load-shedding Stage 6 - 6 months,"Daily 8‑hour power cuts, diesel costs quadruple",FIN03,delta,-2.5,3,4,4,Alternative power,margin impact
-S48,Shock,Accra earthquake - 500+ sites, HQ disruption,"6.5 earthquake damages 500 towers and HQ",Sites,delta,-500,1,5,8,Disaster recovery,extreme event
-S48,Shock,Accra earthquake - 500+ sites, HQ disruption,"6.5 earthquake damages 500 towers and HQ",EmergencyCapex,pct,25,1,5,8,Disaster recovery,rebuild cost
-S48,Shock,Accra earthquake - 500+ sites, HQ disruption,"6.5 earthquake damages 500 towers and HQ",FIN01,pct,-8,1,5,8,Disaster recovery,service interruption
-S49,Stress,Tower equipment supply chain disruption,"Huawei sanctions delay tower equipment 6 months",CapexEfficiency,pct,-30,3,3,2,Supplier diversification,global chip shortage
-S49,Stress,Tower equipment supply chain disruption,"Huawei sanctions delay tower equipment 6 months",RolloutDelay,delta,2,3,3,2,Supplier diversification,quarters
-S50,Shock,CEO + CFO simultaneous departure,"Both top executives resign unexpectedly",SharePrice,pct,-10,2,3,1,Succession planning,market reaction
-S50,Shock,CEO + CFO simultaneous departure,"Both top executives resign unexpectedly",StrategyRisk,delta,1,2,3,1,Succession planning,execution
-S51,Stress,Labour dispute - extended strike,"Union strikes for 4 weeks over pay",Opex,abs,150,2,3,2,Employee relations,FY21 strike cost
-S51,Stress,Labour dispute - extended strike,"Union strikes for 4 weeks over pay",CustomerService,delta,-0.5,2,3,2,Employee relations,NPS decline
-S52,Upside,5G early mover - enterprise revenue surge,"MTN launches 5G first, grabs enterprise share",EnterpriseRev,pct,25,3,3,4,5G investment,FY26 forecast
-S52,Upside,5G early mover - enterprise revenue surge,"MTN launches 5G first, grabs enterprise share",DataARPU,pct,15,3,3,4,5G investment,premium pricing
-S53,Upside,MoMo lending / micro-insurance breakthrough,"MoMo lending scales 5x, insurance attach rate 20%",SEG03,pct,35,3,4,4,Fintech growth,industry opportunity
-S53,Upside,MoMo lending / micro-insurance breakthrough,"MoMo lending scales 5x, insurance attach rate 20%",DigitalRev,pct,80,3,4,4,Fintech growth,new revenue
-S54,Upside,Ghana GDP 8%+ super-cycle,"Oil & mining boom, GDP growth >8%",OPS01,pct,5,2,3,2,Macro hedging,historical boom
-S54,Upside,Ghana GDP 8%+ super-cycle,"Oil & mining boom, GDP growth >8%",OPS04,pct,10,2,3,2,Macro hedging,ARPU uplift
-S54,Upside,Ghana GDP 8%+ super-cycle,"Oil & mining boom, GDP growth >8%",MoMoVolumes,pct,20,2,3,2,Macro hedging,transaction growth
-S55,Upside,Cedi appreciation +40%,"Cedi appreciates 40% on structural reforms",FIN03,delta,4,2,4,3,Currency management,FY25 magnitude
-S55,Upside,Cedi appreciation +40%,"Cedi appreciates 40% on structural reforms",FXGain,delta,1,2,4,3,Currency management,net assets
-S56,Combined,Perfect storm (macro+cyber+regulatory+climate),"Worst‑case combined event",FIN01,pct,-25,1,5,8,Comprehensive resilience,extreme tail
-S56,Combined,Perfect storm (macro+cyber+regulatory+climate),"Worst‑case combined event",FIN03,delta,-8,1,5,8,Comprehensive resilience,severe margin
-S56,Combined,Perfect storm (macro+cyber+regulatory+climate),"Worst‑case combined event",SEG03,pct,-40,1,5,8,Comprehensive resilience,MoMo wipeout
-S56,Combined,Perfect storm (macro+cyber+regulatory+climate),"Worst‑case combined event",Dividend,abs,0,1,5,8,Comprehensive resilience,suspended
-S57,Stress,Cedi devaluation -15% (mild),"Cedi weakens 15% gradually",FIN01,pct,-4,3,2,2,Tariff repricing,0.32 elasticity
-S57,Stress,Cedi devaluation -15% (mild),"Cedi weakens 15% gradually",OPS04,pct,-8,3,2,2,Tariff repricing,ARPU effect
-S58,Stress,Cedi devaluation -50% (extreme),"Cedi loses 50% in 6 months, hyperinflation",FIN01,pct,-18,1,6,8,Contingency planning,elasticity extrapolation
-S58,Stress,Cedi devaluation -50% (extreme),"Cedi loses 50% in 6 months, hyperinflation",FIN03,delta,-6,1,6,8,Contingency planning,margin collapse
-S58,Stress,Cedi devaluation -50% (extreme),"Cedi loses 50% in 6 months, hyperinflation",OPS04,pct,-32,1,6,8,Contingency planning,ARPU halved
-S59,Stress,Inflation 15% (moderate),"CPI rises to 15% on food prices",FIN03,delta,-1.5,3,2,1,Cost control,FY23 average
-S59,Stress,Inflation 15% (moderate),"CPI rises to 15% on food prices",FIN01,pct,-2,3,2,1,Cost control,revenue drag
-S60,Stress,Inflation 35% (severe),"CPI hits 35% after currency crisis",FIN03,delta,-4.5,2,5,3,Price elasticity,FY22 extreme
-S60,Stress,Inflation 35% (severe),"CPI hits 35% after currency crisis",Opex,pct,25,2,5,3,Price elasticity,cost pass-through
-S61,Upside,Policy rate cut to 20% (stimulus),"BoG cuts rate aggressively",FIN01,pct,2,3,3,2,Debt restructuring,lower borrowing cost
-S61,Upside,Policy rate cut to 20% (stimulus),"BoG cuts rate aggressively",FIN03,delta,1.5,3,3,2,Debt restructuring,interest saving
-S62,Stress,Ghana GDP growth 0% (stagnation),"No growth, high unemployment",FIN01,pct,-2,3,3,2,Cost rationalisation,macro drag
-S62,Stress,Ghana GDP growth 0% (stagnation),"GDP growth 0% (stagnation)",Subscribers,pct,-1,3,3,2,Cost rationalisation,disposable income
-S63,Stress,NCA small fine GHS 100m,"Minor compliance fine",Fine,abs,100,4,2,1,Compliance,industry norm
-S63,Stress,NCA small fine GHS 100m,"Minor compliance fine",FIN03,delta,-0.5,4,2,1,Compliance,one‑off impact
-S64,Stress,NCA very large fine GHS 1.2bn,"Major anti‑trust fine",Fine,abs,1200,2,5,4,Legal reserve,extreme penalty
-S64,Stress,NCA very large fine GHS 1.2bn,"Major anti‑trust fine",FIN03,delta,-4,2,5,4,Legal reserve,EBITDA reduction
-S65,Stress,Tariff cap -15% (mild),"Data price cap at 0.65 GHS/GB",FIN01,pct,-3,4,2,2,Pricing agility,partial cap
-S65,Stress,Tariff cap -15% (mild),"Data price cap at 0.65 GHS/GB",DataARPU,pct,-1.5,4,2,2,Pricing agility,revenue loss
-S66,Stress,Tariff floor removal only,"Price floor removed, moderate competition",FIN01,pct,-4,3,3,2,Value stacking,Kenya analogue
-S67,Upside,5G auction win - MTN leads,"MTN wins 5G spectrum cheaply",DataShare,delta,2,4,3,3,5G leadership,competitive advantage
-S67,Upside,5G auction win - MTN leads,"MTN wins 5G spectrum cheaply",DataARPU,pct,1.5,4,3,3,5G leadership,premium pricing
+S49,Stress,Tower equipment supply chain disruption,Huawei sanctions delay tower equipment 6 months,CapexEfficiency,pct,-30.0,3,3,2,Supplier diversification,global chip shortage
+S49,Stress,Tower equipment supply chain disruption,Huawei sanctions delay tower equipment 6 months,RolloutDelay,delta,2.0,3,3,2,Supplier diversification,quarters
+S50,Shock,CEO + CFO simultaneous departure,Both top executives resign unexpectedly,SharePrice,pct,-10.0,2,3,1,Succession planning,market reaction
+S50,Shock,CEO + CFO simultaneous departure,Both top executives resign unexpectedly,StrategyRisk,delta,1.0,2,3,1,Succession planning,execution
+S51,Stress,Labour dispute - extended strike,Union strikes for 4 weeks over pay,Opex,abs,150.0,2,3,2,Employee relations,FY21 strike cost
+S51,Stress,Labour dispute - extended strike,Union strikes for 4 weeks over pay,CustomerService,delta,-0.5,2,3,2,Employee relations,NPS decline
+S52,Upside,5G early mover - enterprise revenue surge,"MTN launches 5G first, grabs enterprise share",EnterpriseRev,pct,25.0,3,3,4,5G investment,FY26 forecast
+S52,Upside,5G early mover - enterprise revenue surge,"MTN launches 5G first, grabs enterprise share",DataARPU,pct,15.0,3,3,4,5G investment,premium pricing
+S53,Upside,MoMo lending / micro-insurance breakthrough,"MoMo lending scales 5x, insurance attach rate 20%",SEG03,pct,35.0,3,4,4,Fintech growth,industry opportunity
+S53,Upside,MoMo lending / micro-insurance breakthrough,"MoMo lending scales 5x, insurance attach rate 20%",DigitalRev,pct,80.0,3,4,4,Fintech growth,new revenue
+S54,Upside,Ghana GDP 8%+ super-cycle,"Oil & mining boom, GDP growth >8%",OPS01,pct,5.0,2,3,2,Macro hedging,historical boom
+S54,Upside,Ghana GDP 8%+ super-cycle,"Oil & mining boom, GDP growth >8%",OPS04,pct,10.0,2,3,2,Macro hedging,ARPU uplift
+S54,Upside,Ghana GDP 8%+ super-cycle,"Oil & mining boom, GDP growth >8%",MoMoVolumes,pct,20.0,2,3,2,Macro hedging,transaction growth
+S55,Upside,Cedi appreciation +40%,Cedi appreciates 40% on structural reforms,FIN03,delta,4.0,2,4,3,Currency management,FY25 magnitude
+S55,Upside,Cedi appreciation +40%,Cedi appreciates 40% on structural reforms,FXGain,delta,1.0,2,4,3,Currency management,net assets
+S56,Combined,Perfect storm (macro+cyber+regulatory+climate),Worst‑case combined event,FIN01,pct,-25.0,1,5,8,Comprehensive resilience,extreme tail
+S56,Combined,Perfect storm (macro+cyber+regulatory+climate),Worst‑case combined event,FIN03,delta,-8.0,1,5,8,Comprehensive resilience,severe margin
+S56,Combined,Perfect storm (macro+cyber+regulatory+climate),Worst‑case combined event,SEG03,pct,-40.0,1,5,8,Comprehensive resilience,MoMo wipeout
+S56,Combined,Perfect storm (macro+cyber+regulatory+climate),Worst‑case combined event,Dividend,abs,0.0,1,5,8,Comprehensive resilience,suspended
+S57,Stress,Cedi devaluation -15% (mild),Cedi weakens 15% gradually,FIN01,pct,-4.0,3,2,2,Tariff repricing,0.32 elasticity
+S57,Stress,Cedi devaluation -15% (mild),Cedi weakens 15% gradually,OPS04,pct,-8.0,3,2,2,Tariff repricing,ARPU effect
+S58,Stress,Cedi devaluation -50% (extreme),"Cedi loses 50% in 6 months, hyperinflation",FIN01,pct,-18.0,1,6,8,Contingency planning,elasticity extrapolation
+S58,Stress,Cedi devaluation -50% (extreme),"Cedi loses 50% in 6 months, hyperinflation",FIN03,delta,-6.0,1,6,8,Contingency planning,margin collapse
+S58,Stress,Cedi devaluation -50% (extreme),"Cedi loses 50% in 6 months, hyperinflation",OPS04,pct,-32.0,1,6,8,Contingency planning,ARPU halved
+S59,Stress,Inflation 15% (moderate),CPI rises to 15% on food prices,FIN03,delta,-1.5,3,2,1,Cost control,FY23 average
+S59,Stress,Inflation 15% (moderate),CPI rises to 15% on food prices,FIN01,pct,-2.0,3,2,1,Cost control,revenue drag
+S60,Stress,Inflation 35% (severe),CPI hits 35% after currency crisis,FIN03,delta,-4.5,2,5,3,Price elasticity,FY22 extreme
+S60,Stress,Inflation 35% (severe),CPI hits 35% after currency crisis,Opex,pct,25.0,2,5,3,Price elasticity,cost pass-through
+S61,Upside,Policy rate cut to 20% (stimulus),BoG cuts rate aggressively,FIN01,pct,2.0,3,3,2,Debt restructuring,lower borrowing cost
+S61,Upside,Policy rate cut to 20% (stimulus),BoG cuts rate aggressively,FIN03,delta,1.5,3,3,2,Debt restructuring,interest saving
+S62,Stress,Ghana GDP growth 0% (stagnation),"No growth, high unemployment",FIN01,pct,-2.0,3,3,2,Cost rationalisation,macro drag
+S62,Stress,Ghana GDP growth 0% (stagnation),GDP growth 0% (stagnation),Subscribers,pct,-1.0,3,3,2,Cost rationalisation,disposable income
+S63,Stress,NCA small fine GHS 100m,Minor compliance fine,Fine,abs,100.0,4,2,1,Compliance,industry norm
+S63,Stress,NCA small fine GHS 100m,Minor compliance fine,FIN03,delta,-0.5,4,2,1,Compliance,one‑off impact
+S64,Stress,NCA very large fine GHS 1.2bn,Major anti‑trust fine,Fine,abs,1200.0,2,5,4,Legal reserve,extreme penalty
+S64,Stress,NCA very large fine GHS 1.2bn,Major anti‑trust fine,FIN03,delta,-4.0,2,5,4,Legal reserve,EBITDA reduction
+S65,Stress,Tariff cap -15% (mild),Data price cap at 0.65 GHS/GB,FIN01,pct,-3.0,4,2,2,Pricing agility,partial cap
+S65,Stress,Tariff cap -15% (mild),Data price cap at 0.65 GHS/GB,DataARPU,pct,-1.5,4,2,2,Pricing agility,revenue loss
+S66,Stress,Tariff floor removal only,"Price floor removed, moderate competition",FIN01,pct,-4.0,3,3,2,Value stacking,Kenya analogue
+S67,Upside,5G auction win - MTN leads,MTN wins 5G spectrum cheaply,DataShare,delta,2.0,4,3,3,5G leadership,competitive advantage
+S67,Upside,5G auction win - MTN leads,MTN wins 5G spectrum cheaply,DataARPU,pct,1.5,4,3,3,5G leadership,premium pricing
 S68,Stress,Subsea cable cut - minor 1 week,"Single fibre cut, 10% capacity loss",FIN01,pct,-0.5,4,2,1,Redundancy planning,limited impact
-S69,Stress,MoMo fraud surge +200%,"Fraud losses double, customer trust dips",SEG03,pct,-5,3,3,2,Fraud detection,trust erosion
-S70,Stress,Telecel mild price promotion,"10% discount on weekend calls",OPS04,pct,-1,4,2,1,Retention campaigns,minor churn
-S71,Stress,New MVNO niche (youth),"Small MVNO takes 2% of prepaid market",OPS01,pct,-0.5,4,2,2,Segment defence,niche loss
-S72,Stress,ECG load-shedding Stage 3 - 3 months,"Daily 4‑hour power cuts",DieselOpex,abs,200,4,3,3,Power backup,FY23 level
-S72,Stress,ECG load-shedding Stage 3 - 3 months,"Daily 4‑hour power cuts",SiteAvailability,delta,-1,4,3,3,Power backup,minor degradation
-S73,Stress,Localised flood - 50 sites down,"Regional flooding affects 50 towers",FIN01,pct,-0.3,4,2,1,Local resilience,short outage
-S74,Stress,Labour dispute - 1 week strike,"Short strike, minimal impact",Opex,abs,50,4,2,1,Labour relations,small cost
-S75,Stress,Minor cyber breach - limited data,"Small leak of non‑sensitive data",Reputation,delta,-0.5,4,2,1,Cyber hygiene,low impact
-S76,Stress,Shareholder dividend pressure,"Activist investors demand higher payout",Dividend,delta,0.5,3,3,2,Capital allocation,no direct KPI
-S77,Upside,FX hedging gain (unexpected),"Cedi weakens but MTN had hedged",FIN03,delta,0.5,4,2,1,Hedging strategy,windfall
-S78,Stress,Corporate tax hike to 30%,"Govt raises corporate tax rate",PAT,pct,-5,3,3,2,Tax planning,earnings impact
-S79,Stress,Mobile termination rate cut,"Regulator cuts MTR by 50%",FIN01,pct,-1.5,4,3,2,Wholesale pricing,revenue loss
-S80,Stress,Free MoMo transaction period,"Govt mandates 6 months zero fees",SEG03,pct,-10,4,3,2,Fintech reprieve,waiver impact
-S81,Stress,Starlink urban expansion,"Starlink offers competitive urban data bundles",DataARPU,pct,-3,3,3,2,Satellite strategy,price pressure
-S82,Upside,AI customer service breakthrough,"AI reduces call centre costs 30%",FIN03,delta,2,4,3,2,Automation investment,cost reduction
-S83,Stress,Diesel tax rebate,"Govt removes fuel tax for telcos",FIN03,delta,0.5,4,2,1,Government relations,benefit
-S84,Stress,Removal of roaming surcharge,"ECOWAS free roaming enforced",FIN01,pct,-0.3,4,2,1,Regional negotiation,small erosion
-S85,Upside,New data centre investment,"MTN builds Tier‑4 data centre",EBITDA,delta,0.2,4,3,2,Digital infrastructure,cloud revenue
-S86,Upside,Green energy subsidy,"Govt subsidises solar for cell sites",FIN03,delta,0.5,4,2,2,Solar investment,operating cost
-S87,Upside,Currency swap agreement (China),"Direct GHS/CNY settlement reduces USD exposure",FXCost,delta,-0.2,4,3,2,Innovative hedging,lower cost
-S88,Stress,MTN Group cross‑guarantee,"Parent guarantees Ghana debt, improves credit",CreditSpread,delta,-100,4,2,2,Group treasury,debt cost down
+S69,Stress,MoMo fraud surge +200%,"Fraud losses double, customer trust dips",SEG03,pct,-5.0,3,3,2,Fraud detection,trust erosion
+S70,Stress,Telecel mild price promotion,10% discount on weekend calls,OPS04,pct,-1.0,4,2,1,Retention campaigns,minor churn
+S71,Stress,New MVNO niche (youth),Small MVNO takes 2% of prepaid market,OPS01,pct,-0.5,4,2,2,Segment defence,niche loss
+S72,Stress,ECG load-shedding Stage 3 - 3 months,Daily 4‑hour power cuts,DieselOpex,abs,200.0,4,3,3,Power backup,FY23 level
+S72,Stress,ECG load-shedding Stage 3 - 3 months,Daily 4‑hour power cuts,SiteAvailability,delta,-1.0,4,3,3,Power backup,minor degradation
+S73,Stress,Localised flood - 50 sites down,Regional flooding affects 50 towers,FIN01,pct,-0.3,4,2,1,Local resilience,short outage
+S74,Stress,Labour dispute - 1 week strike,"Short strike, minimal impact",Opex,abs,50.0,4,2,1,Labour relations,small cost
+S75,Stress,Minor cyber breach - limited data,Small leak of non‑sensitive data,Reputation,delta,-0.5,4,2,1,Cyber hygiene,low impact
+S76,Stress,Shareholder dividend pressure,Activist investors demand higher payout,Dividend,delta,0.5,3,3,2,Capital allocation,no direct KPI
+S77,Upside,FX hedging gain (unexpected),Cedi weakens but MTN had hedged,FIN03,delta,0.5,4,2,1,Hedging strategy,windfall
+S78,Stress,Corporate tax hike to 30%,Govt raises corporate tax rate,PAT,pct,-5.0,3,3,2,Tax planning,earnings impact
+S79,Stress,Mobile termination rate cut,Regulator cuts MTR by 50%,FIN01,pct,-1.5,4,3,2,Wholesale pricing,revenue loss
+S80,Stress,Free MoMo transaction period,Govt mandates 6 months zero fees,SEG03,pct,-10.0,4,3,2,Fintech reprieve,waiver impact
+S81,Stress,Starlink urban expansion,Starlink offers competitive urban data bundles,DataARPU,pct,-3.0,3,3,2,Satellite strategy,price pressure
+S82,Upside,AI customer service breakthrough,AI reduces call centre costs 30%,FIN03,delta,2.0,4,3,2,Automation investment,cost reduction
+S83,Stress,Diesel tax rebate,Govt removes fuel tax for telcos,FIN03,delta,0.5,4,2,1,Government relations,benefit
+S84,Stress,Removal of roaming surcharge,ECOWAS free roaming enforced,FIN01,pct,-0.3,4,2,1,Regional negotiation,small erosion
+S85,Upside,New data centre investment,MTN builds Tier‑4 data centre,EBITDA,delta,0.2,4,3,2,Digital infrastructure,cloud revenue
+S86,Upside,Green energy subsidy,Govt subsidises solar for cell sites,FIN03,delta,0.5,4,2,2,Solar investment,operating cost
+S87,Upside,Currency swap agreement (China),Direct GHS/CNY settlement reduces USD exposure,FXCost,delta,-0.2,4,3,2,Innovative hedging,lower cost
+S88,Stress,MTN Group cross‑guarantee,"Parent guarantees Ghana debt, improves credit",CreditSpread,delta,-100.0,4,2,2,Group treasury,debt cost down
 S89,Upside,NCA quality of service bonus,"MTN meets QoS targets, gets fee rebate",FIN03,delta,0.3,4,2,1,Network investment,rebate income
-S90,Upside,ECG prepaid metering for sites,"Better power management reduces diesel use",DieselCost,pct,-5,4,2,2,Energy efficiency,ongoing saving
+S90,Upside,ECG prepaid metering for sites,Better power management reduces diesel use,DieselCost,pct,-5.0,4,2,2,Energy efficiency,ongoing saving
+S01,Upside,Cedi devaluation -25%,Cedi increases 25% vs USD over 2 quarters,FIN01,pct,-8.0,4,5,4,,FY22 analogue 0.32 elasticity
+S01,Upside,Cedi devaluation -25%,Cedi increases 25% vs USD over 2 quarters,FIN03,delta,-2.0,4,5,4,,FY22 analogue 0.32 elasticity
+S01,Upside,Cedi devaluation -25%,Cedi increases 25% vs USD over 2 quarters,OPS04,pct,-15.0,4,5,4,,FY22 analogue 0.32 elasticity
+S01,Upside,Cedi devaluation -25%,Cedi increases 25% vs USD over 2 quarters,FIN02,pct,-12.0,4,5,4,,FY22 analogue 0.32 elasticity
