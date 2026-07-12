@@ -1,12 +1,45 @@
 "use client";
 
-import React from 'react';
-import { Zap, Radio, Target, EyeOff, Key, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { EyeOff, Eye, Key, Lock, Loader2 } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
 
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const supabase = createClient();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email.toLowerCase().endsWith('@mtn.com')) {
+      setError('Please use a valid @mtn.com work email.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+    } else {
+      router.push('/dashboard');
+      router.refresh();
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden font-sans bg-surface">
@@ -33,16 +66,13 @@ export default function LoginPage() {
           </p>
 
           <div className="flex flex-wrap gap-3">
-            <div className="flex items-center space-x-2 px-3 py-1.5 bg-surface-container rounded border border-outline/50">
-              <Zap className="w-4 h-4 text-mtn-yellow" />
+            <div className="flex items-center px-3 py-1.5 bg-surface-container rounded border border-outline/50">
               <span className="text-xs font-mono text-white">15 MIN</span>
             </div>
-            <div className="flex items-center space-x-2 px-3 py-1.5 bg-surface-container rounded border border-outline/50">
-              <Radio className="w-4 h-4 text-[#3b82f6]" />
+            <div className="flex items-center px-3 py-1.5 bg-surface-container rounded border border-outline/50">
               <span className="text-xs font-mono text-white">500+ Articles/Day</span>
             </div>
-            <div className="flex items-center space-x-2 px-3 py-1.5 bg-surface-container rounded border border-outline/50">
-              <Target className="w-4 h-4 text-[#ef4444]" />
+            <div className="flex items-center px-3 py-1.5 bg-surface-container rounded border border-outline/50">
               <span className="text-xs font-mono text-white">6 Risk Categories</span>
             </div>
           </div>
@@ -69,11 +99,13 @@ export default function LoginPage() {
 
           <form
             className="space-y-6"
-            onSubmit={(e) => {
-              e.preventDefault();
-              router.push('/dashboard');
-            }}
+            onSubmit={handleLogin}
           >
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded">
+                {error}
+              </div>
+            )}
             <div>
               <label className="block text-xs font-mono uppercase tracking-widest text-on-surface-variant mb-2">
                 Work Email
@@ -81,6 +113,8 @@ export default function LoginPage() {
               <input
                 type="email"
                 placeholder="analyst@mtn.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-surface-container-low border border-outline/50 rounded p-3 text-white focus:border-mtn-yellow focus:ring-1 focus:ring-mtn-yellow focus:outline-none transition-all placeholder:text-outline"
                 required
               />
@@ -92,19 +126,29 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <input
-                  type="password"
-                  defaultValue="........"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="........"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-surface-container-low border border-outline/50 rounded p-3 text-white focus:border-mtn-yellow focus:ring-1 focus:ring-mtn-yellow focus:outline-none transition-all pr-10"
                   required
                 />
-                <button type="button" className="absolute right-3 top-3 text-on-surface-variant hover:text-white transition-colors">
-                  <EyeOff className="w-5 h-5" />
+                <button 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-on-surface-variant hover:text-white transition-colors"
+                >
+                  {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-mtn-yellow text-black font-bold uppercase tracking-widest py-3.5 rounded mt-2 hover:bg-yellow-400 transition-colors">
-              Sign In
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full flex items-center justify-center bg-mtn-yellow text-black font-bold uppercase tracking-widest py-3.5 rounded mt-2 hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
             </button>
 
             <div className="flex items-center my-6">
