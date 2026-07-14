@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppState } from '@/stores/useAppState';
-import { fetchKpis } from '@/lib/api';
+import { fetchKpis, fetchNewsSummary, fetchAlertSummary, NewsSummary, AlertSummary } from '@/lib/api';
 import { KpiTile } from '@/components/ui/KpiTile';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import { Kpi } from '@/lib/types';
-import { LayoutDashboard, DollarSign, PieChart, Cpu, Globe } from 'lucide-react';
+import Link from 'next/link';
+import { LayoutDashboard, DollarSign, PieChart, Cpu, Globe, Newspaper, Bell, AlertOctagon, AlertTriangle, Eye } from 'lucide-react';
 
 const CATEGORY_META: Record<string, { icon: React.ReactNode; color: string }> = {
   Financial:   { icon: <DollarSign className="w-3.5 h-3.5" />, color: 'text-mtn-yellow' },
@@ -19,22 +20,30 @@ export default function DashboardPage() {
   const { dispatch } = useAppState();
   const [loading, setLoading] = React.useState(true);
   const [kpis, setKpis] = React.useState<Kpi[]>([]);
+  const [newsSummary, setNewsSummary] = useState<NewsSummary | null>(null);
+  const [alertSummary, setAlertSummary] = useState<AlertSummary | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const data = await fetchKpis();
-        setKpis(data);
-        
-        // Update base case in store
-        const baseCase = data.reduce((acc, kpi) => {
-          acc[kpi.id] = kpi.fy25Value;
-          return acc;
-        }, {} as Record<string, number>);
-        
-        dispatch({ type: 'SET_BASE_CASE', payload: baseCase });
+        const [data, news, alerts] = await Promise.allSettled([
+          fetchKpis(),
+          fetchNewsSummary(),
+          fetchAlertSummary(),
+        ]);
+
+        if (data.status === 'fulfilled') {
+          setKpis(data.value);
+          const baseCase = data.value.reduce((acc, kpi) => {
+            acc[kpi.id] = kpi.fy25Value;
+            return acc;
+          }, {} as Record<string, number>);
+          dispatch({ type: 'SET_BASE_CASE', payload: baseCase });
+        }
+        if (news.status === 'fulfilled')   setNewsSummary(news.value);
+        if (alerts.status === 'fulfilled') setAlertSummary(alerts.value);
       } catch (error) {
-        console.error("Failed to fetch KPIs", error);
+        console.error("Failed to fetch dashboard data", error);
       } finally {
         setLoading(false);
       }
@@ -57,6 +66,76 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Live Intelligence strip ── */}
+      {(newsSummary || alertSummary) && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Articles today */}
+          <Link href="/news" className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-blue-400/30 group"
+            style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' }}>
+            <div className="w-9 h-9 rounded-lg bg-blue-400/10 border border-blue-400/20 flex items-center justify-center shrink-0">
+              <Newspaper className="w-4 h-4 text-blue-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">Articles today</p>
+              <p className="text-xl font-hero font-bold text-on-surface">
+                {newsSummary?.articlesToday ?? '—'}
+              </p>
+              {newsSummary?.topRiskCategory && (
+                <p className="text-xs text-on-surface-variant truncate">Top: {newsSummary.topRiskCategory}</p>
+              )}
+            </div>
+          </Link>
+
+          {/* Active alerts */}
+          <Link href="/alerts" className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-red-400/30 group"
+            style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' }}>
+            <div className="w-9 h-9 rounded-lg bg-red-400/10 border border-red-400/20 flex items-center justify-center shrink-0">
+              <Bell className="w-4 h-4 text-red-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">Active alerts</p>
+              <p className="text-xl font-hero font-bold text-on-surface">
+                {alertSummary?.total_active ?? '—'}
+              </p>
+              {alertSummary && alertSummary.total_active > 0 && (
+                <div className="flex items-center gap-2 mt-0.5">
+                  {alertSummary.critical > 0 && (
+                    <span className="flex items-center gap-0.5 text-xs text-red-400 font-mono">
+                      <AlertOctagon className="w-3 h-3" />{alertSummary.critical}
+                    </span>
+                  )}
+                  {alertSummary.warning > 0 && (
+                    <span className="flex items-center gap-0.5 text-xs text-orange-400 font-mono">
+                      <AlertTriangle className="w-3 h-3" />{alertSummary.warning}
+                    </span>
+                  )}
+                  {alertSummary.watch > 0 && (
+                    <span className="flex items-center gap-0.5 text-xs text-yellow-400 font-mono">
+                      <Eye className="w-3 h-3" />{alertSummary.watch}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </Link>
+
+          {/* Total articles */}
+          <Link href="/news" className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-blue-400/30 group"
+            style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' }}>
+            <div className="w-9 h-9 rounded-lg bg-blue-400/10 border border-blue-400/20 flex items-center justify-center shrink-0">
+              <Globe className="w-4 h-4 text-blue-400" />
+            </div>
+            <div>
+              <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">Total scraped</p>
+              <p className="text-xl font-hero font-bold text-on-surface">
+                {newsSummary?.totalArticles ?? '—'}
+              </p>
+              <p className="text-xs text-on-surface-variant">news articles</p>
+            </div>
+          </Link>
+        </div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

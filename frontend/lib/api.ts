@@ -196,3 +196,103 @@ export async function fetchFeedback(): Promise<FeedbackPayload[]> {
 export async function fetchBaseCaseLogs(): Promise<BaseCaseLogEntry[]> {
   return apiFetch('/api/logs/base-case');
 }
+
+// ── News Feed ──────────────────────────────────────────────────────────────────
+
+export interface NewsArticle {
+  id: string;
+  url: string;
+  title: string;
+  body?: string;
+  sourceName: string | null;
+  publishedAt: string | null;
+  scrapedAt: string | null;
+  category: string | null;
+  severity: number | null;
+  confidence: number | null;
+  mtnRelevance: number | null;
+  alertTier: string | null;
+  sentiment: string | null;
+  impactGhsMin: number | null;
+  impactGhsMid: number | null;
+  impactGhsMax: number | null;
+  entities: { orgs: string[]; money: string[]; locations: string[]; persons: string[] } | null;
+  keywordHits?: Record<string, number>;
+}
+
+export interface NewsSummary {
+  articlesToday: number;
+  totalArticles: number;
+  topRiskCategory: string | null;
+  categoryBreakdown: Record<string, number>;
+}
+
+export async function fetchNews(params: {
+  category?: string;
+  source?: string;
+  limit?: number;
+  offset?: number;
+} = {}): Promise<NewsArticle[]> {
+  const qs = new URLSearchParams();
+  if (params.category) qs.set('category', params.category);
+  if (params.source)   qs.set('source',   params.source);
+  if (params.limit)    qs.set('limit',    String(params.limit));
+  if (params.offset)   qs.set('offset',   String(params.offset));
+  return apiFetch<NewsArticle[]>(`/api/news?${qs}`);
+}
+
+export async function fetchNewsArticle(id: string): Promise<NewsArticle> {
+  return apiFetch<NewsArticle>(`/api/news/${id}`);
+}
+
+export async function fetchNewsSummary(): Promise<NewsSummary> {
+  return apiFetch<NewsSummary>('/api/news/summary');
+}
+
+export async function triggerScrape(): Promise<{ newArticles: number; status: string }> {
+  return apiFetch('/api/news/scrape', { method: 'POST' });
+}
+
+// ── Alerts ─────────────────────────────────────────────────────────────────────
+
+export interface NewsAlert {
+  id: string;
+  articleId: string;
+  tier: 'Critical' | 'Warning' | 'Watch';
+  category: string;
+  headline: string;
+  sourceName: string | null;
+  severity: number;
+  impactGhsMid: number | null;
+  mtnRelevance: number | null;
+  acknowledged: boolean;
+  acknowledgedAt: string | null;
+  createdAt: string;
+}
+
+export interface AlertSummary {
+  total_active: number;
+  critical: number;
+  warning: number;
+  watch: number;
+}
+
+export async function fetchAlerts(params: {
+  tier?: string;
+  acknowledged?: boolean;
+  limit?: number;
+} = {}): Promise<NewsAlert[]> {
+  const qs = new URLSearchParams();
+  if (params.tier !== undefined)         qs.set('tier',         params.tier);
+  if (params.acknowledged !== undefined) qs.set('acknowledged', String(params.acknowledged));
+  if (params.limit !== undefined)        qs.set('limit',        String(params.limit));
+  return apiFetch<NewsAlert[]>(`/api/alerts?${qs}`);
+}
+
+export async function fetchAlertSummary(): Promise<AlertSummary> {
+  return apiFetch<AlertSummary>('/api/alerts/summary');
+}
+
+export async function acknowledgeAlert(alertId: string): Promise<NewsAlert> {
+  return apiFetch<NewsAlert>(`/api/alerts/${alertId}/acknowledge`, { method: 'PATCH' });
+}

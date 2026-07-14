@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, List, Calendar, CalendarDays, LineChart,
   FileText, FlaskConical, GitCompare, ActivitySquare,
-  Settings, HelpCircle, Dices, Zap
+  Settings, HelpCircle, Dices, Zap, Newspaper, Bell
 } from 'lucide-react';
 
 interface NavItem {
@@ -45,6 +45,13 @@ const NAV_ITEMS: NavGroup[] = [
       { href: '/compare',      label: 'Scenario Compare', icon: GitCompare },
       { href: '/reverse',      label: 'Reverse Stress',   icon: ActivitySquare },
       { href: '/monte-carlo',  label: 'Monte Carlo',      icon: Dices, badge: 'AI' },
+    ],
+  },
+  {
+    group: 'Live Intelligence',
+    items: [
+      { href: '/news',    label: 'News Feed',  icon: Newspaper, badge: 'NEW' },
+      { href: '/alerts',  label: 'Risk Alerts', icon: Bell,      badge: 'NEW' },
     ],
   },
 ];
