@@ -1,8 +1,21 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User, Settings, Shield, HelpCircle, LogOut, X } from 'lucide-react';
-
+import { createClient } from '@/utils/supabase/client';
 export function ProfilePanel({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    onClose();
+    router.push('/login');
+    router.refresh();
+  };
+
   return (
     <div className="absolute top-12 right-0 w-64 bg-surface border border-outline/20 rounded-lg shadow-2xl overflow-hidden z-50 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
       <div className="p-4 border-b border-outline/10 bg-surface-container-low flex justify-between items-start">
@@ -45,14 +58,13 @@ export function ProfilePanel({ onClose }: { onClose: () => void }) {
       </div>
 
       <div className="p-2 border-t border-outline/10 bg-surface-container-low">
-        <Link 
-          href="/login" 
-          onClick={onClose}
-          className="flex items-center px-2 py-2 text-sm font-sans text-error hover:bg-error/10 hover:text-red-400 rounded transition-colors w-full"
+        <button 
+          onClick={handleSignOut}
+          className="flex items-center w-full px-2 py-2 text-sm font-sans text-error hover:bg-error/10 hover:text-red-400 rounded transition-colors text-left"
         >
           <LogOut className="w-4 h-4 mr-3" />
           Sign Out
-        </Link>
+        </button>
       </div>
     </div>
   );
