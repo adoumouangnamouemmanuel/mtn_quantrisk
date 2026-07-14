@@ -387,3 +387,94 @@ def list_feedback(limit: int = 50):
 @router.get("/logs/base-case")
 def base_case_logs(limit: int = 100):
     return get_base_case_logs(limit=limit)
+
+
+# ── News Feed ──────────────────────────────────────────────────────────────────
+
+@router.get("/news")
+def list_news(
+    category: str | None = None,
+    source: str | None = None,
+    limit: int = 30,
+    offset: int = 0,
+):
+    """Paginated list of scraped articles with NLP risk scores."""
+    from ..models.database import SessionLocal
+    from ..services.news_service import list_news as _list_news
+
+    with SessionLocal() as db:
+        return _list_news(db, category=category, source=source, limit=limit, offset=offset)
+
+
+@router.get("/news/summary")
+def news_summary():
+    """Dashboard summary: articles today, top category, category breakdown."""
+    from ..models.database import SessionLocal
+    from ..services.news_service import get_news_summary
+
+    with SessionLocal() as db:
+        return get_news_summary(db)
+
+
+@router.get("/news/{article_id}")
+def get_news_article(article_id: str):
+    """Full article detail — includes body, entities, keyword_hits."""
+    from ..models.database import SessionLocal
+    from ..services.news_service import get_news_by_id
+    from fastapi import HTTPException
+
+    with SessionLocal() as db:
+        result = get_news_by_id(db, article_id)
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Article {article_id} not found")
+    return result
+
+
+@router.post("/news/scrape")
+def trigger_scrape():
+    """Manually trigger a scrape cycle (useful for testing)."""
+    from ..services.scraper_service import run_scrape_and_store
+
+    count = run_scrape_and_store()
+    return {"newArticles": count, "status": "ok"}
+
+
+# ── Alerts ────────────────────────────────────────────────────────────────────
+
+@router.get("/alerts")
+def list_alerts(
+    tier: str | None = None,
+    acknowledged: bool | None = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    """List alerts — filter by tier (Critical/Warning/Watch) and acknowledged status."""
+    from ..models.database import SessionLocal
+    from ..services.alert_service import list_alerts as _list_alerts
+
+    with SessionLocal() as db:
+        return _list_alerts(db, tier=tier, acknowledged=acknowledged, limit=limit, offset=offset)
+
+
+@router.get("/alerts/summary")
+def alerts_summary():
+    """Active alert counts per tier — used by the dashboard."""
+    from ..models.database import SessionLocal
+    from ..services.alert_service import get_alert_summary
+
+    with SessionLocal() as db:
+        return get_alert_summary(db)
+
+
+@router.patch("/alerts/{alert_id}/acknowledge")
+def acknowledge_alert(alert_id: str):
+    """Mark an alert as acknowledged."""
+    from ..models.database import SessionLocal
+    from ..services.alert_service import acknowledge_alert as _ack
+    from fastapi import HTTPException
+
+    with SessionLocal() as db:
+        result = _ack(db, alert_id)
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Alert {alert_id} not found")
+    return result
