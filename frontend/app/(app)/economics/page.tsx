@@ -40,7 +40,7 @@ function Sparkline({ history, invert }: { history: { year: number; value: number
     const y = H - ((v - min) / range) * H;
     return `${x},${y}`;
   }).join(' ');
-  const last = vals[vals.length - 1];
+  const last = vals[vals.length - 1] ?? 0;
   const prev = vals[vals.length - 2] ?? last;
   const up = last >= prev;
   const good = invert ? !up : up;
@@ -52,7 +52,8 @@ function Sparkline({ history, invert }: { history: { year: number; value: number
 }
 
 function IndicatorCard({ id, data }: { id: string; data: EconomicIndicator }) {
-  const meta = INDICATOR_META[id] ?? { label: id, icon: BarChart2 };
+  const meta: { label: string; icon: React.ElementType; invert?: boolean } =
+    INDICATOR_META[id] ?? { label: id, icon: BarChart2 };
   const Icon = meta.icon;
   if (data.latest === null) {
     return (
