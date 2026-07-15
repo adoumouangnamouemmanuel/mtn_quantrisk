@@ -1,33 +1,58 @@
 """
-Sentiment analysis — uses cardiffnlp/twitter-roberta-base-sentiment-latest via transformers.
-Falls back to simple lexicon if transformers/torch not installed.
+Sentiment analysis using HuggingFace Inference API → ProsusAI/finbert.
+No local GPU or transformers install needed — just a free HF token.
+
+Get a free token at https://huggingface.co/settings/tokens
+Set env var:  HF_TOKEN=hf_xxxxxxxxxxxx
+
+Falls back to lexicon scoring if HF_TOKEN is not set or the API is unavailable.
 """
 
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
-_pipeline = None
-_SENTIMENT_AVAILABLE = None
+HF_TOKEN = os.environ.get("HF_TOKEN", "")
+_FINBERT_URL = "https://api-inference.huggingface.co/models/ProsusAI/finbert"
 
+# ── HuggingFace Inference API (FinBERT) ───────────────────────────────────────
 
-def _get_pipeline():
-    global _pipeline, _SENTIMENT_AVAILABLE
-    if _SENTIMENT_AVAILABLE is None:
-        try:
-            from transformers import pipeline
-            _pipeline = pipeline(
-                "sentiment-analysis",
-                model="cardiffnlp/twitter-roberta-base-sentiment-latest",
-                truncation=True,
-                max_length=512,
-            )
-            _SENTIMENT_AVAILABLE = True
-            logger.info("Sentiment model loaded (cardiffnlp/twitter-roberta-base-sentiment-latest)")
-        except Exception as exc:
-            _SENTIMENT_AVAILABLE = False
-            logger.warning("Transformers sentiment not available (%s) — using lexicon fallback", exc)
-    return _pipeline
+def _hf_finbert(text: str) -> dict | None:
+    """
+    POST to HF Inference API. Returns sentiment dict or None on failure.
+    FinBERT output: [[{"label": "positive", "score": 0.97}, ...]]
+    """
+    if not HF_TOKEN:
+        return None
+    try:
+        import requests
+        resp = requests.post(
+            _FINBERT_URL,
+            headers={"Authorization": f"Bearer {HF_TOKEN}"},
+            json={"inputs": text[:512]},
+            timeout=12,
+        )
+        if resp.status_code == 503:
+            # Model loading — return None so we fall back gracefully
+            logger.debug("FinBERT model loading on HF (503), using lexicon fallback")
+            return None
+        if resp.status_code != 200:
+            logger.warning("HF FinBERT returned %s", resp.status_code)
+            return None
+
+        payload = resp.json()
+        # API wraps batch results: [[{label, score}, ...]]
+        inner = payload[0] if isinstance(payload, list) and isinstance(payload[0], list) else payload
+        if not inner:
+            return None
+        best = max(inner, key=lambda x: x.get("score", 0))
+        label = best["label"].lower()
+        # FinBERT uses "positive" / "negative" / "neutral" directly
+        return {"sentiment": label, "sentiment_confidence": round(best["score"], 3)}
+    except Exception as exc:
+        logger.warning("HF FinBERT request failed: %s", exc)
+        return None
 
 
 # ── Lexicon fallback ──────────────────────────────────────────────────────────
@@ -35,12 +60,14 @@ def _get_pipeline():
 _POSITIVE_WORDS = [
     "growth", "profit", "revenue", "record", "increase", "expand", "launch",
     "award", "partnership", "investment", "success", "improve", "strong",
-    "positive", "gain", "rise", "milestone", "achieve", "approve",
+    "positive", "gain", "rise", "milestone", "achieve", "approve", "surge",
+    "recovery", "dividend", "upgrade", "beat", "outperform", "innovation",
 ]
 _NEGATIVE_WORDS = [
     "decline", "loss", "drop", "fall", "crisis", "fine", "penalty", "outage",
     "failure", "complaint", "concern", "risk", "threat", "breach", "hack",
-    "reduce", "cut", "lay off", "debt", "scandal", "protest", "ban",
+    "reduce", "cut", "lay off", "debt", "scandal", "protest", "ban", "collapse",
+    "downgrade", "miss", "shortfall", "warning", "fraud", "sue", "lawsuit",
 ]
 
 
@@ -62,25 +89,9 @@ def _lexicon_sentiment(text: str) -> dict:
 def run_sentiment(text: str) -> dict:
     """
     Returns { sentiment: 'positive'|'neutral'|'negative', sentiment_confidence: float }
+    Tries FinBERT via HF Inference API first, falls back to lexicon.
     """
-    pipe = _get_pipeline()
-    if pipe:
-        try:
-            result = pipe(text[:512], truncation=True)[0]
-            label_map = {
-                "LABEL_0": "negative",
-                "LABEL_1": "neutral",
-                "LABEL_2": "positive",
-                "negative": "negative",
-                "neutral": "neutral",
-                "positive": "positive",
-            }
-            label = label_map.get(result["label"].upper(), result["label"].lower())
-            return {
-                "sentiment": label,
-                "sentiment_confidence": round(result["score"], 3),
-            }
-        except Exception as exc:
-            logger.warning("Sentiment inference failed: %s", exc)
-
+    result = _hf_finbert(text)
+    if result:
+        return result
     return _lexicon_sentiment(text)

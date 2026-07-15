@@ -1,13 +1,21 @@
 """
-NLP service — spaCy NER + keyword-based risk classifier.
-spaCy is optional: if not installed/model not downloaded, falls back to keyword-only.
+NLP service — spaCy NER + keyword classifier + HF zero-shot category validation.
+
+Optional integrations (all free):
+  - spaCy en_core_web_sm  → better NER (python -m spacy download en_core_web_sm)
+  - HF_TOKEN env var      → zero-shot category boost via facebook/bart-large-mnli
 """
 
 import logging
+import os
 import re
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+HF_TOKEN = os.environ.get("HF_TOKEN", "")
+_ZEROSHOT_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+_CANDIDATE_LABELS = ["regulatory", "financial", "competitive", "operational", "political", "reputational"]
 
 # ── spaCy (optional) ──────────────────────────────────────────────────────────
 
@@ -148,6 +156,43 @@ def extract_entities(text: str) -> dict:
     return {"orgs": orgs, "money": [], "locations": [], "persons": []}
 
 
+# ── HF Zero-shot category classifier (optional boost) ─────────────────────────
+
+def _hf_zeroshot_category(text: str) -> dict | None:
+    """
+    Uses facebook/bart-large-mnli via HF Inference API to score all 6 risk categories.
+    Returns { category: str, scores: {cat: float} } or None on failure/no token.
+    """
+    if not HF_TOKEN:
+        return None
+    try:
+        import requests
+        resp = requests.post(
+            _ZEROSHOT_URL,
+            headers={"Authorization": f"Bearer {HF_TOKEN}"},
+            json={
+                "inputs": text[:800],
+                "parameters": {"candidate_labels": _CANDIDATE_LABELS, "multi_label": False},
+            },
+            timeout=20,
+        )
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        labels = data.get("labels", [])
+        scores = data.get("scores", [])
+        if not labels:
+            return None
+        # Map "financial" → "fx_financial" to match our internal naming
+        label_map = {"financial": "fx_financial"}
+        score_dict = {label_map.get(l, l): round(s, 4) for l, s in zip(labels, scores)}
+        top_cat = max(score_dict, key=score_dict.get)
+        return {"category": top_cat, "scores": score_dict}
+    except Exception as exc:
+        logger.debug("HF zero-shot failed: %s", exc)
+        return None
+
+
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 def run_nlp(title: str, body: str) -> dict:
@@ -159,17 +204,27 @@ def run_nlp(title: str, body: str) -> dict:
     """
     full_text = f"{title} {body}"
     mtn_relevance = compute_mtn_relevance(full_text)
-    category, severity, keyword_hits = classify_risk_category(full_text)
+    kw_category, kw_severity, keyword_hits = classify_risk_category(full_text)
     entities = extract_entities(full_text)
 
-    # Confidence = normalised keyword hit count for best category
-    best_hits = keyword_hits.get(category, 0)
-    confidence = min(1.0, best_hits * 0.15 + 0.2)
+    # Optional zero-shot boost — if HF is available and confident, it overrides keyword category
+    zs = _hf_zeroshot_category(full_text[:800])
+    if zs and zs["scores"].get(zs["category"], 0) > 0.55:
+        category = zs["category"]
+        # Blend keyword severity with zero-shot confidence as a weight
+        zs_conf = zs["scores"][category]
+        severity = round(kw_severity * 0.6 + (zs_conf * 10) * 0.4, 2)
+        confidence = round(min(1.0, zs_conf * 0.8 + 0.2), 3)
+    else:
+        category = kw_category
+        severity = kw_severity
+        best_hits = keyword_hits.get(category, 0)
+        confidence = min(1.0, best_hits * 0.15 + 0.2)
 
     return {
         "mtn_relevance": mtn_relevance,
         "category": category,
-        "severity": severity,
+        "severity": round(severity, 2),
         "confidence": round(confidence, 3),
         "entities": entities,
         "keyword_hits": keyword_hits,

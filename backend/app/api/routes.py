@@ -389,6 +389,28 @@ def base_case_logs(limit: int = 100):
     return get_base_case_logs(limit=limit)
 
 
+# ── Ghana Economics (World Bank) ──────────────────────────────────────────────
+
+@router.get("/economics")
+def ghana_economics():
+    """
+    Latest Ghana macroeconomic indicators from World Bank Open Data.
+    Cached for 6 hours. No API key required.
+    """
+    from ..services.economic_service import get_ghana_economics
+    return get_ghana_economics()
+
+
+@router.get("/economics/risk-context")
+def economics_risk_context():
+    """
+    Converts World Bank Ghana data into risk signal ratings for the dashboard.
+    Returns inflation_risk, growth_risk, fx summary.
+    """
+    from ..services.economic_service import get_risk_context_from_economics
+    return get_risk_context_from_economics()
+
+
 # ── News Feed ──────────────────────────────────────────────────────────────────
 
 @router.get("/news")
