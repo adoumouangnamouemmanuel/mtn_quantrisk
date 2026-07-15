@@ -336,3 +336,47 @@ export async function fetchEconomicsRiskContext(): Promise<EconomicsRiskContext>
   return apiFetch<EconomicsRiskContext>('/api/economics/risk-context');
 }
 
+// ── Intelligence Briefing (LLM daily summary) ─────────────────────────────────
+
+export interface IntelligenceTopArticle {
+  title: string;
+  source: string | null;
+  url: string | null;
+  tier: string | null;
+  severity: number | null;
+  sentiment: string | null;
+  impact_ghs_mid: number | null;
+}
+
+export interface IntelligenceSection {
+  category: string;
+  label: string;
+  icon: string;
+  article_count: number;
+  critical_count: number;
+  summary: string;
+  top_articles: IntelligenceTopArticle[];
+}
+
+export interface IntelligenceSummary {
+  generated_at: string;
+  period: string;
+  total_articles: number;
+  tier_counts: { Critical: number; Warning: number; Watch: number };
+  overall_risk: string;
+  risk_color: string;
+  headline: {
+    title: string;
+    source: string | null;
+    tier: string;
+    severity: number | null;
+    url: string | null;
+  } | null;
+  sections: IntelligenceSection[];
+  used_llm: boolean;
+}
+
+export async function fetchIntelligenceSummary(): Promise<IntelligenceSummary> {
+  return apiFetch<IntelligenceSummary>('/api/intelligence/summary');
+}
+
