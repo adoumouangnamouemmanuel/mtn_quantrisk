@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAppState } from '@/stores/useAppState';
-import { fetchKpis, fetchNewsSummary, fetchAlertSummary, NewsSummary, AlertSummary } from '@/lib/api';
+import { fetchKpis, fetchNewsSummary, fetchAlertSummary, fetchEconomicsRiskContext, NewsSummary, AlertSummary, EconomicsRiskContext } from '@/lib/api';
 import { KpiTile } from '@/components/ui/KpiTile';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import { Kpi } from '@/lib/types';
 import Link from 'next/link';
-import { LayoutDashboard, DollarSign, PieChart, Cpu, Globe, Newspaper, Bell, AlertOctagon, AlertTriangle, Eye } from 'lucide-react';
+import { LayoutDashboard, DollarSign, PieChart, Cpu, Globe, Newspaper, Bell, AlertOctagon, AlertTriangle, Eye, TrendingUp } from 'lucide-react';
 
 const CATEGORY_META: Record<string, { icon: React.ReactNode; color: string }> = {
   Financial:   { icon: <DollarSign className="w-3.5 h-3.5" />, color: 'text-mtn-yellow' },
@@ -22,14 +22,16 @@ export default function DashboardPage() {
   const [kpis, setKpis] = React.useState<Kpi[]>([]);
   const [newsSummary, setNewsSummary] = useState<NewsSummary | null>(null);
   const [alertSummary, setAlertSummary] = useState<AlertSummary | null>(null);
+  const [econCtx, setEconCtx] = useState<EconomicsRiskContext | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [data, news, alerts] = await Promise.allSettled([
+        const [data, news, alerts, econ] = await Promise.allSettled([
           fetchKpis(),
           fetchNewsSummary(),
           fetchAlertSummary(),
+          fetchEconomicsRiskContext(),
         ]);
 
         if (data.status === 'fulfilled') {
@@ -42,6 +44,7 @@ export default function DashboardPage() {
         }
         if (news.status === 'fulfilled')   setNewsSummary(news.value);
         if (alerts.status === 'fulfilled') setAlertSummary(alerts.value);
+        if (econ.status === 'fulfilled')   setEconCtx(econ.value);
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
       } finally {
@@ -120,18 +123,26 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          {/* Total articles */}
-          <Link href="/news" className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-blue-400/30 group"
+          {/* Ghana Macro tile */}
+          <Link href="/economics" className="flex items-center gap-3 rounded-xl border p-4 transition-all hover:border-emerald-400/30 group"
             style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.07)' }}>
-            <div className="w-9 h-9 rounded-lg bg-blue-400/10 border border-blue-400/20 flex items-center justify-center shrink-0">
-              <Globe className="w-4 h-4 text-blue-400" />
+            <div className="w-9 h-9 rounded-lg bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center shrink-0">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
             </div>
-            <div>
-              <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">Total scraped</p>
-              <p className="text-xl font-hero font-bold text-on-surface">
-                {newsSummary?.totalArticles ?? '—'}
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">Ghana Macro</p>
+              <p className="text-xs text-on-surface-variant truncate mt-0.5">
+                {econCtx ? econCtx.summary : 'World Bank data'}
               </p>
-              <p className="text-xs text-on-surface-variant">news articles</p>
+              {econCtx && (
+                <div className="flex gap-1.5 mt-1">
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                    econCtx.inflation_risk === 'Critical' ? 'bg-red-100 text-red-700' :
+                    econCtx.inflation_risk === 'Warning'  ? 'bg-amber-100 text-amber-700' :
+                    'bg-emerald-100 text-emerald-700'
+                  }`}>CPI: {econCtx.inflation_risk}</span>
+                </div>
+              )}
             </div>
           </Link>
         </div>

@@ -296,3 +296,43 @@ export async function fetchAlertSummary(): Promise<AlertSummary> {
 export async function acknowledgeAlert(alertId: string): Promise<NewsAlert> {
   return apiFetch<NewsAlert>(`/api/alerts/${alertId}/acknowledge`, { method: 'PATCH' });
 }
+
+// ── Ghana Economics (World Bank) ───────────────────────────────────────────────
+
+export interface EconomicIndicator {
+  latest: number | null;
+  year: number | null;
+  unit: string;
+  description: string;
+  history: { year: number; value: number }[];
+}
+
+export interface GhanaEconomics {
+  lastUpdated: string;
+  source: string;
+  country: string;
+  indicators: {
+    inflation:    EconomicIndicator;
+    gdp_growth:   EconomicIndicator;
+    fx_usd_ghs:   EconomicIndicator;
+    unemployment: EconomicIndicator;
+    public_debt:  EconomicIndicator;
+    fdi_inflows:  EconomicIndicator;
+  };
+}
+
+export interface EconomicsRiskContext {
+  inflation_risk: 'Critical' | 'Warning' | 'Watch' | 'Normal';
+  growth_risk:    'Critical' | 'Warning' | 'Normal';
+  summary: string;
+  raw: GhanaEconomics;
+}
+
+export async function fetchGhanaEconomics(): Promise<GhanaEconomics> {
+  return apiFetch<GhanaEconomics>('/api/economics');
+}
+
+export async function fetchEconomicsRiskContext(): Promise<EconomicsRiskContext> {
+  return apiFetch<EconomicsRiskContext>('/api/economics/risk-context');
+}
+

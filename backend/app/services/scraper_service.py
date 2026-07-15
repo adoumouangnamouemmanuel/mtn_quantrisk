@@ -1,20 +1,24 @@
 """
-RSS feed scraper — pulls articles from 6 Ghana/Africa news sources every 15 min.
-Uses feedparser; no Scrapy/Playwright needed for RSS.
+RSS scraper + optional GNews API — pulls articles from 13 Ghana/Africa sources every 15 min.
+Set GNEWS_TOKEN env var (free at gnews.io) to also search for MTN-specific articles.
 """
 
 import logging
+import os
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Optional
 
 import feedparser
 
+GNEWS_TOKEN = os.environ.get("GNEWS_TOKEN", "")
+
 logger = logging.getLogger(__name__)
 
 # ── Source registry ───────────────────────────────────────────────────────────
 
 RSS_SOURCES = [
+    # ── Ghana local ──────────────────────────────────────────────────────────
     {
         "name": "JoyFM",
         "url": "https://www.myjoyonline.com/feed/",
@@ -26,24 +30,56 @@ RSS_SOURCES = [
         "category_hint": "ghana_local",
     },
     {
-        "name": "Reuters Africa",
-        "url": "https://feeds.reuters.com/reuters/AFRICANews",
-        "category_hint": "global_finance",
+        "name": "Modern Ghana",
+        "url": "https://www.modernghana.com/rss/news.aspx",
+        "category_hint": "ghana_local",
     },
+    {
+        "name": "GhanaWeb",
+        "url": "https://www.ghanaweb.com/GhanaHomePage/rss/",
+        "category_hint": "ghana_local",
+    },
+    {
+        "name": "Graphic Online",
+        "url": "https://www.graphic.com.gh/feed",
+        "category_hint": "ghana_local",
+    },
+    {
+        "name": "Ghana Business News",
+        "url": "https://www.ghanabusinessnews.com/feed/",
+        "category_hint": "ghana_business",
+    },
+    {
+        "name": "Pulse Ghana",
+        "url": "https://www.pulse.com.gh/rss",
+        "category_hint": "ghana_local",
+    },
+    # ── Tech & Telecom ────────────────────────────────────────────────────────
+    {
+        "name": "TechCabal",
+        "url": "https://techcabal.com/feed/",
+        "category_hint": "tech_telecom",
+    },
+    {
+        "name": "Disrupt Africa",
+        "url": "https://disrupt-africa.com/feed/",
+        "category_hint": "tech_telecom",
+    },
+    # ── Africa / Global Finance ───────────────────────────────────────────────
     {
         "name": "BBC Africa",
         "url": "http://feeds.bbci.co.uk/news/world/africa/rss.xml",
         "category_hint": "global_finance",
     },
     {
-        "name": "Modern Ghana",
-        "url": "https://www.modernghana.com/rss/news.aspx",
-        "category_hint": "ghana_local",
+        "name": "The Africa Report",
+        "url": "https://www.theafricareport.com/feed/",
+        "category_hint": "global_finance",
     },
     {
-        "name": "TechCabal",
-        "url": "https://techcabal.com/feed/",
-        "category_hint": "tech_telecom",
+        "name": "African Business",
+        "url": "https://african.business/feed/",
+        "category_hint": "global_finance",
     },
 ]
 
@@ -122,6 +158,53 @@ def scrape_all_sources() -> list[dict]:
     return articles
 
 
+# ── GNews API (optional, free 100 req/day) ───────────────────────────────────
+
+def _fetch_gnews(query: str = "MTN Ghana telecom", max_results: int = 10) -> list[dict]:
+    """
+    Fetch targeted articles from GNews free tier (100 req/day).
+    Requires GNEWS_TOKEN env var — get one free at https://gnews.io/
+    Returns same shape as scrape_all_sources().
+    """
+    if not GNEWS_TOKEN:
+        return []
+    try:
+        import requests
+        url = "https://gnews.io/api/v4/search"
+        params = {
+            "q": query,
+            "token": GNEWS_TOKEN,
+            "lang": "en",
+            "max": max_results,
+            "sortby": "publishedAt",
+        }
+        resp = requests.get(url, params=params, timeout=10)
+        if resp.status_code != 200:
+            logger.warning("GNews returned %s: %s", resp.status_code, resp.text[:200])
+            return []
+        data = resp.json().get("articles", [])
+        articles = []
+        for a in data:
+            pub = a.get("publishedAt")
+            try:
+                pub_dt = datetime.fromisoformat(pub.replace("Z", "+00:00")) if pub else None
+            except Exception:
+                pub_dt = None
+            articles.append({
+                "url":         a.get("url", ""),
+                "title":       a.get("title", "").strip(),
+                "body":        a.get("content") or a.get("description") or "",
+                "source_name": a.get("source", {}).get("name", "GNews"),
+                "source_url":  a.get("source", {}).get("url", ""),
+                "published_at": pub_dt,
+            })
+        logger.info("GNews returned %d articles for query '%s'", len(articles), query)
+        return articles
+    except Exception as exc:
+        logger.error("GNews fetch failed: %s", exc)
+        return []
+
+
 # ── DB-persisting entry point ─────────────────────────────────────────────────
 
 def run_scrape_and_store() -> int:
@@ -134,6 +217,11 @@ def run_scrape_and_store() -> int:
     from .pipeline_service import process_article
 
     raw_articles = scrape_all_sources()
+
+    # Augment with targeted GNews search for MTN-specific articles
+    raw_articles += _fetch_gnews("MTN Ghana telecom MoMo", max_results=10)
+    raw_articles += _fetch_gnews("Ghana cedi inflation NCA regulation", max_results=10)
+
     new_count = 0
 
     with SessionLocal() as db:
