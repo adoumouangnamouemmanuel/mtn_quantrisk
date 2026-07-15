@@ -3,18 +3,30 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-# DB_PATH env var lets Docker mount the DB into a persistent volume.
-# Falls back to backend/quantrisk_news.db for local dev.
-_DB_PATH = os.environ.get("DB_PATH") or str(
-    Path(__file__).resolve().parents[2] / "quantrisk_news.db"
-)
-DATABASE_URL = f"sqlite:///{_DB_PATH}"
+# Prefer a supplied database URL (for Supabase/Postgres). Fall back to SQLite for local dev.
+DATABASE_URL = os.environ.get("DATABASE_URL") or os.environ.get("SUPABASE_DB_URL")
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    echo=False,
-)
+if not DATABASE_URL:
+    _DB_PATH = os.environ.get("DB_PATH") or str(
+        Path(__file__).resolve().parents[2] / "quantrisk_news.db"
+    )
+    DATABASE_URL = f"sqlite:///{_DB_PATH}"
+else:
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+    elif DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+
+    if "supabase.com" in DATABASE_URL or "pooler.supabase.com" in DATABASE_URL:
+        separator = "?" if "?" not in DATABASE_URL else "&"
+        if "sslmode=" not in DATABASE_URL:
+            DATABASE_URL = f"{DATABASE_URL}{separator}sslmode=require"
+
+engine_kwargs = {"echo": False}
+if DATABASE_URL.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
