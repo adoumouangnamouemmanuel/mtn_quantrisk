@@ -1,6 +1,7 @@
 """
-RSS scraper + optional GNews API — pulls articles from 13 Ghana/Africa sources every 15 min.
-Set GNEWS_TOKEN env var (free at gnews.io) to also search for MTN-specific articles.
+RSS scraper + optional GNews API — pulls articles from 18 Ghana/Africa/Google News sources every 15 min.
+Google News RSS (free, no key) aggregates both traditional media and social media (Twitter/X) coverage.
+Set GNEWS_TOKEN env var (free at gnews.io) to also enable direct MTN Ghana targeted search.
 """
 
 import logging
@@ -79,6 +80,34 @@ RSS_SOURCES = [
     {
         "name": "African Business",
         "url": "https://african.business/feed/",
+        "category_hint": "global_finance",
+    },
+    # ── Google News (aggregates social + traditional media) ───────────────────
+    # Free — no API key. Covers Twitter/X mentions aggregated by Google News.
+    {
+        "name": "Google News: MTN Ghana",
+        "url": "https://news.google.com/rss/search?q=MTN+Ghana&hl=en&gl=GH&ceid=GH:en",
+        "category_hint": "ghana_local",
+    },
+    {
+        "name": "Google News: Ghana Telecom",
+        "url": "https://news.google.com/rss/search?q=Ghana+telecom+NCA+regulation&hl=en&gl=GH&ceid=GH:en",
+        "category_hint": "regulatory",
+    },
+    {
+        "name": "Google News: MoMo Ghana",
+        "url": "https://news.google.com/rss/search?q=MoMo+mobile+money+Ghana&hl=en&gl=GH&ceid=GH:en",
+        "category_hint": "ghana_business",
+    },
+    # ── Additional Africa finance ─────────────────────────────────────────────
+    {
+        "name": "CNBC Africa",
+        "url": "https://www.cnbcafrica.com/feed/",
+        "category_hint": "global_finance",
+    },
+    {
+        "name": "Nairametrics",
+        "url": "https://nairametrics.com/feed/",
         "category_hint": "global_finance",
     },
 ]

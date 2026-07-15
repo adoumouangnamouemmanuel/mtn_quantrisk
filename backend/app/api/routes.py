@@ -411,6 +411,20 @@ def economics_risk_context():
     return get_risk_context_from_economics()
 
 
+# ── Intelligence Summary ──────────────────────────────────────────────────────
+
+@router.get("/intelligence/summary")
+def intelligence_summary():
+    """
+    24-hour LLM-powered risk digest grouped by category.
+    Uses facebook/bart-large-cnn (HF Inference API, free).
+    Falls back to extractive summarisation when HF_TOKEN not set.
+    Cached 30 minutes.
+    """
+    from ..services.intelligence_service import get_intelligence_summary
+    return get_intelligence_summary()
+
+
 # ── News Feed ──────────────────────────────────────────────────────────────────
 
 @router.get("/news")
