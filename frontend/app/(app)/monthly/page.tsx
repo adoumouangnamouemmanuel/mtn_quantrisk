@@ -8,14 +8,15 @@ import { fetchMonthly } from '@/lib/api';
 import { ThemeTokens } from '@/lib/theme';
 import { KpiId, MonthlyPoint } from '@/lib/types';
 import { Calendar } from 'lucide-react';
+import { LiveRiskEvents } from '@/components/intelligence/LiveRiskEvents';
 
-const KPIS: { id: KpiId; label: string }[] = [
-  { id: 'OPS01', label: 'Total Subscribers' },
-  { id: 'OPS04', label: 'ARPU' },
-  { id: 'EXT01', label: 'Inflation' },
-  { id: 'EXT03', label: 'Cedi/USD' },
-  { id: 'FIN01', label: 'Service Revenue' },
-  { id: 'SEG03', label: 'MoMo Revenue' },
+const KPIS: { id: KpiId; label: string; riskCategory: string }[] = [
+  { id: 'OPS01', label: 'Total Subscribers', riskCategory: 'competitive'  },
+  { id: 'OPS04', label: 'ARPU',              riskCategory: 'competitive'  },
+  { id: 'EXT01', label: 'Inflation',         riskCategory: 'fx_financial' },
+  { id: 'EXT03', label: 'Cedi/USD',          riskCategory: 'fx_financial' },
+  { id: 'FIN01', label: 'Service Revenue',   riskCategory: 'fx_financial' },
+  { id: 'SEG03', label: 'MoMo Revenue',      riskCategory: 'fx_financial' },
 ];
 
 export default function MonthlyPage() {
@@ -24,17 +25,20 @@ export default function MonthlyPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetchMonthly(selectedKpi, 36)
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [selectedKpi]);
 
+  const activeKpi = KPIS.find(k => k.id === selectedKpi);
+
   const chartData = {
     labels: data.map(d => d.month),
     datasets: [
       {
-        label: KPIS.find(k => k.id === selectedKpi)?.label ?? selectedKpi,
+        label: activeKpi?.label ?? selectedKpi,
         data: data.map(d => d.value),
         borderColor: ThemeTokens.colors.mtnYellow,
         backgroundColor: ThemeTokens.colors.mtnYellow + '1A',
@@ -83,6 +87,15 @@ export default function MonthlyPage() {
           </div>
         )}
       </Card>
+
+      {/* Live scraping intelligence for this KPI's risk category */}
+      {activeKpi && (
+        <LiveRiskEvents
+          category={activeKpi.riskCategory}
+          label={`${activeKpi.label} — ${activeKpi.riskCategory.replace('_', ' / ')}`}
+          limit={5}
+        />
+      )}
     </div>
   );
 }

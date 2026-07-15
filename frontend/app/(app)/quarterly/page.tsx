@@ -8,19 +8,20 @@ import { fetchQuarterly } from '@/lib/api';
 import { ThemeTokens } from '@/lib/theme';
 import { KpiId, QuarterlyPoint } from '@/lib/types';
 import { CalendarDays } from 'lucide-react';
+import { LiveRiskEvents } from '@/components/intelligence/LiveRiskEvents';
 
-const KPIS: { id: KpiId; label: string }[] = [
-  { id: 'FIN01', label: 'Service Revenue' },
-  { id: 'FIN02', label: 'EBITDA' },
-  { id: 'FIN03', label: 'EBITDA Margin' },
-  { id: 'FIN04', label: 'PAT' },
-  { id: 'SEG01', label: 'Data Revenue' },
-  { id: 'SEG03', label: 'MoMo Revenue' },
-  { id: 'OPS01', label: 'Total Subscribers' },
-  { id: 'OPS04', label: 'ARPU' },
-  { id: 'EXT01', label: 'Inflation' },
-  { id: 'EXT02', label: 'BoG Policy Rate' },
-  { id: 'EXT03', label: 'Cedi/USD' },
+const KPIS: { id: KpiId; label: string; riskCategory: string }[] = [
+  { id: 'FIN01', label: 'Service Revenue',  riskCategory: 'fx_financial' },
+  { id: 'FIN02', label: 'EBITDA',           riskCategory: 'fx_financial' },
+  { id: 'FIN03', label: 'EBITDA Margin',    riskCategory: 'fx_financial' },
+  { id: 'FIN04', label: 'PAT',              riskCategory: 'fx_financial' },
+  { id: 'SEG01', label: 'Data Revenue',     riskCategory: 'competitive'  },
+  { id: 'SEG03', label: 'MoMo Revenue',     riskCategory: 'fx_financial' },
+  { id: 'OPS01', label: 'Total Subscribers',riskCategory: 'competitive'  },
+  { id: 'OPS04', label: 'ARPU',             riskCategory: 'competitive'  },
+  { id: 'EXT01', label: 'Inflation',        riskCategory: 'fx_financial' },
+  { id: 'EXT02', label: 'BoG Policy Rate',  riskCategory: 'regulatory'   },
+  { id: 'EXT03', label: 'Cedi/USD',         riskCategory: 'fx_financial' },
 ];
 
 export default function QuarterlyPage() {
@@ -29,17 +30,20 @@ export default function QuarterlyPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetchQuarterly(selectedKpi)
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [selectedKpi]);
 
+  const activeKpi = KPIS.find(k => k.id === selectedKpi);
+
   const chartData = {
     labels: data.map(d => d.quarter),
     datasets: [
       {
-        label: KPIS.find(k => k.id === selectedKpi)?.label ?? selectedKpi,
+        label: activeKpi?.label ?? selectedKpi,
         data: data.map(d => d.value),
         backgroundColor: data.map((_, i) =>
           i === data.length - 1
@@ -89,6 +93,15 @@ export default function QuarterlyPage() {
           </div>
         )}
       </Card>
+
+      {/* Live scraping intelligence for this KPI's risk category */}
+      {activeKpi && (
+        <LiveRiskEvents
+          category={activeKpi.riskCategory}
+          label={`${activeKpi.label} — ${activeKpi.riskCategory.replace('_', ' / ')}`}
+          limit={5}
+        />
+      )}
     </div>
   );
 }

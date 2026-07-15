@@ -48,8 +48,11 @@ def get_news_by_id(db: Session, article_id: str) -> dict | None:
 
 def get_news_summary(db: Session) -> dict:
     """Stats for the dashboard summary card."""
-    from datetime import timezone
-    today = datetime.now(timezone.utc).date()
+    from datetime import timezone, timedelta
+    now = datetime.now(timezone.utc)
+    today = now.date()
+    since_24h = now - timedelta(hours=24)
+
     all_today = (
         db.query(Article)
         .filter(Article.scraped_at >= datetime(today.year, today.month, today.day))
@@ -61,11 +64,23 @@ def get_news_summary(db: Session) -> dict:
         cat_counts[rs.category] = cat_counts.get(rs.category, 0) + 1
     top_category = max(cat_counts, key=lambda c: cat_counts[c]) if cat_counts else None
 
+    # Source breakdown — article count per source in last 24 h
+    recent = db.query(Article.source_name).filter(Article.scraped_at >= since_24h).all()
+    source_counts: dict[str, int] = {}
+    for (src,) in recent:
+        key = src or "Unknown"
+        source_counts[key] = source_counts.get(key, 0) + 1
+    # Return top 15 by count, sorted descending
+    source_breakdown = dict(
+        sorted(source_counts.items(), key=lambda x: -x[1])[:15]
+    )
+
     return {
         "articlesToday": all_today,
         "totalArticles": db.query(Article).count(),
         "topRiskCategory": top_category,
         "categoryBreakdown": cat_counts,
+        "sourceBreakdown": source_breakdown,
     }
 
 

@@ -225,6 +225,7 @@ export interface NewsSummary {
   totalArticles: number;
   topRiskCategory: string | null;
   categoryBreakdown: Record<string, number>;
+  sourceBreakdown: Record<string, number>;
 }
 
 export async function fetchNews(params: {

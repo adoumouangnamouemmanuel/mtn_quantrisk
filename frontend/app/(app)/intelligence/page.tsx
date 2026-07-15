@@ -3,16 +3,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  fetchIntelligenceSummary,
+  fetchIntelligenceSummary, fetchNewsSummary, fetchNews,
   type IntelligenceSummary,
   type IntelligenceSection,
   type IntelligenceTopArticle,
+  type NewsSummary,
+  type NewsArticle,
 } from '@/lib/api';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import {
   Brain, RefreshCw, AlertTriangle, Shield, TrendingUp, Activity,
   Wifi, Globe, Eye, ExternalLink, CheckCircle2, Clock, Zap,
-  ChevronRight, Newspaper,
+  ChevronRight, Newspaper, Radio,
 } from 'lucide-react';
 
 // ── Meta ─────────────────────────────────────────────────────────────────────
@@ -177,16 +179,85 @@ function SectionCard({ section }: { section: IntelligenceSection }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+// ── Source Activity bar ───────────────────────────────────────────────────────
+
+function SourceBar({ name, count, max }: { name: string; count: number; max: number }) {
+  const pct = max > 0 ? (count / max) * 100 : 0;
+  const isMtn = name.toLowerCase().includes('mtn');
+  return (
+    <div className="flex items-center gap-3 text-xs">
+      <span
+        className={`w-36 shrink-0 truncate font-mono ${isMtn ? 'text-mtn-yellow font-bold' : 'text-on-surface-variant'}`}
+        title={name}
+      >
+        {isMtn && '★ '}{name}
+      </span>
+      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${isMtn ? 'bg-mtn-yellow' : 'bg-white/30'}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="w-6 text-right font-mono text-on-surface-variant shrink-0">{count}</span>
+    </div>
+  );
+}
+
+// ── Compact article row for live feed ─────────────────────────────────────────
+
+const TIER_COLOR: Record<string, string> = {
+  Critical: 'text-red-400',
+  Warning:  'text-orange-400',
+  Watch:    'text-yellow-400',
+};
+
+function FeedRow({ article }: { article: NewsArticle }) {
+  const tc = article.alertTier ? TIER_COLOR[article.alertTier] : '';
+  return (
+    <a
+      href={article.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-start gap-3 py-2.5 border-b group hover:bg-white/02 transition-colors"
+      style={{ borderColor: 'rgba(255,255,255,0.05)' }}
+    >
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium text-on-surface leading-snug line-clamp-1 group-hover:text-mtn-yellow transition-colors">
+          {article.title}
+        </p>
+        <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-on-surface-variant">
+          <span className={article.sourceName?.toLowerCase().includes('mtn') ? 'text-mtn-yellow font-bold' : ''}>
+            {article.sourceName ?? '—'}
+          </span>
+          {article.alertTier && <span className={`font-bold ${tc}`}>{article.alertTier}</span>}
+        </div>
+      </div>
+      <ExternalLink className="w-3 h-3 shrink-0 text-on-surface-variant opacity-0 group-hover:opacity-50 mt-0.5" />
+    </a>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function IntelligencePage() {
-  const [data,    setData]    = useState<IntelligenceSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState<string | null>(null);
+  const [data,       setData]       = useState<IntelligenceSummary | null>(null);
+  const [summary,    setSummary]    = useState<NewsSummary | null>(null);
+  const [recentArts, setRecentArts] = useState<NewsArticle[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      setData(await fetchIntelligenceSummary());
+      const [intel, sum, arts] = await Promise.all([
+        fetchIntelligenceSummary(),
+        fetchNewsSummary(),
+        fetchNews({ limit: 15 }),
+      ]);
+      setData(intel);
+      setSummary(sum);
+      setRecentArts(arts);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -359,6 +430,63 @@ export default function IntelligencePage() {
               </Link>
             </div>
           )}
+
+          {/* ── Source Activity + Live Feed ── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            {/* Source Activity */}
+            <div
+              className="rounded-xl border p-5 space-y-3"
+              style={{ background: 'rgba(255,255,255,0.015)', borderColor: 'rgba(255,255,255,0.07)' }}
+            >
+              <div className="flex items-center gap-2">
+                <Radio className="w-4 h-4 text-mtn-yellow" />
+                <span className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">
+                  Source Activity
+                </span>
+                <span className="text-[10px] font-mono text-on-surface-variant ml-auto">last 24 h</span>
+              </div>
+              {summary && Object.keys(summary.sourceBreakdown ?? {}).length > 0 ? (
+                <div className="space-y-2">
+                  {(() => {
+                    const entries = Object.entries(summary.sourceBreakdown ?? {});
+                    const max = entries[0]?.[1] ?? 1;
+                    return entries.map(([name, count]) => (
+                      <SourceBar key={name} name={name} count={count} max={max} />
+                    ));
+                  })()}
+                </div>
+              ) : (
+                <p className="text-xs text-on-surface-variant font-mono">No source data yet</p>
+              )}
+            </div>
+
+            {/* Live Article Feed */}
+            <div
+              className="rounded-xl border p-5 space-y-2"
+              style={{ background: 'rgba(255,255,255,0.015)', borderColor: 'rgba(255,255,255,0.07)' }}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <Newspaper className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">
+                    Live Feed
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                </div>
+                <Link href="/news" className="text-[10px] font-mono text-on-surface-variant hover:text-mtn-yellow transition-colors flex items-center gap-1">
+                  All articles <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+              {recentArts.length > 0 ? (
+                <div>
+                  {recentArts.map(a => <FeedRow key={a.id} article={a} />)}
+                </div>
+              ) : (
+                <p className="text-xs text-on-surface-variant font-mono py-4">No articles yet</p>
+              )}
+            </div>
+          </div>
 
           {/* ── Footer ── */}
           <div className="flex items-center gap-2 text-xs text-on-surface-variant font-mono pt-2">
