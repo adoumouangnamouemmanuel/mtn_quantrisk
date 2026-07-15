@@ -1469,6 +1469,283 @@ mtn_quantrisk/
             └── settings/page.tsx      ← Data upload & model retraining
 
 
+────────────────────────────────────────────────────────────────────────────────
+PART 14 — THE NEWS FEED PAGE (/news)
+────────────────────────────────────────────────────────────────────────────────
+
+WHAT IT IS
+The News Feed is a live intelligence layer that automatically scrapes 12 Ghana
+and Africa news sources every 15 minutes, runs every article through an AI
+pipeline, and shows you which ones are relevant to MTN Ghana's risk exposure.
+
+WHAT IT SHOWS YOU
+Each article card displays:
+  · Source name and time (e.g. "JoyFM · 2 hours ago")
+  · Risk tier stripe on the left edge — red for Critical, amber for Warning,
+    yellow for Watch, grey for unscored
+  · Risk category badge (Regulatory / FX-Financial / Competitive / Operational /
+    Political / Reputational)
+  · Sentiment chip (Positive / Neutral / Negative) from the FinBERT AI model
+  · GHS impact estimate: "GHS 45M – 375M" shows you the potential financial
+    exposure range if the event described actually unfolds fully
+
+HOW TO READ THE FILTER CHIPS
+Click any chip at the top to filter by risk category. "All" shows everything.
+"Regulatory" shows only articles about NCA fines, spectrum licences, compliance.
+"FX-Financial" shows only Cedi/dollar movement articles.
+
+CLICK TO EXPAND
+Click any article card to open the full-body drawer on the right. Inside you see:
+  · Full article text
+  · Named entities: Organisations, Money amounts, Locations, Persons
+  · All keyword hit counts per category (e.g. regulatory: 5 hits)
+  · A link to the original article on the source website
+
+SCRAPE NOW BUTTON
+Click "Scrape Now" in the top bar to manually trigger a new scrape cycle.
+The backend fetches new articles from all 12 sources immediately instead of
+waiting for the next 15-minute APScheduler tick.
+
+SUMMARY BAR
+The three tiles at the top show:
+  · Articles today — how many were published and scraped since midnight
+  · Top risk category — which category has the most articles today
+  · Total articles — cumulative count in the database
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 15 — THE ALERTS PAGE (/alerts)
+────────────────────────────────────────────────────────────────────────────────
+
+WHAT AN ALERT IS
+When the NLP pipeline scores an article, it calculates a severity score (0–10)
+and an MTN relevance score (0–1). If both scores are high enough, the pipeline
+automatically creates an alert record. Alerts are the system's way of saying:
+"This article is not just interesting — it could actually hurt MTN Ghana."
+
+ALERT TIERS
+  CRITICAL  — severity ≥ 7.5 AND MTN relevance ≥ 0.25
+              Examples: NCA license suspension, Cedi crash > 15%, major cyber breach
+  WARNING   — severity ≥ 5.0 AND MTN relevance ≥ 0.25
+              Examples: New mobile money tax bill, competitor price war
+  WATCH     — severity ≥ 3.0 AND MTN relevance ≥ 0.25
+              Examples: Minor regulatory update, BOG rate adjustment
+
+The relevance gate (≥ 0.25) means that a general-interest Africa story (even
+if dramatic) will not trigger an alert unless it specifically mentions MTN,
+Ghana, MoMo, or related entities.
+
+WHAT THE CARDS SHOW
+Each alert card shows:
+  · Coloured left stripe: red = Critical, amber = Warning, yellow = Watch
+  · Category badge and severity score (e.g. "Regulatory · 8.2/10")
+  · GHS impact estimate: the mid-point financial exposure in Ghana Cedis
+  · MTN relevance score: 0.0 to 1.0 (higher = more directly about MTN Ghana)
+  · Time the alert was created
+  · Acknowledge button
+
+HOW ACKNOWLEDGE WORKS
+Click "Acknowledge" and the alert is immediately greyed out. The UI updates
+instantly (optimistic update) while the API call happens in the background.
+Acknowledged alerts are still stored in the database — they just move to the
+"acknowledged" filter view. Nothing is deleted.
+
+FILTER CHIPS
+  All Tiers / Critical / Warning / Watch — filter by tier
+  All / Unacknowledged — filter by acknowledge status
+
+THE SUMMARY ROW
+The four tiles at the top show: Total Active · Critical count · Warning count
+· Watch count. These are the same numbers shown on the Dashboard intelligence strip.
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 16 — GHANA MACRO DASHBOARD (/economics)
+────────────────────────────────────────────────────────────────────────────────
+
+WHAT IT IS
+The Ghana Macro Dashboard fetches live macroeconomic data for Ghana directly
+from the World Bank Open Data API. No API key is required — the World Bank
+provides this data completely free of charge. Results are cached for 6 hours
+to avoid hammering the API.
+
+THE SIX INDICATORS
+
+1. CPI INFLATION (%)
+   Consumer Price Index growth year-on-year. Ghana's inflation is structurally
+   high — anything above 12% triggers a Warning signal in the system.
+   Why it matters: High inflation raises MTN's operating costs (staff, energy,
+   rent) and erodes real ARPU (what customers actually pay in purchasing power).
+
+2. GDP GROWTH (%)
+   Ghana's annual real GDP growth. Negative growth triggers a Critical signal.
+   Why it matters: GDP growth drives subscriber acquisition and ARPU growth.
+   A recession means fewer people can afford data bundles.
+
+3. GHS / USD EXCHANGE RATE
+   How many Ghana Cedis per US Dollar (annual average). A rising number means
+   the Cedi is weakening — a direct cost increase for MTN Ghana because most
+   network equipment and Group intercompany charges are USD-denominated.
+
+4. UNEMPLOYMENT RATE (%)
+   Ghana's unemployment as a percentage of the labor force.
+   Why it matters: High unemployment suppresses consumer spending on
+   telecommunications and mobile money usage.
+
+5. PUBLIC DEBT (% of GDP)
+   Central government debt as a share of GDP. When this is high, Ghana's
+   government may impose emergency levies (like the 2022 e-levy) to raise
+   revenue, directly hitting MTN's mobile money business.
+
+6. FDI NET INFLOWS (% of GDP)
+   Foreign direct investment flowing into Ghana. Rising FDI is a positive
+   signal — it means international investors believe in the Ghana economy,
+   which typically supports a stronger Cedi and growth environment.
+
+READING THE SPARKLINES
+Each indicator card shows a small sparkline (trend line) in the bottom-right
+corner. Green line = improving trend; red line = deteriorating trend.
+The direction is calibrated to what's GOOD for MTN:
+  · Inflation going down  = green (lower costs)
+  · GDP growth going up   = green (more customers)
+  · GHS/USD going down    = green (stronger Cedi)
+
+RISK CONTEXT BANNER
+The banner at the top of the page (and on the Dashboard) summarises the two
+most important risk signals:
+  "Ghana inflation 14.2% | GDP growth 6.0% | GHS/USD 12.56"
+  "Inflation: Warning | Growth: Normal"
+
+These signals feed directly into the scenario engine — when inflation is at
+Warning level, the FX/Financial stress scenarios become more relevant.
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 17 — THE AI PIPELINE: HOW AN ARTICLE BECOMES AN ALERT
+────────────────────────────────────────────────────────────────────────────────
+
+Here is the full journey of an article from source to dashboard alert:
+
+STEP 1 — SCRAPING (every 15 minutes)
+  APScheduler fires → scraper_service.py fetches 12 RSS feeds using feedparser
+  Optional: GNews API adds targeted "MTN Ghana telecom" search results
+  Each article → { url, title, body, source_name, published_at }
+
+STEP 2 — DEDUPLICATION
+  Before saving, the system checks: is this URL already in the database?
+  If yes → skip. SQLite UNIQUE constraint on URL handles race conditions.
+
+STEP 3 — MTN RELEVANCE GATE
+  compute_mtn_relevance(title + body) → score 0.0 to 1.0
+  MTN keywords score 0.35 each; Ghana keywords score 0.10 each.
+  If score < 0.2 → article is irrelevant; skip NLP pipeline entirely.
+  This keeps the database clean — a cricket score from BBC Africa won't be scored.
+
+STEP 4 — RISK CATEGORY CLASSIFICATION
+  Two methods run simultaneously:
+    a) Keyword matching: count hits per category across ~80 curated keywords
+    b) Zero-shot AI (if HF_TOKEN is set): facebook/bart-large-mnli classifies
+       the article into one of 6 categories via HuggingFace Inference API
+  If AI is confident (>55%), it overrides the keyword result.
+  Result: one of { regulatory, fx_financial, competitive, operational,
+                   political, reputational }
+
+STEP 5 — SENTIMENT (FinBERT)
+  If HF_TOKEN env var is set:
+    → POST to api-inference.huggingface.co/models/ProsusAI/finbert
+    → Financial-domain sentiment model, trained on financial news
+    → Returns: positive / neutral / negative with confidence score
+  If no token:
+    → Lexicon fallback: count positive/negative word lists
+  Result: { sentiment, sentiment_confidence }
+
+STEP 6 — SEVERITY SCORING
+  severity = keyword_score × 1.5 (capped at 10.0)
+  If zero-shot AI was used: severity = keyword_score × 0.6 + (AI_confidence × 10) × 0.4
+  confidence = min(1.0, keyword_hits × 0.15 + 0.2)
+
+STEP 7 — GHS IMPACT ESTIMATE
+  mid = base_exposure[category] × (severity / 10) × mtn_relevance × max(confidence, 0.2)
+  Base exposures per category (GHS millions):
+    fx_financial: 200  |  regulatory: 120  |  competitive: 80
+    operational:   60  |  political:   50  |  reputational: 40
+  min = mid × 0.30,  max = mid × 2.50
+
+STEP 8 — ALERT TIER DECISION
+  mtn_relevance ≥ 0.25 required (gate — no alerts for tangential articles)
+  severity ≥ 7.5 → Critical
+  severity ≥ 5.0 → Warning
+  severity ≥ 3.0 → Watch
+  else           → no alert (article is scored but not alerted)
+
+STEP 9 — STORAGE
+  RiskScore row saved to SQLite linked to the Article
+  Alert row created if tier is not None
+  Both appear in /news and /alerts immediately
+
+TOTAL PIPELINE LATENCY: < 3 seconds per article (without AI model calls)
+                        < 15 seconds per article (with HF Inference API)
+
+
+────────────────────────────────────────────────────────────────────────────────
+PART 18 — MOBILE APP (EXPO GO)
+────────────────────────────────────────────────────────────────────────────────
+
+The mobile app runs in Expo Go on iOS and Android. It calls the same FastAPI
+backend as the web dashboard. No separate mobile API exists.
+
+HOW TO RUN IT
+1. Install Expo Go from the App Store / Google Play
+2. Make sure the FastAPI backend is running: uvicorn app.main:app --port 8001
+3. Make sure your phone is on the same WiFi as your laptop
+4. Run: npx expo start (in the mobile/ folder)
+5. Scan the QR code with Expo Go (iOS) or the Expo Go app (Android)
+
+THE FOUR TABS
+
+DASHBOARD (Home)
+  Shows all 14 KPIs grouped by category: Financial, Segment, Operational,
+  External. Each KPI tile shows the FY25 value, unit, and status colour
+  (green = on-track, yellow = at-risk, red = off-track). Critical KPIs have
+  a highlighted border. Pull down to refresh.
+
+NEWS
+  Live article feed from all scraped sources. Tap a category chip to filter.
+  Each article shows source, time, category badge, and the risk tier colour
+  stripe. Pull down to refresh. "Scrape" button in top-right triggers a manual
+  scrape cycle.
+
+ALERTS
+  Active risk alerts sorted by severity. Summary bar shows counts per tier.
+  Tap "Acknowledge" to dismiss an alert from the active list. The item
+  immediately disappears from the unacknowledged view.
+
+ABOUT (System Status)
+  Shows the backend pipeline health check (all data sources green/red),
+  live Ghana macro signals from World Bank, quick links to the API docs,
+  and team/project information.
+
+CONNECTING TO PRODUCTION
+  If the app is deployed to Railway/Render, change API_BASE in each screen
+  file from 'http://127.0.0.1:8001' to your production URL. This is the only
+  change needed to switch the app from local to production mode.
+
+
+            ├── news/page.tsx          ← Live news feed with NLP scores
+            ├── alerts/page.tsx        ← Risk alerts with acknowledge
+            ├── economics/page.tsx     ← Ghana macro dashboard (World Bank)
+            ├── quarterly/page.tsx     ← Quarterly trend charts
+            ├── monthly/page.tsx       ← Monthly trend charts
+            ├── forecasts/page.tsx     ← ARIMA/LSTM predictive forecasts
+            ├── briefs/page.tsx        ← Board brief library
+            ├── scenarios/page.tsx     ← Stress Tester
+            ├── compare/page.tsx       ← Scenario comparison
+            ├── reverse/page.tsx       ← Reverse Stress
+            ├── monte-carlo/page.tsx   ← Monte Carlo simulation
+            ├── help/page.tsx          ← Help & Q&A & Glossary
+            └── settings/page.tsx      ← Data upload & model retraining
+
+
 ================================================================================
 END OF GUIDE
 ================================================================================
