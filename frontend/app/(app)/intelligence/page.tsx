@@ -184,196 +184,151 @@ function GhanaCard() {
     <div
       className="relative w-full overflow-hidden rounded-2xl border select-none"
       style={{
-        height: '200px',
-        background: 'linear-gradient(135deg, #050510 0%, #0A0A1A 40%, #0D0D20 100%)',
-        borderColor: 'rgba(255,208,0,0.2)',
-        boxShadow: '0 0 40px rgba(255,208,0,0.06), inset 0 0 60px rgba(255,208,0,0.02)',
+        height: '220px',
+        background: 'radial-gradient(ellipse at 68% 50%, #0E0D20 0%, #070710 100%)',
+        borderColor: 'rgba(255,208,0,0.18)',
+        boxShadow: '0 0 0 1px rgba(255,208,0,0.04), 0 24px 64px rgba(0,0,0,0.7)',
       }}
     >
-      {/* ── Radial background glow behind map ── */}
-      <div
-        className="absolute"
-        style={{
-          right: '8%',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: '220px',
-          height: '220px',
-          background: 'radial-gradient(ellipse, rgba(255,208,0,0.12) 0%, rgba(255,208,0,0.04) 40%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
+      <style>{`
+        @keyframes gh-halo { 0%,100%{opacity:0} 50%{opacity:0.22} }
+        @keyframes gh-acc  { 0%,100%{r:3;opacity:1} 50%{r:5;opacity:0.5} }
+        @keyframes gh-ring { 0%,100%{r:8;opacity:0.45} 50%{r:15;opacity:0} }
+      `}</style>
 
-      {/* ── Graticule (decorative lat/lon lines) ── */}
-      <svg
-        className="absolute inset-0 w-full h-full"
-        style={{ opacity: 0.06 }}
-        viewBox="0 0 800 200"
-        preserveAspectRatio="none"
-      >
-        {/* Vertical lines */}
-        {[0,80,160,240,320,400,480,560,640,720,800].map(x => (
-          <line key={x} x1={x} y1="0" x2={x} y2="200" stroke="#FFD000" strokeWidth="0.5" />
-        ))}
-        {/* Horizontal lines */}
-        {[0,40,80,120,160,200].map(y => (
-          <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="#FFD000" strokeWidth="0.5" />
+      {/* Warm gold ambient glow behind map */}
+      <div style={{
+        position: 'absolute', right: 0, top: 0, bottom: 0, left: '36%',
+        background: 'radial-gradient(ellipse at 62% 50%, rgba(255,208,0,0.09) 0%, transparent 68%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Scattered star field */}
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }} aria-hidden="true">
+        {([
+          [18,22],[45,68],[72,14],[118,8],[155,30],[182,12],[228,44],[260,18],[308,38],[345,10],[398,32],[422,55],
+          [30,142],[95,178],[145,108],[195,158],[248,182],[315,152],[362,170],[406,132],[452,178],
+        ] as [number,number][]).map(([cx, cy], i) => (
+          <circle key={i} cx={cx} cy={cy} r="0.9" fill="rgba(255,208,0,0.32)" />
         ))}
       </svg>
 
-      {/* ── Left text block ── */}
-      <div className="absolute left-7 top-0 bottom-0 flex flex-col justify-center gap-2">
-        <p
-          className="font-mono font-bold tracking-[0.3em] uppercase"
-          style={{ fontSize: '11px', color: 'rgba(255,208,0,0.5)' }}
-        >
-          Republic of
-        </p>
-        <p
-          className="font-hero font-black tracking-widest"
-          style={{
-            fontSize: '32px',
-            color: 'transparent',
-            backgroundImage: 'linear-gradient(135deg, #FFD000 0%, #FFF176 50%, #FFB300 100%)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            lineHeight: 1,
-            letterSpacing: '0.15em',
-          }}
-        >
-          GHANA
-        </p>
-        <p
-          className="font-mono"
-          style={{ fontSize: '10px', color: 'rgba(255,208,0,0.35)', letterSpacing: '0.15em' }}
-        >
-          5°33'N · 0°11'W · West Africa
-        </p>
+      {/* Left text block */}
+      <div style={{
+        position: 'absolute', left: 30, top: 0, bottom: 0, zIndex: 2,
+        display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 10,
+      }}>
+        <span style={{
+          fontFamily: 'ui-monospace, monospace', fontSize: '9px',
+          letterSpacing: '0.3em', textTransform: 'uppercase' as const,
+          color: 'rgba(255,208,0,0.38)',
+        }}>
+          Coverage Region
+        </span>
 
-        {/* Small flag stripe (red-gold-green) */}
-        <div className="flex gap-0.5 mt-1">
-          {['#CE1126','#FCD116','#006B3F'].map((c, i) => (
-            <div key={i} style={{ width: 18, height: 4, background: c, borderRadius: 2, opacity: 0.8 }} />
+        <span style={{
+          fontFamily: '"Inter","Helvetica Neue",system-ui,sans-serif',
+          fontWeight: 900, fontSize: '44px', lineHeight: 1, letterSpacing: '-0.01em',
+          background: 'linear-gradient(158deg,#7A4E00 0%,#FFD000 28%,#FFF5C0 52%,#FFD000 70%,#7A4E00 100%)',
+          WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+        }}>
+          GHANA
+        </span>
+
+        <span style={{
+          fontFamily: 'ui-monospace, monospace', fontSize: '10px',
+          letterSpacing: '0.12em', color: 'rgba(255,208,0,0.36)',
+        }}>
+          West Africa · 8°N 2°W
+        </span>
+
+        {/* Flag stripes */}
+        <div style={{ display: 'flex', gap: 3, marginTop: 4 }}>
+          {(['#CE1126','#FCD116','#006B3F'] as string[]).map((c, i) => (
+            <div key={i} style={{ width: 28, height: 5, background: c, borderRadius: 3, opacity: 0.72 }} />
           ))}
         </div>
       </div>
 
-      {/* ── Ghana SVG silhouette ── */}
+      {/* Vertical separator */}
+      <div style={{
+        position: 'absolute', left: '38%', top: '18%', bottom: '18%', width: '1px',
+        background: 'linear-gradient(to bottom,transparent,rgba(255,208,0,0.1),transparent)',
+      }} />
+
+      {/* Ghana SVG — accurate simplified silhouette */}
       <svg
-        viewBox="0 0 210 255"
-        className="absolute"
-        style={{ right: '4%', top: '50%', transform: 'translateY(-50%)', height: '185px', width: 'auto' }}
+        viewBox="0 0 210 262"
+        style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', height: '196px', width: 'auto' }}
+        aria-hidden="true"
       >
         <defs>
-          {/* Golden glow filter */}
-          <filter id="gh-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="4" result="blur1" />
-            <feGaussianBlur stdDeviation="10" result="blur2" />
-            <feMerge>
-              <feMergeNode in="blur2" />
-              <feMergeNode in="blur1" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          {/* Subtle inner fill gradient */}
-          <radialGradient id="gh-fill" cx="50%" cy="55%" r="50%">
+          <radialGradient id="ghf" cx="42%" cy="52%" r="58%">
             <stop offset="0%"   stopColor="#FFD000" stopOpacity="0.10" />
-            <stop offset="60%"  stopColor="#FFD000" stopOpacity="0.04" />
             <stop offset="100%" stopColor="#FFD000" stopOpacity="0.01" />
           </radialGradient>
-          {/* Animated pulse for glow */}
-          <filter id="gh-pulse" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
+          {/* Border glow: soft double-blur merge */}
+          <filter id="ghg" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="b1"/>
+            <feGaussianBlur stdDeviation="9" result="b2"/>
+            <feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          {/* Outer halo for pulse animation */}
+          <filter id="gho" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="14"/>
           </filter>
         </defs>
 
-        {/* Pulse halo layer (animates opacity) */}
+        {/* Pulsing outer halo */}
         <path
-          d="M 42 14 C 70 6 105 5 140 10 L 168 16 L 178 28 L 182 60 L 180 95 L 175 128 L 170 155 L 172 185 L 162 218 L 145 230 L 118 235 L 90 232 L 65 225 L 42 214 L 28 200 L 22 168 L 20 128 L 22 88 L 28 52 Z"
-          fill="none"
-          stroke="#FFD000"
-          strokeWidth="8"
-          filter="url(#gh-pulse)"
-          style={{
-            opacity: 0,
-            animation: 'gh-halo 3s ease-in-out infinite',
-          }}
+          d="M 12,8 Q 105,2 185,16 L 195,32 L 196,60 L 190,95 L 183,130 L 176,160 L 172,182 L 168,205 L 158,225 L 135,237 L 105,240 L 75,236 L 50,228 L 28,215 L 15,195 L 10,165 L 8,130 L 9,92 L 10,55 L 12,28 Z"
+          fill="none" stroke="#FFD000" strokeWidth="12"
+          filter="url(#gho)"
+          style={{ animation: 'gh-halo 3.5s ease-in-out infinite' }}
         />
 
-        {/* Ghana fill */}
+        {/* Ghana territory fill */}
         <path
-          d="M 42 14 C 70 6 105 5 140 10 L 168 16 L 178 28 L 182 60 L 180 95 L 175 128 L 170 155 L 172 185 L 162 218 L 145 230 L 118 235 L 90 232 L 65 225 L 42 214 L 28 200 L 22 168 L 20 128 L 22 88 L 28 52 Z"
-          fill="url(#gh-fill)"
-          stroke="none"
+          d="M 12,8 Q 105,2 185,16 L 195,32 L 196,60 L 190,95 L 183,130 L 176,160 L 172,182 L 168,205 L 158,225 L 135,237 L 105,240 L 75,236 L 50,228 L 28,215 L 15,195 L 10,165 L 8,130 L 9,92 L 10,55 L 12,28 Z"
+          fill="url(#ghf)"
         />
 
-        {/* Ghana outline — main golden stroke */}
+        {/* Ghana border — golden outline with soft glow */}
         <path
-          d="M 42 14 C 70 6 105 5 140 10 L 168 16 L 178 28 L 182 60 L 180 95 L 175 128 L 170 155 L 172 185 L 162 218 L 145 230 L 118 235 L 90 232 L 65 225 L 42 214 L 28 200 L 22 168 L 20 128 L 22 88 L 28 52 Z"
-          fill="none"
-          stroke="#FFD000"
-          strokeWidth="1.8"
-          filter="url(#gh-glow)"
-          strokeLinejoin="round"
-          strokeLinecap="round"
+          d="M 12,8 Q 105,2 185,16 L 195,32 L 196,60 L 190,95 L 183,130 L 176,160 L 172,182 L 168,205 L 158,225 L 135,237 L 105,240 L 75,236 L 50,228 L 28,215 L 15,195 L 10,165 L 8,130 L 9,92 L 10,55 L 12,28 Z"
+          fill="none" stroke="#FFD000" strokeWidth="1.6"
+          filter="url(#ghg)" strokeLinejoin="round"
         />
 
-        {/* Lake Volta — distinctive shape */}
+        {/* Lake Volta — main J body */}
         <path
-          d="M 142 62 L 158 78 L 162 102 L 158 128 L 150 148 L 140 162 L 130 158 L 124 138 L 128 115 L 134 92 L 130 72 Z"
-          fill="rgba(40,60,120,0.4)"
-          stroke="rgba(100,160,255,0.35)"
-          strokeWidth="0.8"
+          d="M 162,38 L 176,60 L 173,85 L 168,108 L 160,128 L 150,138 L 138,134 L 134,115 L 138,90 L 146,65 L 156,45 Z"
+          fill="rgba(6,12,38,0.85)" stroke="rgba(90,150,255,0.4)" strokeWidth="0.9" strokeLinejoin="round"
+        />
+        {/* Lake Volta — southern arm */}
+        <path
+          d="M 150,138 L 155,158 L 152,180 L 143,178 L 148,156 L 138,134"
+          fill="rgba(6,12,38,0.85)" stroke="rgba(90,150,255,0.4)" strokeWidth="0.9" strokeLinecap="round"
         />
 
-        {/* Volta River mouth */}
-        <path
-          d="M 155 198 L 162 215 L 170 222"
-          fill="none"
-          stroke="rgba(100,160,255,0.3)"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-        />
+        {/* Tamale — static dot */}
+        <circle cx="92" cy="82" r="1.8" fill="#FFD000" opacity="0.62" />
 
-        {/* City: Tamale (N Ghana) */}
-        <circle cx="105" cy="72" r="2.5" fill="#FFD000" opacity="0.9">
-          <animate attributeName="opacity" values="0.9;0.4;0.9" dur="2.2s" repeatCount="indefinite" />
+        {/* Kumasi — static dot */}
+        <circle cx="72" cy="158" r="1.8" fill="#FFD000" opacity="0.62" />
+
+        {/* Accra — pulsing capital */}
+        <circle cx="125" cy="237" r="3" fill="#FFD000">
+          <animate attributeName="r" values="3;4.8;3" dur="2.2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1;0.5;1" dur="2.2s" repeatCount="indefinite" />
         </circle>
-        <circle cx="105" cy="72" r="5" fill="none" stroke="#FFD000" strokeWidth="0.6" opacity="0.4" />
-        <text x="110" y="70" fontSize="7" fill="rgba(255,208,0,0.55)" fontFamily="monospace">Tamale</text>
-
-        {/* City: Kumasi (center) */}
-        <circle cx="82" cy="148" r="2.5" fill="#FFD000" opacity="0.9">
-          <animate attributeName="opacity" values="0.9;0.4;0.9" dur="2.8s" repeatCount="indefinite" />
+        <circle cx="125" cy="237" r="8" fill="none" stroke="#FFD000" strokeWidth="0.8">
+          <animate attributeName="r" values="8;14;8" dur="2.2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.45;0;0.45" dur="2.2s" repeatCount="indefinite" />
         </circle>
-        <circle cx="82" cy="148" r="5" fill="none" stroke="#FFD000" strokeWidth="0.6" opacity="0.4" />
-        <text x="88" y="146" fontSize="7" fill="rgba(255,208,0,0.55)" fontFamily="monospace">Kumasi</text>
-
-        {/* City: Accra (capital — slightly larger dot) */}
-        <circle cx="128" cy="228" r="3.2" fill="#FFD000" opacity="1">
-          <animate attributeName="opacity" values="1;0.5;1" dur="1.8s" repeatCount="indefinite" />
-        </circle>
-        <circle cx="128" cy="228" r="6.5" fill="none" stroke="#FFD000" strokeWidth="0.8" opacity="0.5">
-          <animate attributeName="r" values="6.5;9;6.5" dur="1.8s" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0.5;0;0.5" dur="1.8s" repeatCount="indefinite" />
-        </circle>
-        <text x="134" y="226" fontSize="7.5" fill="rgba(255,208,0,0.7)" fontFamily="monospace" fontWeight="bold">Accra ★</text>
-
-        {/* Compass rose (decorative) */}
-        <g transform="translate(20, 235)" opacity="0.35">
-          <line x1="0" y1="-8" x2="0" y2="8" stroke="#FFD000" strokeWidth="0.8" />
-          <line x1="-8" y1="0" x2="8" y2="0" stroke="#FFD000" strokeWidth="0.8" />
-          <text x="0" y="-10" fontSize="6" fill="#FFD000" fontFamily="monospace" textAnchor="middle">N</text>
-        </g>
+        <text x="131" y="234" fontSize="7.5" fill="rgba(255,208,0,0.65)"
+          fontFamily="ui-monospace,monospace" fontWeight="bold">Accra ★</text>
       </svg>
-
-      {/* ── Keyframes injected via style tag ── */}
-      <style>{`
-        @keyframes gh-halo {
-          0%, 100% { opacity: 0; }
-          50%       { opacity: 0.25; }
-        }
-      `}</style>
     </div>
   );
 }

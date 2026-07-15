@@ -46,7 +46,7 @@ SEED_ARTICLES = [
             "in the affected regions. This represents the largest regulatory fine in Ghana's telecom history."
         ),
         "source_name": "Citi FM",
-        "url": "https://citinewsroom.com/seed/nca-fine-mtn-ghana-2026",
+        "url": "https://citinewsroom.com/?s=NCA+MTN+Ghana+spectrum+fine",
         "days_ago": 0,
     },
     {
@@ -59,7 +59,7 @@ SEED_ARTICLES = [
             "continues. The IMF has been called in for emergency consultations with the Ministry of Finance."
         ),
         "source_name": "Ghana Business News",
-        "url": "https://ghanabusinessnews.com/seed/cedi-crash-mtn-2026",
+        "url": "https://ghanabusinessnews.com/?s=cedi+MTN+Ghana+depreciation",
         "days_ago": 0,
     },
     # --- WARNING tier ---
@@ -73,7 +73,7 @@ SEED_ARTICLES = [
             "Vodafone Ghana is also reported to be planning a similar bundle promotion."
         ),
         "source_name": "TechCabal",
-        "url": "https://techcabal.com/seed/airteltigo-price-war-2026",
+        "url": "https://techcabal.com/?s=AirtelTigo+Ghana+tariff",
         "days_ago": 1,
     },
     {
@@ -86,7 +86,7 @@ SEED_ARTICLES = [
             "Industry groups warn the tax could suppress transaction volumes by up to 40%."
         ),
         "source_name": "JoyFM",
-        "url": "https://myjoyonline.com/seed/digital-tax-momo-2026",
+        "url": "https://myjoyonline.com/?s=digital+services+tax+mobile+money",
         "days_ago": 1,
     },
     # --- WATCH tier ---
@@ -99,7 +99,7 @@ SEED_ARTICLES = [
             "programme. MTN engineers will upgrade tower equipment across 45 base stations."
         ),
         "source_name": "Modern Ghana",
-        "url": "https://modernghana.com/seed/mtn-maintenance-2026",
+        "url": "https://www.modernghana.com/search/?q=MTN+Ghana+network",
         "days_ago": 2,
     },
     {
@@ -112,7 +112,7 @@ SEED_ARTICLES = [
             "reach 32% by Q3 2026."
         ),
         "source_name": "African Business",
-        "url": "https://african.business/seed/bog-rates-2026",
+        "url": "https://african.business/?s=Bank+of+Ghana+interest+rate",
         "days_ago": 2,
     },
     {
@@ -125,7 +125,7 @@ SEED_ARTICLES = [
             "expansion over the next 18 months."
         ),
         "source_name": "BBC Africa",
-        "url": "https://bbcafrica.com/seed/mtn-momo-expansion-2026",
+        "url": "https://www.bbc.com/news/topics/c8nq32jeww8t",
         "days_ago": 3,
     },
     {
@@ -138,7 +138,7 @@ SEED_ARTICLES = [
             "NDC and NPP MPs both expressed support for the initiative."
         ),
         "source_name": "The Africa Report",
-        "url": "https://theafricareport.com/seed/ghana-digital-policy-2026",
+        "url": "https://www.theafricareport.com/?s=Ghana+digital+economy+policy",
         "days_ago": 3,
     },
     {
@@ -151,7 +151,7 @@ SEED_ARTICLES = [
             "primary headwind for H2 2026 guidance."
         ),
         "source_name": "Ghana Business News",
-        "url": "https://ghanabusinessnews.com/seed/mtn-q2-results-2026",
+        "url": "https://ghanabusinessnews.com/?s=MTN+Ghana+Q2+results",
         "days_ago": 4,
     },
     {
@@ -165,7 +165,7 @@ SEED_ARTICLES = [
             "about suspicious transactions have increased on social media."
         ),
         "source_name": "TechCabal",
-        "url": "https://techcabal.com/seed/cybersecurity-momo-2026",
+        "url": "https://techcabal.com/?s=MoMo+cybersecurity+Ghana",
         "days_ago": 5,
     },
     {
@@ -178,7 +178,7 @@ SEED_ARTICLES = [
             "quality by Q4 or face potential tariff restrictions under the new compliance framework."
         ),
         "source_name": "Citi FM",
-        "url": "https://citinewsroom.com/seed/nca-qos-report-2026",
+        "url": "https://citinewsroom.com/?s=NCA+quality+of+service+MTN",
         "days_ago": 6,
     },
     {
@@ -191,7 +191,7 @@ SEED_ARTICLES = [
             "The programme is part of MTN's commitment to bridge the digital divide in Ghana."
         ),
         "source_name": "JoyFM",
-        "url": "https://myjoyonline.com/seed/mtn-digital-schools-2026",
+        "url": "https://myjoyonline.com/?s=MTN+Ghana+digital+schools+WiFi",
         "days_ago": 7,
     },
 ]
