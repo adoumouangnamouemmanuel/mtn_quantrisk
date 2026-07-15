@@ -8,6 +8,15 @@ import { Chip } from '@/components/ui/Chip';
 import { formatNumber, formatPct } from '@/lib/format';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import { BookOpen, DollarSign, PieChart, Cpu, Globe, CheckCircle2, AlertTriangle, XCircle, Eye, ArrowUpDown } from 'lucide-react';
+import { LiveRiskEvents } from '@/components/intelligence/LiveRiskEvents';
+
+// KPI book category → risk category mapping
+const BOOK_TO_RISK: Record<string, string> = {
+  Financial:   'fx_financial',
+  Segment:     'competitive',
+  Operational: 'operational',
+  External:    'political',
+};
 
 const CATEGORY_ICON: Record<string, React.ReactNode> = {
   Financial:   <DollarSign className="w-3.5 h-3.5 text-mtn-yellow" />,
@@ -24,8 +33,9 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
 };
 
 export default function KriRegisterPage() {
-  const [kpis, setKpis] = useState<Kpi[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [kpis,        setKpis]        = useState<Kpi[]>([]);
+  const [loading,     setLoading]     = useState(true);
+  const [activeBookCat, setActiveBookCat] = useState<string>('Financial');
 
   useEffect(() => {
     fetchKpis().then(data => {
@@ -79,7 +89,11 @@ export default function KriRegisterPage() {
                   const upperStr = kpi.upperThreshold !== null ? (kpi.unit === '%' ? formatPct(kpi.upperThreshold) : formatNumber(kpi.upperThreshold, 1)) : '-';
                   
                   return (
-                    <tr key={kpi.id} className="hover:bg-rowHover transition-colors">
+                    <tr
+                      key={kpi.id}
+                      className={`cursor-pointer transition-colors ${activeBookCat === kpi.category ? 'bg-mtn-yellow/05' : 'hover:bg-rowHover'}`}
+                      onClick={() => setActiveBookCat(kpi.category)}
+                    >
                       <td className="px-6 py-4 font-mono text-sm text-outline">{kpi.id}</td>
                       <td className="px-6 py-4 font-sans text-sm font-medium text-on-surface">{kpi.name}</td>
                       <td className="px-6 py-4">
@@ -108,6 +122,23 @@ export default function KriRegisterPage() {
           </table>
         </div>
       </Card>
+
+      {/* Live Intelligence panel — updates when you click a KPI row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Object.entries(BOOK_TO_RISK).map(([bookCat, riskCat]) => (
+          <LiveRiskEvents
+            key={bookCat}
+            category={riskCat}
+            label={`${bookCat} KPIs`}
+            limit={4}
+            className={activeBookCat === bookCat ? 'ring-1 ring-mtn-yellow/30' : ''}
+          />
+        ))}
+      </div>
+
+      <p className="text-xs text-on-surface-variant font-mono">
+        Click any KPI row to highlight its Live Intelligence panel · articles update from live scraping pipeline
+      </p>
     </div>
   );
 }
