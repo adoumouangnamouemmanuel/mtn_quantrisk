@@ -66,6 +66,29 @@ function SummaryBar({ summary }: { summary: NewsSummary }) {
   );
 }
 
+// ── Extractive summary — first 2–3 complete sentences from the body ──────────
+
+function extractSummary(body: string): string {
+  if (!body) return '';
+  const sentences = body.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 30);
+  return sentences.slice(0, 3).join(' ');
+}
+
+// ── Severity bar ──────────────────────────────────────────────────────────────
+
+function SeverityBar({ value }: { value: number }) {
+  const pct = (value / 10) * 100;
+  const color = value >= 8 ? '#ef4444' : value >= 6 ? '#f97316' : value >= 4 ? '#facc15' : '#22c55e';
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
+      </div>
+      <span className="text-xs font-mono font-bold" style={{ color }}>{value.toFixed(1)}</span>
+    </div>
+  );
+}
+
 // ── Article card with inline expansion ───────────────────────────────────────
 
 function ArticleCard({
@@ -77,8 +100,12 @@ function ArticleCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const [showFull, setShowFull] = React.useState(false);
   const cat  = article.category  ? CATEGORY_META[article.category]  : null;
   const tier = article.alertTier ? TIER_STYLE[article.alertTier]     : null;
+  const summary = article.body ? extractSummary(article.body) : '';
+  const bodyFull = article.body ?? '';
+  const BODY_PREVIEW = 600;
 
   return (
     <div
@@ -92,31 +119,23 @@ function ArticleCard({
       {/* ── Clickable header ── */}
       <button onClick={onToggle} className="w-full text-left p-4 group">
         <div className="flex items-start gap-3">
-          {/* Tier stripe */}
           <div
             className={`w-1 rounded-full shrink-0 ${tier ? tier.bar : 'bg-transparent'}`}
             style={{ minHeight: '1.25rem', alignSelf: 'stretch' }}
           />
-
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-2">
-              <p
-                className={`flex-1 text-sm font-semibold leading-snug transition-colors ${
-                  isExpanded
-                    ? 'text-mtn-yellow'
-                    : 'text-on-surface group-hover:text-mtn-yellow'
-                } ${isExpanded ? '' : 'line-clamp-2'}`}
-              >
+              <p className={`flex-1 text-sm font-semibold leading-snug transition-colors ${
+                isExpanded ? 'text-mtn-yellow' : 'text-on-surface group-hover:text-mtn-yellow'
+              } ${isExpanded ? '' : 'line-clamp-2'}`}>
                 {article.title}
               </p>
-              <div className="shrink-0 mt-0.5 transition-colors">
+              <div className="shrink-0 mt-0.5">
                 {isExpanded
                   ? <ChevronUp   className="w-4 h-4 text-mtn-yellow" />
                   : <ChevronDown className="w-4 h-4 text-on-surface-variant group-hover:text-on-surface" />}
               </div>
             </div>
-
-            {/* Meta row */}
             <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-on-surface-variant">
               <span className="font-medium">{article.sourceName ?? 'Unknown source'}</span>
               <span>·</span>
@@ -148,69 +167,107 @@ function ArticleCard({
       {isExpanded && (
         <div className="px-5 pb-5 space-y-4 border-t" style={{ borderColor: 'rgba(255,208,0,0.1)' }}>
 
-          {/* AI Risk Analysis */}
-          {(article.severity != null || article.mtnRelevance != null || article.impactGhsMid != null) && (
-            <div
-              className="mt-4 rounded-lg border p-3.5 space-y-3"
-              style={{ borderColor: 'rgba(255,208,0,0.15)', background: 'rgba(255,208,0,0.03)' }}
-            >
+          {/* ── Quick Summary ── */}
+          {summary && (
+            <div className="mt-4 rounded-lg p-4 space-y-2"
+              style={{ background: 'rgba(255,255,255,0.03)', borderLeft: '3px solid rgba(255,208,0,0.4)' }}>
               <p className="text-xs font-mono uppercase tracking-widest text-mtn-yellow/70 flex items-center gap-1.5">
-                <Brain className="w-3.5 h-3.5" /> AI Risk Analysis
+                <Brain className="w-3.5 h-3.5" /> Quick Summary
               </p>
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { label: 'Severity',      value: article.severity     != null ? `${article.severity.toFixed(1)} / 10` : '—' },
-                  { label: 'MTN Relevance', value: article.mtnRelevance != null ? `${(article.mtnRelevance * 100).toFixed(0)}%` : '—' },
-                  { label: 'Impact (mid)',  value: fmtGhs(article.impactGhsMid) },
-                ].map(({ label, value }) => (
-                  <div key={label}>
-                    <p className="text-xs text-on-surface-variant">{label}</p>
-                    <p className="text-sm font-mono font-bold text-on-surface mt-0.5">{value}</p>
+              <p className="text-sm text-on-surface leading-relaxed">{summary}</p>
+            </div>
+          )}
+
+          {/* ── AI Risk Analysis ── */}
+          {(article.severity != null || article.mtnRelevance != null || article.impactGhsMid != null) && (
+            <div className="rounded-lg border p-4 space-y-3"
+              style={{ borderColor: 'rgba(255,208,0,0.15)', background: 'rgba(255,208,0,0.02)' }}>
+              <p className="text-xs font-mono uppercase tracking-widest text-mtn-yellow/70">AI Risk Scores</p>
+              <div className="grid grid-cols-1 gap-3">
+                {article.severity != null && (
+                  <div>
+                    <div className="flex justify-between text-xs text-on-surface-variant mb-1">
+                      <span>Severity</span>
+                      <span className="font-mono">/ 10</span>
+                    </div>
+                    <SeverityBar value={article.severity} />
                   </div>
-                ))}
+                )}
+                {article.mtnRelevance != null && (
+                  <div>
+                    <div className="flex justify-between text-xs text-on-surface-variant mb-1">
+                      <span>MTN Relevance</span>
+                      <span className="font-mono font-bold text-on-surface">{(article.mtnRelevance * 100).toFixed(0)}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                      <div className="h-full rounded-full bg-blue-400 transition-all duration-500"
+                        style={{ width: `${article.mtnRelevance * 100}%` }} />
+                    </div>
+                  </div>
+                )}
               </div>
               {article.impactGhsMid != null && (
-                <p className="text-xs text-on-surface-variant font-mono">
-                  Range: {fmtGhs(article.impactGhsMin)} – {fmtGhs(article.impactGhsMax)}
-                </p>
+                <div className="pt-1 grid grid-cols-3 gap-2 text-center">
+                  {[
+                    { label: 'Min Impact',  value: fmtGhs(article.impactGhsMin) },
+                    { label: 'Mid Impact',  value: fmtGhs(article.impactGhsMid) },
+                    { label: 'Max Impact',  value: fmtGhs(article.impactGhsMax) },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="rounded-lg p-2" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                      <p className="text-[10px] text-on-surface-variant font-mono">{label}</p>
+                      <p className="text-sm font-mono font-bold text-mtn-yellow mt-0.5">{value}</p>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
 
-          {/* Article body excerpt */}
-          {article.body && (
-            <div className="space-y-1.5">
-              <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">
-                Article Excerpt
-              </p>
-              <p className="text-sm text-on-surface-variant leading-relaxed">
-                {article.body.slice(0, 500)}{article.body.length > 500 ? '…' : ''}
-              </p>
+          {/* ── Full article body ── */}
+          {bodyFull && (
+            <div className="space-y-2">
+              <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">Full Article</p>
+              <div className="text-sm text-on-surface-variant leading-relaxed space-y-2"
+                style={{ maxHeight: showFull ? 'none' : '200px', overflow: 'hidden', position: 'relative' }}>
+                {bodyFull.split(/\n+/).filter(Boolean).map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
+                {!showFull && bodyFull.length > BODY_PREVIEW && (
+                  <div className="absolute bottom-0 left-0 right-0 h-12"
+                    style={{ background: 'linear-gradient(to bottom, transparent, rgba(10,10,20,0.95))' }} />
+                )}
+              </div>
+              {bodyFull.length > BODY_PREVIEW && (
+                <button
+                  onClick={() => setShowFull(v => !v)}
+                  className="text-xs font-mono text-mtn-yellow hover:underline mt-1"
+                >
+                  {showFull ? '▲ Show less' : '▼ Show full article'}
+                </button>
+              )}
             </div>
           )}
 
-          {/* Named entities */}
-          {article.entities && Object.values(article.entities).some(arr => arr.length > 0) && (
-            <div className="space-y-1.5">
+          {/* ── Named entities ── */}
+          {article.entities && Object.values(article.entities).some((arr: string[]) => arr.length > 0) && (
+            <div className="space-y-2">
               <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant flex items-center gap-1.5">
                 <Tag className="w-3 h-3" /> Named Entities
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {[
-                  ...article.entities.orgs.map(e      => ({ label: e, color: 'text-blue-400 bg-blue-400/10 border-blue-400/20' })),
-                  ...article.entities.locations.map(e => ({ label: e, color: 'text-green-400 bg-green-400/10 border-green-400/20' })),
-                  ...article.entities.persons.map(e   => ({ label: e, color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' })),
-                  ...article.entities.money.map(e     => ({ label: e, color: 'text-mtn-yellow bg-mtn-yellow/10 border-mtn-yellow/20' })),
+                  ...article.entities.orgs.map((e: string)      => ({ label: e, color: 'text-blue-400 bg-blue-400/10 border-blue-400/20' })),
+                  ...article.entities.locations.map((e: string) => ({ label: e, color: 'text-green-400 bg-green-400/10 border-green-400/20' })),
+                  ...article.entities.persons.map((e: string)   => ({ label: e, color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' })),
+                  ...article.entities.money.map((e: string)     => ({ label: e, color: 'text-mtn-yellow bg-mtn-yellow/10 border-mtn-yellow/20' })),
                 ].map(({ label, color }, i) => (
-                  <span key={i} className={`px-2 py-0.5 rounded-full border text-xs font-mono ${color}`}>
-                    {label}
-                  </span>
+                  <span key={i} className={`px-2 py-0.5 rounded-full border text-xs font-mono ${color}`}>{label}</span>
                 ))}
               </div>
             </div>
           )}
 
-          {/* View More → actual article URL */}
+          {/* ── View full article link ── */}
           <div className="pt-1 flex items-center gap-3">
             <a
               href={article.url}
@@ -220,7 +277,7 @@ function ArticleCard({
               style={{ borderColor: 'rgba(255,208,0,0.35)', color: '#FFD000' }}
             >
               <ExternalLink className="w-4 h-4" />
-              View More
+              Read Full Article
             </a>
             <span className="text-xs text-on-surface-variant font-mono">
               Opens {article.sourceName ?? 'source'} in new tab
@@ -234,31 +291,57 @@ function ArticleCard({
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 20;
+
 export default function NewsPage() {
   const [articles,       setArticles]       = useState<NewsArticle[]>([]);
   const [summary,        setSummary]        = useState<NewsSummary | null>(null);
   const [loading,        setLoading]        = useState(true);
+  const [loadingMore,    setLoadingMore]    = useState(false);
+  const [hasMore,        setHasMore]        = useState(true);
   const [scraping,       setScraping]       = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [expandedId,     setExpandedId]     = useState<string | null>(null);
   const [error,          setError]          = useState<string | null>(null);
+  const offsetRef = React.useRef(0);
 
   const loadData = useCallback(async (category?: string) => {
     setLoading(true);
     setError(null);
+    offsetRef.current = 0;
     try {
       const [arts, sum] = await Promise.all([
-        fetchNews({ category: category ?? undefined, limit: 50 }),
+        fetchNews({ category, limit: PAGE_SIZE, offset: 0 }),
         fetchNewsSummary(),
       ]);
       setArticles(arts);
       setSummary(sum);
+      setHasMore(arts.length === PAGE_SIZE);
+      offsetRef.current = arts.length;
     } catch (e) {
       setError(String(e));
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const loadMore = useCallback(async () => {
+    setLoadingMore(true);
+    try {
+      const more = await fetchNews({
+        category: activeCategory ?? undefined,
+        limit: PAGE_SIZE,
+        offset: offsetRef.current,
+      });
+      setArticles(prev => [...prev, ...more]);
+      setHasMore(more.length === PAGE_SIZE);
+      offsetRef.current += more.length;
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [activeCategory]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -367,6 +450,27 @@ export default function NewsPage() {
               onToggle={() => setExpandedId(prev => prev === a.id ? null : a.id)}
             />
           ))}
+
+          {/* Load More */}
+          {articles.length > 0 && (
+            <div className="flex flex-col items-center gap-2 pt-4 pb-2">
+              {hasMore ? (
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-150 disabled:opacity-50 hover:bg-white/05 active:scale-95"
+                  style={{ borderColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)' }}
+                >
+                  <RefreshCw className={`w-4 h-4 ${loadingMore ? 'animate-spin' : ''}`} />
+                  {loadingMore ? 'Loading…' : `Load more articles`}
+                </button>
+              ) : (
+                <p className="text-xs font-mono text-on-surface-variant">
+                  All {articles.length} articles loaded
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
