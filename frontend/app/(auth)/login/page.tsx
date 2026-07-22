@@ -1,45 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useActionState, useState } from 'react';
 import { EyeOff, Eye, Key, Lock, Loader2 } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
-
-import { useRouter } from 'next/navigation';
+import { loginAction } from './actions';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const supabase = createClient();
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!email.toLowerCase().endsWith('@mtn.com')) {
-      setError('Please use a valid @mtn.com work email.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (authError) {
-      setError(authError.message);
-      setLoading(false);
-    } else {
-      router.push('/dashboard');
-      router.refresh();
-    }
-  };
+  const [state, formAction, pending] = useActionState(loginAction, { error: null });
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden font-sans bg-surface">
@@ -99,11 +68,11 @@ export default function LoginPage() {
 
           <form
             className="space-y-6"
-            onSubmit={handleLogin}
+            action={formAction}
           >
-            {error && (
+            {state.error && (
               <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded">
-                {error}
+                {state.error}
               </div>
             )}
             <div>
@@ -112,6 +81,7 @@ export default function LoginPage() {
               </label>
               <input
                 type="email"
+                name="email"
                 placeholder="analyst@mtn.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -127,6 +97,7 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
                   placeholder="........"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -145,10 +116,10 @@ export default function LoginPage() {
 
             <button 
               type="submit" 
-              disabled={loading}
+              disabled={pending}
               className="w-full flex items-center justify-center bg-mtn-yellow text-black font-bold uppercase tracking-widest py-3.5 rounded mt-2 hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
+              {pending ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
             </button>
 
             <div className="flex items-center my-6">
@@ -157,9 +128,9 @@ export default function LoginPage() {
               <hr className="flex-1 border-outline/50" />
             </div>
 
-            <button type="button" className="w-full bg-surface-container-low border border-outline/50 text-white font-bold py-3.5 rounded flex items-center justify-center space-x-3 hover:bg-surface-container transition-colors">
+            <button type="button" disabled className="w-full bg-surface-container-low border border-outline/50 text-on-surface-variant font-bold py-3.5 rounded flex items-center justify-center space-x-3 cursor-not-allowed opacity-60">
               <Key className="w-4 h-4" />
-              <span>Sign in with MTN SSO</span>
+              <span>MTN SSO — Coming Soon</span>
             </button>
           </form>
 
