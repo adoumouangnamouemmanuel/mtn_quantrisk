@@ -10,6 +10,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from app.services.scraper_service import (
     _extract_body,
+    is_relevant_for_mtn_ghana,
     scrape_all_sources,
     RSS_SOURCES,
 )
@@ -109,3 +110,34 @@ def test_scrape_handles_source_failure_gracefully(mock_parse):
     # If one source fails, the rest should still be attempted
     articles = scrape_all_sources()
     assert isinstance(articles, list)  # Should not raise, should return empty list
+
+
+class TestNairametricsRelevanceFilter:
+    def test_rejects_unrelated_nigerian_business_story(self):
+        article = {
+            "source_name": "Nairametrics",
+            "title": "Dangote refinery expands petroleum production",
+            "body": "The company announced additional refining capacity in Lagos.",
+        }
+        assert is_relevant_for_mtn_ghana(article) is False
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "MTN Nigeria reports subscriber growth",
+            "Ghana telecom regulator releases new spectrum",
+            "Mobile money operators face new cybersecurity rules",
+            "Fintech firms expand digital payments across West Africa",
+        ],
+    )
+    def test_accepts_concrete_relevance_signal(self, text):
+        article = {"source_name": "Nairametrics", "title": text, "body": ""}
+        assert is_relevant_for_mtn_ghana(article) is True
+
+    def test_does_not_filter_ghana_focused_sources(self):
+        article = {
+            "source_name": "JoyFM",
+            "title": "Local education programme opens applications",
+            "body": "",
+        }
+        assert is_relevant_for_mtn_ghana(article) is True

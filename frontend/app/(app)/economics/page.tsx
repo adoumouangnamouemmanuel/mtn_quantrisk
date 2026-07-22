@@ -24,7 +24,7 @@ const INDICATOR_META: Record<string, { label: string; icon: React.ElementType; i
   gdp_growth:   { label: 'GDP Growth',           icon: BarChart2 },
   fx_usd_ghs:   { label: 'GHS / USD Rate',       icon: DollarSign,  invert: true },
   unemployment: { label: 'Unemployment Rate',    icon: Users,        invert: true },
-  public_debt:  { label: 'Public Debt / GDP',    icon: Globe,        invert: true },
+  debt_service: { label: 'PPG Debt Service / GNI', icon: Globe,     invert: true },
   fdi_inflows:  { label: 'FDI Net Inflows / GDP',icon: TrendingDown },
 };
 
@@ -36,7 +36,7 @@ function Sparkline({ history, invert }: { history: { year: number; value: number
   const range = max - min || 1;
   const W = 80, H = 32;
   const pts = vals.map((v, i) => {
-    const x = (i / (vals.length - 1)) * W;
+    const x = vals.length === 1 ? W / 2 : (i / (vals.length - 1)) * W;
     const y = H - ((v - min) / range) * H;
     return `${x},${y}`;
   }).join(' ');
@@ -99,14 +99,12 @@ export default function EconomicsPage() {
   const [error, setError]   = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (refresh = false) => {
     setLoading(true);
     setError(null);
     try {
-      const [econ, riskCtx] = await Promise.all([
-        fetchGhanaEconomics(),
-        fetchEconomicsRiskContext(),
-      ]);
+      const econ = await fetchGhanaEconomics(refresh);
+      const riskCtx = await fetchEconomicsRiskContext();
       setData(econ);
       setCtx(riskCtx);
       setLastRefresh(new Date());
@@ -117,9 +115,9 @@ export default function EconomicsPage() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { void load(); }, [load]);
 
-  const indicatorIds = ['inflation', 'gdp_growth', 'fx_usd_ghs', 'unemployment', 'public_debt', 'fdi_inflows'];
+  const indicatorIds = ['inflation', 'gdp_growth', 'fx_usd_ghs', 'unemployment', 'debt_service', 'fdi_inflows'];
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
@@ -129,11 +127,11 @@ export default function EconomicsPage() {
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Ghana Macro Dashboard</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            Live indicators from World Bank Open Data — updated annually, cached 6 h.
+            Latest annual indicators from World Bank Open Data — cached for 6 hours.
           </p>
         </div>
         <button
-          onClick={load}
+          onClick={() => void load(true)}
           disabled={loading}
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium border border-zinc-300 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-40 transition"
         >
@@ -154,6 +152,9 @@ export default function EconomicsPage() {
               </span>
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${RISK_COLOR[ctx.growth_risk]}`}>
                 Growth: {ctx.growth_risk}
+              </span>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${RISK_COLOR[ctx.fx_risk]}`}>
+                FX: {ctx.fx_risk}
               </span>
             </div>
           </div>

@@ -10,7 +10,7 @@ The platform monitors 18 Ghanaian and African news sources every 15 minutes, run
 
 | Capability | Detail |
 |---|---|
-| Live news pipeline | 18 RSS sources + optional GNews API — scrapes every 15 min |
+| Live news pipeline | 18 RSS sources + optional GNews API — scrapes every 15 minutes |
 | NLP risk scoring | spaCy NER + FinBERT sentiment (HF Inference API) + zero-shot classification |
 | Alert tiers | Critical ≥ 7.5 · Warning ≥ 5.0 · Watch ≥ 3.0 severity |
 | GHS impact | Monte-Carlo-style range: min / mid / max per article |
@@ -49,7 +49,7 @@ The platform monitors 18 Ghanaian and African news sources every 15 minutes, run
 | Layer | Choice |
 |---|---|
 | Framework | FastAPI + Uvicorn |
-| Scheduler | APScheduler BackgroundScheduler (scrapes every 15 min) |
+| Scheduler | APScheduler BackgroundScheduler (15-minute interval) |
 | Database | SQLite via SQLAlchemy (WAL mode) |
 | ML models | XGBoost (severity / EBITDA), ARIMA (revenue forecast) |
 | NLP | spaCy `en_core_web_sm` NER, FinBERT + BART-CNN via HuggingFace Inference API |

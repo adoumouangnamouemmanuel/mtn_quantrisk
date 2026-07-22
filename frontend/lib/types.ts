@@ -149,6 +149,11 @@ export interface BoardBrief {
 export interface PipelineHealth {
   status: 'Healthy' | 'Degraded' | 'Failed';
   lastBeatAt: string;
+  automaticScraper?: {
+    status: 'Scheduled' | 'Unavailable';
+    nextRunAt: string | null;
+    schedule: string | null;
+  };
   sources: Array<{
     name: string;
     status: 'Healthy' | 'Degraded' | 'Failed';
