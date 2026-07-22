@@ -1,20 +1,37 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User, Settings, Shield, HelpCircle, LogOut, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 export function ProfilePanel({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, [supabase]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) return;
     onClose();
-    router.push('/login');
+    router.replace('/login');
     router.refresh();
   };
+
+  const displayName =
+    user?.user_metadata?.full_name ??
+    user?.user_metadata?.name ??
+    user?.email?.split('@')[0] ??
+    'Authenticated User';
 
   return (
     <div className="absolute top-12 right-0 w-64 bg-surface border border-outline/20 rounded-lg shadow-2xl overflow-hidden z-50 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
@@ -24,9 +41,9 @@ export function ProfilePanel({ onClose }: { onClose: () => void }) {
             <User className="w-5 h-5 text-mtn-yellow" />
           </div>
           <div>
-            <h3 className="font-sans text-sm font-bold text-white leading-tight">Risk Analyst</h3>
+            <h3 className="font-sans text-sm font-bold text-white leading-tight">{displayName}</h3>
             <span className="font-mono text-[10px] text-on-surface-variant tracking-widest uppercase block mt-1">
-              analyst@mtn.com
+              {user?.email ?? 'Loading account…'}
             </span>
           </div>
         </div>

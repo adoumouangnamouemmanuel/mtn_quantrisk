@@ -1,25 +1,24 @@
 import { createBrowserClient } from '@supabase/ssr'
 
-function createFallbackClient() {
-  return {
-    auth: {
-      async signInWithPassword() {
-        return { error: null }
-      },
-      async signOut() {
-        return undefined
-      },
-    },
-  }
+export function isSupabaseConfigured() {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  )
 }
 
 export function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const publishableKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (!url || !anonKey) {
-    return createFallbackClient() as ReturnType<typeof createBrowserClient>
+  if (!url || !publishableKey) {
+    throw new Error(
+      'Supabase Auth is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.'
+    )
   }
 
-  return createBrowserClient(url, anonKey)
+  return createBrowserClient(url, publishableKey)
 }
