@@ -68,6 +68,41 @@ export default function SettingsPage() {
                       ? new Date(health.automaticScraper.nextRunAt).toLocaleString()
                       : 'Not scheduled'}
                   </p>
+                  {health.externalFeeds && (
+                    <div className="mt-2 grid grid-cols-2 gap-2 font-mono text-[9px] text-on-surface-variant">
+                      <span>Feeds: {health.externalFeeds.summary.healthy}/{health.externalFeeds.summary.total} healthy</span>
+                      <span>Failed: {health.externalFeeds.summary.failed}</span>
+                      <span>Fetched: {health.externalFeeds.fetchedCount}</span>
+                      <span>New: {health.externalFeeds.newArticleCount}</span>
+                      <span className="col-span-2">Last success: {health.externalFeeds.lastSuccessfulFetchAt
+                        ? new Date(health.externalFeeds.lastSuccessfulFetchAt).toLocaleString()
+                        : 'No successful fetch recorded'}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              {health.historicalData && (
+                <div className="rounded-lg border border-outline/20 bg-surface-container-low p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-sans text-sm text-on-surface">Historical CSV Sources</span>
+                    <Chip size="sm" variant={health.historicalData.every(source => source.status === 'Healthy') ? 'success' : 'error'}>
+                      {health.historicalData.filter(source => source.status === 'Healthy').length}/{health.historicalData.length} readable
+                    </Chip>
+                  </div>
+                  <p className="mt-1 font-mono text-[9px] text-on-surface-variant">
+                    {health.historicalData.map(source => `${source.name}: ${source.rows} rows`).join(' · ')}
+                  </p>
+                </div>
+              )}
+              {health.modelQuality && (
+                <div className="rounded-lg border border-outline/20 bg-surface-container-low p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-sans text-sm text-on-surface">Model Validation Evidence</span>
+                    <Chip size="sm" variant={health.modelQuality.status === 'MetricsAvailable' ? 'warning' : 'error'}>
+                      {health.modelQuality.metrics.length} metrics
+                    </Chip>
+                  </div>
+                  <p className="mt-1 text-[10px] leading-relaxed text-on-surface-variant">{health.modelQuality.note}</p>
                 </div>
               )}
               <div className="space-y-2">

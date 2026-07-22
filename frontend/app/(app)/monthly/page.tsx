@@ -6,7 +6,7 @@ import { LineChart } from '@/components/charts/LineChart';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import { fetchMonthly } from '@/lib/api';
 import { ThemeTokens } from '@/lib/theme';
-import { KpiId, MonthlyPoint } from '@/lib/types';
+import { HistoryMetadata, KpiId, MonthlyPoint } from '@/lib/types';
 import { Calendar } from 'lucide-react';
 import { LiveRiskEvents } from '@/components/intelligence/LiveRiskEvents';
 
@@ -22,13 +22,22 @@ const KPIS: { id: KpiId; label: string; riskCategory: string }[] = [
 export default function MonthlyPage() {
   const [selectedKpi, setSelectedKpi] = useState<KpiId>('OPS01');
   const [data, setData] = useState<MonthlyPoint[]>([]);
+  const [metadata, setMetadata] = useState<HistoryMetadata | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
     fetchMonthly(selectedKpi, 36)
-      .then(setData)
-      .catch(console.error)
+      .then(series => {
+        setData(series.points);
+        setMetadata(series.metadata);
+        setError(null);
+      })
+      .catch(reason => {
+        setData([]);
+        setMetadata(null);
+        setError(reason instanceof Error ? reason.message : 'Unable to load history');
+      })
       .finally(() => setLoading(false));
   }, [selectedKpi]);
 
@@ -58,7 +67,7 @@ export default function MonthlyPage() {
           </div>
           <div>
             <h1 className="text-3xl font-hero font-bold text-on-surface">Monthly Trends</h1>
-            <p className="text-on-surface-variant mt-0.5">High-frequency trailing 36-month tracking</p>
+            <p className="text-on-surface-variant mt-0.5">Best available source observations — no synthetic monthly interpolation</p>
           </div>
         </div>
 
@@ -75,6 +84,22 @@ export default function MonthlyPage() {
           ))}
         </select>
       </div>
+
+      {metadata && (
+        <div className="rounded-xl border border-outline/15 bg-surface-container-low px-4 py-3 text-xs text-on-surface-variant">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono uppercase tracking-wider text-mtn-yellow">Showing {metadata.actualFrequency}</span>
+            <span>{metadata.sourceFile}</span>
+            <span>· {metadata.pointCount} observations</span>
+            {metadata.containsReported && <span className="rounded border border-green-400/25 bg-green-400/10 px-2 py-0.5 text-green-400">Reported</span>}
+            {metadata.containsInterpolated && <span className="rounded border border-blue-400/25 bg-blue-400/10 px-2 py-0.5 text-blue-400">Interpolated</span>}
+            {metadata.containsEstimated && <span className="rounded border border-amber-400/25 bg-amber-400/10 px-2 py-0.5 text-amber-400">Estimated</span>}
+          </div>
+          <p className="mt-1">{metadata.note}</p>
+        </div>
+      )}
+
+      {error && <p className="text-sm text-error">{error}</p>}
 
       <Card className="h-[500px]">
         {loading ? (

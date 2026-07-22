@@ -190,8 +190,23 @@ export const GLOSSARY: GlossaryTerm[] = [
 
   // Platform
   {
+    term: 'Automatic News Scraper',
+    definition: 'The background RSS ingestion job. It runs once when the backend starts and then every 15 minutes, deduplicates articles by URL, filters broad sources for MTN relevance, and sends new articles through the NLP risk-scoring pipeline.',
+    category: 'platform',
+  },
+  {
+    term: 'Ghana Macro Dashboard',
+    definition: 'A World Bank-powered view of Ghana inflation, GDP growth, GHS/USD, unemployment, public and publicly guaranteed debt service, and FDI. These are latest annual observations rather than real-time market quotes.',
+    category: 'platform',
+  },
+  {
+    term: 'Supabase Authentication',
+    definition: 'The platform login system. Credentials are verified by Supabase Auth, protected routes require an active server-side session, and signing out clears that session.',
+    category: 'platform',
+  },
+  {
     term: 'Pipeline Health',
-    definition: 'The real-time status check for all data sources and ML models. A "Healthy" status means the CSV files are readable and model artefacts are present. "Degraded" means at least one source has failed. Visible in the Settings page.',
+    definition: 'The status check for structured data, ML artefacts, and the automatic news scheduler. Settings shows whether the scraper is scheduled and its next run time. Healthy does not guarantee that every external RSS publisher is reachable.',
     category: 'platform',
   },
   {
@@ -419,6 +434,81 @@ export const GUIDES: HelpGuide[] = [
     ],
   },
   {
+    id: 'daily-intelligence',
+    title: 'Daily Briefing & News Intelligence',
+    description: 'Review automatically collected news and its relevance to MTN Ghana.',
+    iconName: 'ActivitySquare',
+    steps: [
+      {
+        heading: 'Confirm the automatic schedule',
+        detail: 'Open Settings and locate Automatic News Scraper. Scheduled means the background job is active; Next run shows when the next 15-minute cycle will start.',
+      },
+      {
+        heading: 'Read the Daily Briefing',
+        detail: 'Daily Briefing groups recent risk-scored articles by category, highlights alert tiers and estimated impact, and provides links to the original publishers.',
+      },
+      {
+        heading: 'Use the Ghana coverage card',
+        detail: 'Select the Ghana card near the top of Daily Briefing to open the Ghana Macro Dashboard and compare news risk with the latest annual macro context.',
+      },
+      {
+        heading: 'Trigger a manual scrape only when needed',
+        detail: 'The News page can request a scrape immediately. A result of 0 new articles means either all fetched URLs already exist or no feed returned usable entries; check Settings and backend logs if the last scraped timestamp is stale.',
+      },
+    ],
+    tips: [
+      'Nairametrics is retained only when an article contains a concrete MTN, Ghana, telecom, mobile-money, fintech, spectrum, network, or cybersecurity signal.',
+      'The published date belongs to the news source; the scraped date records when Quantrisk first stored the article.',
+    ],
+  },
+  {
+    id: 'ghana-macro',
+    title: 'Ghana Macro Dashboard',
+    description: 'Interpret Ghana annual macro indicators and their risk ratings.',
+    iconName: 'Database',
+    steps: [
+      {
+        heading: 'Check each observation year',
+        detail: 'Each card displays its own latest year because World Bank indicators are released on different schedules. The values are annual observations, not intraday market data.',
+      },
+      {
+        heading: 'Read the risk banner',
+        detail: 'Inflation, Growth, and FX badges translate the latest observations and year-on-year FX movement into Normal, Watch, Warning, or Critical context.',
+      },
+      {
+        heading: 'Use Refresh for a fresh upstream request',
+        detail: 'Refresh bypasses the six-hour server cache and requests the World Bank API again. If the upstream request completely fails, Quantrisk preserves the last useful cached response.',
+      },
+      {
+        heading: 'Interpret debt service correctly',
+        detail: 'PPG Debt Service / GNI measures annual public and publicly guaranteed external-debt service relative to gross national income. It replaces the unavailable Ghana central-government-debt/GDP World Bank series.',
+      },
+    ],
+  },
+  {
+    id: 'authentication',
+    title: 'Login & Session Security',
+    description: 'Sign in securely and troubleshoot authentication configuration.',
+    iconName: 'Settings',
+    steps: [
+      {
+        heading: 'Use an approved account',
+        detail: 'Enter the email address and password of a user created in Supabase Authentication. Database connection credentials are not application login credentials.',
+      },
+      {
+        heading: 'Confirm frontend configuration',
+        detail: 'The frontend requires NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in frontend/.env.local. Restart or rebuild the frontend after changing them.',
+      },
+      {
+        heading: 'Understand protected routes',
+        detail: 'Pages such as Dashboard, Daily Briefing, Ghana Macro, and Settings require an active session. Unauthenticated requests are redirected to Login and return to the intended page after successful sign-in.',
+      },
+    ],
+    warnings: [
+      'Never place the Supabase database password or service-role key in a NEXT_PUBLIC environment variable.',
+    ],
+  },
+  {
     id: 'settings',
     title: 'Settings & Data Pipeline',
     description: 'Manage data uploads, pipeline health, and model retraining.',
@@ -426,7 +516,7 @@ export const GUIDES: HelpGuide[] = [
     steps: [
       {
         heading: 'Check pipeline health',
-        detail: 'The Pipeline Health panel shows the status (Healthy / Degraded / Failed) for each data source (Base Case CSV, Scenario Library, ML Models) with latency readings.',
+        detail: 'The Pipeline Health panel shows structured-data and ML status with latency readings. Automatic News Scraper separately shows whether the 15-minute job is scheduled and its next run time.',
       },
       {
         heading: 'Upload a CSV',
@@ -466,7 +556,7 @@ export const QNA_CATEGORIES: QnACategory[] = [
       },
       {
         question: 'How often is the data updated?',
-        answer: 'The base-case KPI values are updated quarterly when new financial data is available, via the CSV or PDF upload in Settings. Scenario library calibrations are reviewed quarterly by the risk team. Forecasts regenerate on each page load using the latest available data.',
+        answer: 'News is scraped when the backend starts and every 15 minutes afterward. Base-case KPI values change when an authorised user uploads new CSV or PDF data. Forecasts use the latest loaded base case. Ghana Macro observations come from the World Bank, are cached for six hours, and are generally updated annually by the source.',
       },
       {
         question: 'Is the data real or simulated?',
@@ -474,7 +564,7 @@ export const QNA_CATEGORIES: QnACategory[] = [
       },
       {
         question: 'How do I navigate between modules?',
-        answer: 'Use the left sidebar to navigate. Pages are grouped into three sections: Core (Dashboard, KRI Register, Quarterly/Monthly Trends), Intelligence (Forecasts, Board Briefs), and Advanced Modeling (Stress Tester, Scenario Compare, Reverse Stress, Monte Carlo).',
+        answer: 'Use the left sidebar. Core contains anchors and trend views; Intelligence contains Forecasts, Board Briefs, Ghana Macro, Daily Briefing, News and Alerts; Advanced Modeling contains Stress Tester, Scenario Compare, Reverse Stress and Monte Carlo. The Ghana card on Daily Briefing also links directly to Ghana Macro.',
       },
       {
         question: 'Can I export results as a PDF?',
@@ -639,6 +729,41 @@ export const QNA_CATEGORIES: QnACategory[] = [
     ],
   },
   {
+    id: 'intelligence',
+    label: 'News & Macro Intelligence',
+    iconName: 'ActivitySquare',
+    items: [
+      {
+        question: 'How often does Quantrisk scrape news?',
+        answer: 'The backend schedules one scrape immediately after startup and another every 15 minutes. The job runs in the background, prevents overlapping executions, and coalesces missed runs. Settings shows whether it is scheduled and the next run time.',
+      },
+      {
+        question: 'Why does a manual scrape say 0 new articles?',
+        answer: 'The number counts newly stored URLs, not all fetched feed entries. Zero is normal when every fetched URL is already in the database. If the newest scraped timestamp is also stale, check Automatic News Scraper in Settings and backend logs for DNS, socket, timeout, or malformed-feed errors.',
+      },
+      {
+        question: 'Does every Nairametrics article affect MTN Ghana?',
+        answer: 'No. Quantrisk rejects Nairametrics articles before storage unless their title or body contains a concrete MTN, Ghana, telecom, mobile-network, mobile-money, fintech, 5G, spectrum, digital-payment, or cybersecurity signal.',
+      },
+      {
+        question: 'What is the difference between published time and scraped time?',
+        answer: 'Published time is supplied by the news publisher. Scraped time is when Quantrisk first stored that URL. Deduplication means an existing article is not stored again on every 15-minute cycle.',
+      },
+      {
+        question: 'Is the Ghana Macro Dashboard real-time?',
+        answer: 'No. It displays the latest annual World Bank observations and shows the observation year on every card. Refresh forces a new World Bank request but cannot create a newer observation than the source has published.',
+      },
+      {
+        question: 'Why does the dashboard show PPG Debt Service instead of public debt to GDP?',
+        answer: 'The World Bank central-government-debt/GDP series has no Ghana observations. Quantrisk therefore uses the available public and publicly guaranteed external-debt-service series, shown as a percentage of GNI.',
+      },
+      {
+        question: 'How are the Inflation, Growth and FX risk badges calculated?',
+        answer: 'Inflation and GDP growth use transparent threshold rules against their latest values. FX risk uses the percentage change between the two latest annual GHS/USD observations. These badges provide screening context rather than real-time market advice.',
+      },
+    ],
+  },
+  {
     id: 'technical',
     label: 'Technical & Troubleshooting',
     iconName: 'Settings',
@@ -649,7 +774,15 @@ export const QNA_CATEGORIES: QnACategory[] = [
       },
       {
         question: 'The login page is not working — nothing happens when I click Submit.',
-        answer: 'This is usually caused by a WebSocket failure when accessing the app via an IP address instead of localhost. Always open the frontend at http://localhost:3000, not via your machine\'s IP address (e.g., 192.168.x.x). The HMR WebSocket connection requires localhost to hydrate React properly.',
+        answer: 'Confirm that NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY exist in frontend/.env.local, then restart the frontend. Verify that the user exists in Supabase Authentication and is using an email/password login, not the PostgreSQL database password. Development WebSocket warnings concern hot reload and do not validate credentials.',
+      },
+      {
+        question: 'How do I create or approve a user account?',
+        answer: 'Create the user in Supabase Dashboard under Authentication → Users, or use an approved organisational invitation flow. The application intentionally has no public self-registration screen. The user then signs in with that email and password.',
+      },
+      {
+        question: 'The scraper is scheduled but articles are stale. What should I check?',
+        answer: 'Scheduled confirms the timer exists, not that publishers are reachable. Trigger one manual scrape and inspect backend logs. Socket or DNS errors mean the backend lacks outbound internet access; malformed-feed warnings affect only that publisher. Confirm the backend stays running between 15-minute intervals.',
       },
       {
         question: 'How do I start the backend server?',

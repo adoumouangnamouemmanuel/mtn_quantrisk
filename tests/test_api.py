@@ -129,3 +129,22 @@ def test_health_returns_status(client):
     assert data["status"] in ("Healthy", "Degraded")
     assert data["automaticScraper"]["status"] == "Scheduled"
     assert data["automaticScraper"]["nextRunAt"] is not None
+    assert len(data["historicalData"]) == 4
+    assert "externalFeeds" in data
+    assert data["modelQuality"]["accuracyProven"] is False
+
+
+def test_quarterly_endpoint_returns_provenance(client):
+    response = client.get("/api/quarterly/FIN01")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["points"][0]["value"] == 1450.0
+    assert data["metadata"]["isSynthetic"] is False
+
+
+def test_monthly_endpoint_discloses_actual_frequency(client):
+    response = client.get("/api/monthly/OPS01?n_months=36")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["metadata"]["requestedFrequency"] == "monthly"
+    assert data["metadata"]["actualFrequency"] == "quarterly"
