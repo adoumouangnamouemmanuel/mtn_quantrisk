@@ -7,8 +7,10 @@ Set GNEWS_TOKEN env var (free at gnews.io) to also enable direct MTN Ghana targe
 import logging
 import os
 import re
+from copy import deepcopy
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
+from threading import Lock
 from typing import Optional
 
 import feedparser
@@ -16,6 +18,24 @@ import feedparser
 GNEWS_TOKEN = os.environ.get("GNEWS_TOKEN", "")
 
 logger = logging.getLogger(__name__)
+
+_STATUS_LOCK = Lock()
+_SCRAPER_STATUS = {
+    "lastAttemptAt": None,
+    "lastCompletedAt": None,
+    "lastSuccessfulFetchAt": None,
+    "lastNewArticleAt": None,
+    "fetchedCount": 0,
+    "newArticleCount": 0,
+    "filteredCount": 0,
+    "sources": [],
+    "gnewsConfigured": bool(GNEWS_TOKEN),
+}
+
+
+def get_scraper_status() -> dict:
+    with _STATUS_LOCK:
+        return deepcopy(_SCRAPER_STATUS)
 
 
 # Nairametrics covers the whole Nigerian economy. Only retain stories with a
@@ -192,11 +212,17 @@ def scrape_all_sources() -> list[dict]:
     Does NOT write to DB — caller handles persistence + deduplication.
     """
     articles = []
+    source_results = []
+    checked_at = datetime.now(timezone.utc).isoformat()
     for source in RSS_SOURCES:
         try:
             feed = feedparser.parse(source["url"])
             if feed.bozo and not feed.entries:
                 logger.warning("Feed %s may be malformed: %s", source["name"], feed.bozo_exception)
+                source_results.append({
+                    "name": source["name"], "url": source["url"], "status": "Failed",
+                    "entryCount": 0, "checkedAt": checked_at, "error": str(feed.bozo_exception),
+                })
                 continue
             for entry in feed.entries:
                 url = entry.get("link") or entry.get("id")
@@ -212,8 +238,23 @@ def scrape_all_sources() -> list[dict]:
                     "published_at": _parse_published(entry),
                 })
             logger.info("Scraped %d articles from %s", len(feed.entries), source["name"])
+            source_results.append({
+                "name": source["name"], "url": source["url"],
+                "status": "Degraded" if feed.bozo else "Healthy",
+                "entryCount": len(feed.entries), "checkedAt": checked_at,
+                "error": str(feed.bozo_exception) if feed.bozo else None,
+            })
         except Exception as exc:
             logger.error("Failed to scrape %s: %s", source["name"], exc)
+            source_results.append({
+                "name": source["name"], "url": source["url"], "status": "Failed",
+                "entryCount": 0, "checkedAt": checked_at, "error": str(exc),
+            })
+    with _STATUS_LOCK:
+        _SCRAPER_STATUS["sources"] = source_results
+        _SCRAPER_STATUS["fetchedCount"] = len(articles)
+        if articles:
+            _SCRAPER_STATUS["lastSuccessfulFetchAt"] = checked_at
     return articles
 
 
@@ -275,6 +316,10 @@ def run_scrape_and_store() -> int:
     from ..models.article import Article
     from .pipeline_service import process_article
 
+    attempt_at = datetime.now(timezone.utc).isoformat()
+    with _STATUS_LOCK:
+        _SCRAPER_STATUS["lastAttemptAt"] = attempt_at
+
     raw_articles = scrape_all_sources()
 
     # Augment with targeted GNews search for MTN-specific articles
@@ -289,6 +334,8 @@ def run_scrape_and_store() -> int:
             "Filtered %d Nairametrics articles without an MTN Ghana relevance signal",
             filtered_count,
         )
+    with _STATUS_LOCK:
+        _SCRAPER_STATUS["filteredCount"] = filtered_count
 
     new_count = 0
 
@@ -320,5 +367,11 @@ def run_scrape_and_store() -> int:
                 db.rollback()
                 logger.debug("Skipped duplicate: %s (%s)", raw["url"][:60], db_exc)
 
+    completed_at = datetime.now(timezone.utc).isoformat()
+    with _STATUS_LOCK:
+        _SCRAPER_STATUS["lastCompletedAt"] = completed_at
+        _SCRAPER_STATUS["newArticleCount"] = new_count
+        if new_count:
+            _SCRAPER_STATUS["lastNewArticleAt"] = completed_at
     logger.info("Scrape complete — %d new articles stored", new_count)
     return new_count

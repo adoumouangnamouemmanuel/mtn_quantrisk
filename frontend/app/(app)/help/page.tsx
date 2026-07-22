@@ -74,7 +74,7 @@ function GuidesTab({ query }: { query: string }) {
   return (
     <div className="space-y-5">
       {filtered.length === 0 && (
-        <p className="font-mono text-sm text-on-surface-variant">No guides matched "{query}".</p>
+        <p className="font-mono text-sm text-on-surface-variant">No guides matched &ldquo;{query}&rdquo;.</p>
       )}
       {filtered.map(guide => {
         const Icon = ICON_MAP[guide.iconName] || BookOpen;
@@ -155,7 +155,8 @@ function QnATab({ query }: { query: string }) {
   const toggle = (key: string) => {
     setOpenItems(prev => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   };
@@ -211,12 +212,12 @@ function QnATab({ query }: { query: string }) {
 
       {query && (
         <p className="font-mono text-[10px] text-on-surface-variant">
-          {totalResults} result{totalResults !== 1 ? 's' : ''} for "{query}"
+          {totalResults} result{totalResults !== 1 ? 's' : ''} for &ldquo;{query}&rdquo;
         </p>
       )}
 
       {filteredCategories.length === 0 && (
-        <p className="font-mono text-sm text-on-surface-variant">No questions matched "{query}".</p>
+        <p className="font-mono text-sm text-on-surface-variant">No questions matched &ldquo;{query}&rdquo;.</p>
       )}
 
       {filteredCategories.map(cat => {
@@ -241,6 +242,7 @@ function QnATab({ query }: { query: string }) {
                   }`}>
                     <button
                       onClick={() => toggle(key)}
+                      aria-expanded={isOpen}
                       className="w-full flex items-start gap-3 px-4 py-3.5 text-left"
                     >
                       <HelpCircle className={`w-4 h-4 shrink-0 mt-0.5 transition-colors ${isOpen ? 'text-mtn-yellow' : 'text-on-surface-variant'}`} />
@@ -336,7 +338,7 @@ function GlossaryTab({ query }: { query: string }) {
       </div>
 
       {filtered.length === 0 && (
-        <p className="font-mono text-sm text-on-surface-variant">No terms matched "{query}".</p>
+        <p className="font-mono text-sm text-on-surface-variant">No terms matched &ldquo;{query}&rdquo;.</p>
       )}
 
       <div className="grid gap-3 md:grid-cols-2">

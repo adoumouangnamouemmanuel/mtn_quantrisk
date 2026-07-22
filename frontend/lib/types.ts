@@ -154,6 +154,33 @@ export interface PipelineHealth {
     nextRunAt: string | null;
     schedule: string | null;
   };
+  historicalData?: Array<{
+    name: string;
+    status: 'Healthy' | 'Failed';
+    path: string;
+    rows: number;
+    lastModifiedAt: number | null;
+    error: string | null;
+  }>;
+  externalFeeds?: {
+    lastAttemptAt: string | null;
+    lastCompletedAt: string | null;
+    lastSuccessfulFetchAt: string | null;
+    lastNewArticleAt: string | null;
+    latestStoredArticleAt: string | null;
+    fetchedCount: number;
+    newArticleCount: number;
+    filteredCount: number;
+    gnewsConfigured: boolean;
+    summary: { healthy: number; degraded: number; failed: number; total: number };
+  };
+  modelQuality?: {
+    status: 'MetricsAvailable' | 'MetricsUnavailable';
+    lastTrainedAt: string | null;
+    metrics: Array<{ target: string; mae: number | null; r2: number | null; trainRows: number | null }>;
+    accuracyProven: boolean;
+    note: string;
+  };
   sources: Array<{
     name: string;
     status: 'Healthy' | 'Degraded' | 'Failed';
@@ -197,12 +224,41 @@ export interface MacroOverlays {
 
 export interface QuarterlyPoint {
   quarter: string; // "FY20Q1"
+  period: string;
   value: number;
+  quality: 'Reported' | 'Interpolated' | 'Estimated' | 'Source';
 }
 
 export interface MonthlyPoint {
   month: string; // "Jan 2023"
+  period: string;
   value: number;
+  quality: 'Reported' | 'Interpolated' | 'Estimated' | 'Source';
+}
+
+export interface HistoryMetadata {
+  kpiId: string;
+  requestedFrequency: 'quarterly' | 'monthly';
+  actualFrequency: 'quarterly' | 'annual' | 'monthly';
+  sourceFile: string;
+  sourceModifiedAt: number;
+  lastPeriod: string | null;
+  pointCount: number;
+  containsReported: boolean;
+  containsInterpolated: boolean;
+  containsEstimated: boolean;
+  isSynthetic: boolean;
+  note: string;
+}
+
+export interface QuarterlySeries {
+  points: QuarterlyPoint[];
+  metadata: HistoryMetadata;
+}
+
+export interface MonthlySeries {
+  points: MonthlyPoint[];
+  metadata: HistoryMetadata;
 }
 
 export interface ScenarioFormData {

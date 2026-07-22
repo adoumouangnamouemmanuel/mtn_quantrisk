@@ -11,7 +11,12 @@ from ..services.scenario_service import (
     create_scenario, update_scenario, delete_scenario,
 )
 from ..services.reverse_service import run_reverse_stress
-from ..services.history_service import get_quarterly, get_monthly
+from ..services.history_service import (
+    get_quarterly,
+    get_monthly,
+    get_quarterly_series,
+    get_monthly_series,
+)
 from ..services.log_service import get_base_case_logs
 from ..services.feedback_service import submit_feedback, get_feedback
 from ..services.upload_service import process_csv_upload, process_pdf_upload, apply_pdf_candidates, retrain_xgboost
@@ -162,16 +167,16 @@ def get_forecast(kpi_id: str, horizon: int = 90):
 
 @router.get("/quarterly/{kpi_id}")
 def quarterly_series(kpi_id: str):
-    data = get_quarterly(kpi_id)
-    if not data:
+    data = get_quarterly_series(kpi_id)
+    if not data["points"]:
         raise HTTPException(status_code=404, detail=f"No data for KPI {kpi_id}")
     return data
 
 
 @router.get("/monthly/{kpi_id}")
 def monthly_series(kpi_id: str, n_months: int = 36):
-    data = get_monthly(kpi_id, n_months)
-    if not data:
+    data = get_monthly_series(kpi_id, n_months)
+    if not data["points"]:
         raise HTTPException(status_code=404, detail=f"No data for KPI {kpi_id}")
     return data
 
@@ -303,6 +308,45 @@ def pipeline_health(request: Request):
     scheduler = getattr(request.app.state, "scheduler", None)
     scrape_job = scheduler.get_job("rss_scraper") if scheduler else None
 
+    from ..services.history_service import historical_source_health
+    from ..services.scraper_service import get_scraper_status
+    from ..models.database import SessionLocal
+    from ..models.article import Article
+    import json
+
+    historical_data = historical_source_health()
+    scraper_status = get_scraper_status()
+    feed_sources = scraper_status.get("sources", [])
+    feed_summary = {
+        "healthy": sum(source["status"] == "Healthy" for source in feed_sources),
+        "degraded": sum(source["status"] == "Degraded" for source in feed_sources),
+        "failed": sum(source["status"] == "Failed" for source in feed_sources),
+        "total": len(feed_sources),
+    }
+    with SessionLocal() as db:
+        latest_article = db.query(Article).order_by(Article.scraped_at.desc()).first()
+        latest_article_at = latest_article.scraped_at.isoformat() if latest_article else None
+
+    metrics_path = model_dir / "training_results.json"
+    try:
+        training_metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+        metric_rows = [
+            {
+                "target": target,
+                "mae": details.get("loo_mae"),
+                "r2": details.get("loo_r2"),
+                "trainRows": details.get("train_rows"),
+            }
+            for target, details in training_metrics.items()
+        ]
+    except Exception:
+        metric_rows = []
+
+    if any(item["status"] == "Failed" for item in historical_data):
+        overall = "Degraded"
+    if feed_sources and feed_summary["failed"] == feed_summary["total"]:
+        overall = "Degraded"
+
     return {
         "status":     overall,
         "lastBeatAt": datetime.now(timezone.utc).isoformat(),
@@ -311,6 +355,19 @@ def pipeline_health(request: Request):
             "status": "Scheduled" if scrape_job else "Unavailable",
             "nextRunAt": scrape_job.next_run_time.isoformat() if scrape_job and scrape_job.next_run_time else None,
             "schedule": str(scrape_job.trigger) if scrape_job else None,
+        },
+        "historicalData": historical_data,
+        "externalFeeds": {
+            **scraper_status,
+            "latestStoredArticleAt": latest_article_at,
+            "summary": feed_summary,
+        },
+        "modelQuality": {
+            "status": "MetricsAvailable" if metric_rows else "MetricsUnavailable",
+            "lastTrainedAt": datetime.fromtimestamp(metrics_path.stat().st_mtime, timezone.utc).isoformat() if metrics_path.exists() else None,
+            "metrics": metric_rows,
+            "accuracyProven": False,
+            "note": "Stored cross-validation metrics describe development performance; artifact presence does not prove current production accuracy.",
         },
     }
 

@@ -1,7 +1,7 @@
 import type {
   Kpi, Scenario, ScenarioOutput, ReverseStressResult, ReverseStressInput,
   ForecastPoint, MonteCarloResult, BoardBrief, PipelineHealth,
-  QuarterlyPoint, MonthlyPoint,
+  QuarterlySeries, MonthlySeries,
   KpiId, MacroOverlays, ScenarioFormData,
   FeedbackPayload, BaseCaseLogEntry, UploadResult, PdfKpiCandidate,
 } from './types';
@@ -102,12 +102,12 @@ export async function fetchBriefs(): Promise<BoardBrief[]> {
   return apiFetch<BoardBrief[]>('/api/briefs');
 }
 
-export async function fetchQuarterly(kpiId: KpiId): Promise<QuarterlyPoint[]> {
-  return apiFetch<QuarterlyPoint[]>(`/api/quarterly/${kpiId}`);
+export async function fetchQuarterly(kpiId: KpiId): Promise<QuarterlySeries> {
+  return apiFetch<QuarterlySeries>(`/api/quarterly/${kpiId}`);
 }
 
-export async function fetchMonthly(kpiId: KpiId, nMonths: number = 36): Promise<MonthlyPoint[]> {
-  return apiFetch<MonthlyPoint[]>(`/api/monthly/${kpiId}?n_months=${nMonths}`);
+export async function fetchMonthly(kpiId: KpiId, nMonths: number = 36): Promise<MonthlySeries> {
+  return apiFetch<MonthlySeries>(`/api/monthly/${kpiId}?n_months=${nMonths}`);
 }
 
 export async function createScenario(data: ScenarioFormData): Promise<Scenario> {
