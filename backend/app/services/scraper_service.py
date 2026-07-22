@@ -1,11 +1,12 @@
 """
-RSS scraper + optional GNews API — pulls articles from 18 Ghana/Africa/Google News sources every 15 min.
+RSS scraper + optional GNews API — pulls articles from 18 Ghana/Africa/Google News sources every 15 minutes.
 Google News RSS (free, no key) aggregates both traditional media and social media (Twitter/X) coverage.
 Set GNEWS_TOKEN env var (free at gnews.io) to also enable direct MTN Ghana targeted search.
 """
 
 import logging
 import os
+import re
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Optional
@@ -15,6 +16,35 @@ import feedparser
 GNEWS_TOKEN = os.environ.get("GNEWS_TOKEN", "")
 
 logger = logging.getLogger(__name__)
+
+
+# Nairametrics covers the whole Nigerian economy. Only retain stories with a
+# concrete MTN/telecom/digital-finance connection instead of filling the MTN
+# Ghana feed with unrelated Nigerian business news.
+NAIRAMETRICS_RELEVANCE_PATTERNS = (
+    r"\bmtn\b",
+    r"\bghana(?:ian)?\b",
+    r"\btelecom(?:s|munications?)?\b",
+    r"\bmobile (?:network|money|operator|subscriber|data)\b",
+    r"\bmomo\b",
+    r"\bfintech\b",
+    r"\b5g\b",
+    r"\bspectrum\b",
+    r"\bcell(?:ular)? network\b",
+    r"\bnetwork (?:operator|outage|infrastructure)\b",
+    r"\bcyber(?:security|attack|crime|threat)\b",
+    r"\bdigital payments?\b",
+    r"\bmobile payments?\b",
+)
+
+
+def is_relevant_for_mtn_ghana(article: dict) -> bool:
+    """Apply strict pre-storage filtering to broad regional news sources."""
+    if article.get("source_name", "").casefold() != "nairametrics":
+        return True
+
+    text = f"{article.get('title', '')} {article.get('body', '')}".casefold()
+    return any(re.search(pattern, text) for pattern in NAIRAMETRICS_RELEVANCE_PATTERNS)
 
 # ── Source registry ───────────────────────────────────────────────────────────
 
@@ -238,7 +268,7 @@ def _fetch_gnews(query: str = "MTN Ghana telecom", max_results: int = 10) -> lis
 
 def run_scrape_and_store() -> int:
     """
-    Called by APScheduler every 15 min.
+    Called by the interval APScheduler job and the manual scrape endpoint.
     Returns number of NEW articles stored.
     """
     from ..models.database import SessionLocal
@@ -250,6 +280,15 @@ def run_scrape_and_store() -> int:
     # Augment with targeted GNews search for MTN-specific articles
     raw_articles += _fetch_gnews("MTN Ghana telecom MoMo", max_results=10)
     raw_articles += _fetch_gnews("Ghana cedi inflation NCA regulation", max_results=10)
+
+    before_filter = len(raw_articles)
+    raw_articles = [article for article in raw_articles if is_relevant_for_mtn_ghana(article)]
+    filtered_count = before_filter - len(raw_articles)
+    if filtered_count:
+        logger.info(
+            "Filtered %d Nairametrics articles without an MTN Ghana relevance signal",
+            filtered_count,
+        )
 
     new_count = 0
 

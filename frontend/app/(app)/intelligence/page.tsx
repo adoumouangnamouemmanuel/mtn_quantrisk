@@ -181,10 +181,11 @@ function SectionCard({ section }: { section: IntelligenceSection }) {
 
 function GhanaCard() {
   return (
-    <div
-      className="relative w-full overflow-hidden rounded-2xl border select-none"
+    <Link
+      href="/economics"
+      aria-label="Open Ghana Macro Dashboard"
+      className="group relative block min-h-[208px] w-full overflow-hidden rounded-2xl border select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mtn-yellow/70"
       style={{
-        height: '220px',
         background: 'radial-gradient(ellipse at 68% 50%, #0E0D20 0%, #070710 100%)',
         borderColor: 'rgba(255,208,0,0.18)',
         boxShadow: '0 0 0 1px rgba(255,208,0,0.04), 0 24px 64px rgba(0,0,0,0.7)',
@@ -215,7 +216,7 @@ function GhanaCard() {
 
       {/* Left text block */}
       <div style={{
-        position: 'absolute', left: 30, top: 0, bottom: 0, zIndex: 2,
+        position: 'absolute', left: 24, top: 0, bottom: 0, zIndex: 2,
         display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 10,
       }}>
         <span style={{
@@ -223,7 +224,7 @@ function GhanaCard() {
           letterSpacing: '0.3em', textTransform: 'uppercase' as const,
           color: 'rgba(255,208,0,0.38)',
         }}>
-          Coverage Region
+          Daily intelligence coverage
         </span>
 
         <span style={{
@@ -254,11 +255,12 @@ function GhanaCard() {
       <div style={{
         position: 'absolute', left: '38%', top: '18%', bottom: '18%', width: '1px',
         background: 'linear-gradient(to bottom,transparent,rgba(255,208,0,0.1),transparent)',
-      }} />
+      }} className="hidden sm:block" />
 
       {/* Ghana SVG — accurate simplified silhouette */}
       <svg
         viewBox="0 0 210 262"
+        className="hidden sm:block transition-transform duration-500 group-hover:scale-[1.03]"
         style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', height: '196px', width: 'auto' }}
         aria-hidden="true"
       >
@@ -329,7 +331,11 @@ function GhanaCard() {
         <text x="131" y="234" fontSize="7.5" fill="rgba(255,208,0,0.65)"
           fontFamily="ui-monospace,monospace" fontWeight="bold">Accra ★</text>
       </svg>
-    </div>
+      <div className="absolute bottom-5 right-5 z-10 flex items-center gap-1.5 rounded-full border border-mtn-yellow/20 bg-black/35 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-mtn-yellow backdrop-blur-sm transition-all group-hover:border-mtn-yellow/45 group-hover:bg-mtn-yellow/10">
+        Open macro dashboard
+        <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+      </div>
+    </Link>
   );
 }
 

@@ -127,3 +127,5 @@ def test_health_returns_status(client):
     data = r.json()
     assert "status" in data
     assert data["status"] in ("Healthy", "Degraded")
+    assert data["automaticScraper"]["status"] == "Scheduled"
+    assert data["automaticScraper"]["nextRunAt"] is not None

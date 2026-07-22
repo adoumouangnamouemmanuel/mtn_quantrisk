@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Request
 from datetime import datetime, timezone, timedelta
 from dateutil.relativedelta import relativedelta
 import random
@@ -262,7 +262,7 @@ def generate_brief(payload: dict):
 # ── Pipeline Health ────────────────────────────────────────────────────────────
 
 @router.get("/health")
-def pipeline_health():
+def pipeline_health(request: Request):
     from ..services.data_loader import BASE_CASE_CSV, SCENARIO_DETAIL_CSV, SCENARIO_META_CSV
     from pathlib import Path
     import time
@@ -300,10 +300,18 @@ def pipeline_health():
     })
 
     overall = "Healthy" if all(s["status"] == "Healthy" for s in sources) else "Degraded"
+    scheduler = getattr(request.app.state, "scheduler", None)
+    scrape_job = scheduler.get_job("rss_scraper") if scheduler else None
+
     return {
         "status":     overall,
         "lastBeatAt": datetime.now(timezone.utc).isoformat(),
         "sources":    sources,
+        "automaticScraper": {
+            "status": "Scheduled" if scrape_job else "Unavailable",
+            "nextRunAt": scrape_job.next_run_time.isoformat() if scrape_job and scrape_job.next_run_time else None,
+            "schedule": str(scrape_job.trigger) if scrape_job else None,
+        },
     }
 
 
@@ -392,13 +400,13 @@ def base_case_logs(limit: int = 100):
 # ── Ghana Economics (World Bank) ──────────────────────────────────────────────
 
 @router.get("/economics")
-def ghana_economics():
+def ghana_economics(refresh: bool = False):
     """
     Latest Ghana macroeconomic indicators from World Bank Open Data.
     Cached for 6 hours. No API key required.
     """
     from ..services.economic_service import get_ghana_economics
-    return get_ghana_economics()
+    return get_ghana_economics(force_refresh=refresh)
 
 
 @router.get("/economics/risk-context")

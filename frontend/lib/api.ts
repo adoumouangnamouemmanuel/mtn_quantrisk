@@ -317,7 +317,7 @@ export interface GhanaEconomics {
     gdp_growth:   EconomicIndicator;
     fx_usd_ghs:   EconomicIndicator;
     unemployment: EconomicIndicator;
-    public_debt:  EconomicIndicator;
+    debt_service:  EconomicIndicator;
     fdi_inflows:  EconomicIndicator;
   };
 }
@@ -325,12 +325,13 @@ export interface GhanaEconomics {
 export interface EconomicsRiskContext {
   inflation_risk: 'Critical' | 'Warning' | 'Watch' | 'Normal';
   growth_risk:    'Critical' | 'Warning' | 'Normal';
+  fx_risk:        'Critical' | 'Warning' | 'Watch' | 'Normal';
   summary: string;
   raw: GhanaEconomics;
 }
 
-export async function fetchGhanaEconomics(): Promise<GhanaEconomics> {
-  return apiFetch<GhanaEconomics>('/api/economics');
+export async function fetchGhanaEconomics(refresh = false): Promise<GhanaEconomics> {
+  return apiFetch<GhanaEconomics>(`/api/economics${refresh ? '?refresh=true' : ''}`);
 }
 
 export async function fetchEconomicsRiskContext(): Promise<EconomicsRiskContext> {

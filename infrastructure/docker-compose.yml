@@ -22,6 +22,7 @@ services:
     restart: unless-stopped
     environment:
       DB_PATH: /data/quantrisk_news.db
+      SCRAPE_INTERVAL_MINUTES: "15"
       # Allow requests from the frontend container and localhost
       CORS_ORIGINS: "http://frontend:3000,http://localhost:3000,http://127.0.0.1:3000"
     volumes:

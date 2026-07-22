@@ -8,7 +8,8 @@ Docs: https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the
 
 import logging
 import time
-from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,9 @@ _INDICATORS = [
     ("NY.GDP.MKTP.KD.ZG","gdp_growth",     "% annual",    "GDP growth — annual %"),
     ("PA.NUS.FCRF",      "fx_usd_ghs",     "GHS per USD", "Official exchange rate LCU per USD"),
     ("SL.UEM.TOTL.ZS",  "unemployment",    "% labor",     "Unemployment % of total labor force"),
-    ("GC.DOD.TOTL.GD.ZS","public_debt",    "% GDP",       "Central government debt % GDP"),
+    # Ghana has no observations for GC.DOD.TOTL.GD.ZS. Debt service is the
+    # available annual World Bank sovereign debt-burden series for Ghana.
+    ("DT.TDS.DPPG.GN.ZS","debt_service", "% GNI",       "Public and publicly guaranteed external debt service % of GNI"),
     ("BX.KLT.DINV.WD.GD.ZS","fdi_inflows","% GDP",       "Foreign direct investment net inflows % GDP"),
 ]
 
@@ -55,7 +58,7 @@ def _fetch_indicator(code: str, mrv: int = 5) -> list[dict]:
         return []
 
 
-def get_ghana_economics() -> dict:
+def get_ghana_economics(force_refresh: bool = False) -> dict:
     """
     Returns latest Ghana macro indicators from the World Bank.
     Result is cached for 6 hours. Falls back to empty dict per indicator on failure.
@@ -75,12 +78,14 @@ def get_ghana_economics() -> dict:
     }
     """
     now = time.time()
-    if _CACHE.get("data") and now - _CACHE.get("fetched_at", 0) < _CACHE_TTL:
+    if not force_refresh and _CACHE.get("data") and now - _CACHE.get("fetched_at", 0) < _CACHE_TTL:
         return _CACHE["data"]
 
     indicators: dict = {}
-    for code, key, unit, desc in _INDICATORS:
-        history = _fetch_indicator(code, mrv=8)
+    with ThreadPoolExecutor(max_workers=len(_INDICATORS)) as pool:
+        histories = list(pool.map(lambda item: _fetch_indicator(item[0], mrv=8), _INDICATORS))
+
+    for (code, key, unit, desc), history in zip(_INDICATORS, histories):
         if history:
             latest = history[-1]
             indicators[key] = {
@@ -94,13 +99,18 @@ def get_ghana_economics() -> dict:
             indicators[key] = {"latest": None, "year": None, "unit": unit, "description": desc, "history": []}
 
     result = {
-        "lastUpdated": datetime.utcnow().isoformat() + "Z",
+        "lastUpdated": datetime.now(timezone.utc).isoformat(),
         "source": "World Bank Open Data (api.worldbank.org)",
         "country": "Ghana",
         "indicators": indicators,
     }
-    _CACHE["data"] = result
-    _CACHE["fetched_at"] = now
+    available = sum(indicator["latest"] is not None for indicator in indicators.values())
+    if available:
+        _CACHE["data"] = result
+        _CACHE["fetched_at"] = now
+    elif _CACHE.get("data"):
+        logger.warning("World Bank refresh returned no observations; serving stale cache")
+        return _CACHE["data"]
     logger.info("Ghana macro data refreshed from World Bank")
     return result
 
@@ -116,6 +126,7 @@ def get_risk_context_from_economics() -> dict:
     inflation = inds.get("inflation", {}).get("latest")
     gdp       = inds.get("gdp_growth", {}).get("latest")
     fx        = inds.get("fx_usd_ghs", {}).get("latest")
+    fx_history = inds.get("fx_usd_ghs", {}).get("history", [])
 
     # Simple rule-based risk signals
     inflation_risk = (
@@ -127,6 +138,14 @@ def get_risk_context_from_economics() -> dict:
     growth_risk = (
         "Critical" if gdp is not None and gdp < 0
         else "Warning" if gdp is not None and gdp < 2
+        else "Normal"
+    )
+    previous_fx = fx_history[-2]["value"] if len(fx_history) > 1 else None
+    fx_change = ((fx / previous_fx) - 1) * 100 if fx is not None and previous_fx else None
+    fx_risk = (
+        "Critical" if fx_change is not None and fx_change > 20
+        else "Warning" if fx_change is not None and fx_change > 10
+        else "Watch" if fx_change is not None and fx_change > 5
         else "Normal"
     )
 
@@ -141,6 +160,7 @@ def get_risk_context_from_economics() -> dict:
     return {
         "inflation_risk": inflation_risk,
         "growth_risk":    growth_risk,
+        "fx_risk":        fx_risk,
         "summary":        " | ".join(parts) if parts else "World Bank data unavailable",
         "raw": data,
     }
