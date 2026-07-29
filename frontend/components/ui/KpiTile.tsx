@@ -80,6 +80,14 @@ export function KpiTile({ kpi, onClick }: KpiTileProps) {
           <Sparkline data={kpi.trend24m} color={sparklineColor} width={80} height={32} strokeWidth={2} />
         </div>
       </div>
+      {kpi.sourceType && (
+        <div className="mt-3 pt-3 border-t border-outline/10 flex items-center justify-between gap-2 text-[10px] font-mono text-on-surface-variant">
+          <span>{kpi.sourcePeriod}</span>
+          <span title={kpi.notes} className={kpi.sourceType === 'Reported' ? 'text-emerald-400' : 'text-amber-400'}>
+            {kpi.sourceType}
+          </span>
+        </div>
+      )}
     </Card>
   );
 }

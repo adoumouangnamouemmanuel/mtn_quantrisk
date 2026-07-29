@@ -9,6 +9,7 @@ from functools import lru_cache
 ROOT = Path(__file__).resolve().parents[3]  # …/mtn_quantrisk/
 
 BASE_CASE_CSV      = ROOT / "data/structured/base_case.csv"
+DASHBOARD_Q1_2026_CSV = ROOT / "data/structured/dashboard_2026q1.csv"
 SCENARIO_DETAIL_CSV = ROOT / "data/structured/scenario_library.csv"
 SCENARIO_META_CSV  = ROOT / "mtn_scenario_library.csv"
 
@@ -51,6 +52,14 @@ def load_base_case() -> dict:
     """Returns {KPI_ID: float}"""
     df = pd.read_csv(BASE_CASE_CSV, on_bad_lines="skip", encoding="utf-8-sig")
     return dict(zip(df["KPI_ID"].astype(str).str.strip(), df["FY25_Base_Value"].astype(float)))
+
+
+@lru_cache(maxsize=1)
+def load_dashboard_q1_2026() -> dict[str, dict]:
+    """Return the dashboard-only Q1 2026 snapshot keyed by KPI ID."""
+    df = pd.read_csv(DASHBOARD_Q1_2026_CSV, encoding="utf-8-sig")
+    df["KPI_ID"] = df["KPI_ID"].astype(str).str.strip()
+    return {row["KPI_ID"]: row.to_dict() for _, row in df.iterrows()}
 
 
 @lru_cache(maxsize=1)

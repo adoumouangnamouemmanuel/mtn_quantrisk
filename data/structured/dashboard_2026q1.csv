@@ -1,0 +1,15 @@
+KPI_ID,Value,Period,Source_Period,Source_Type,Lower_Threshold,Upper_Threshold,Notes
+FIN01,7257.927,2026Q1,2026Q1,Reported,5750,7000,Service revenue for the three months ended 31 March 2026
+FIN02,4452.758,2026Q1,2026Q1,Reported,3500,4400,EBITDA for the three months ended 31 March 2026
+FIN03,61.2,2026Q1,2026Q1,Reported,58,62,Reported EBITDA margin
+FIN04,2479.402,2026Q1,2026Q1,Reported,1900,2400,Profit after tax for the three months ended 31 March 2026
+FIN05,34.1,2026Q1,2026Q1,Derived,31,35,PAT divided by total revenue
+FIN06,35.7,2026Q1,2026Q1,Reported,25,40,Service revenue growth versus restated Q1 2025
+SEG01,4285.471,2026Q1,2026Q1,Reported,3000,4200,Data revenue for the quarter
+SEG03,1711.461,2026Q1,2026Q1,Reported,1400,1800,Mobile Money revenue for the quarter
+OPS01,31.993,2026Q1,2026Q1,Reported,29,33,Closing mobile subscribers in millions
+OPS04,76.6,2026Q1,2026Q1,Derived,70,80,Approximate monthly service revenue per average mobile subscriber
+OPS07,99.5,2026Q1,2025FY,Carried forward,98,100,Q1 release does not publish a numeric 4G population coverage value
+EXT01,3.2,2026Q1,2026Q1,Reported,4,10,Ghana year-on-year inflation in March 2026
+EXT02,14.0,2026Q1,2026Q1,Reported,15,20,Bank of Ghana policy rate at 18 March 2026
+EXT03,11.0,2026Q1,2026Q1,Reported,11,13,USD/GHS rate in March 2026 cited by MTN Ghana

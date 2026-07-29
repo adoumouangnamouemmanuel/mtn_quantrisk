@@ -6,7 +6,7 @@ import random
 import math
 from datetime import datetime, timezone
 from .data_loader import (
-    load_base_case, load_scenario_details, load_scenario_meta,
+    load_base_case, load_dashboard_q1_2026, load_scenario_details, load_scenario_meta,
     KPI_META, FRONTEND_KPIS, PILLAR_MAP, get_kpi_status,
     SCENARIO_DETAIL_CSV, SCENARIO_META_CSV, clear_scenario_cache,
 )
@@ -28,22 +28,30 @@ def _trend24m(base_val: float) -> list:
     return [float(base_val * (1 + random.uniform(-0.08, 0.08))) for _ in range(24)]
 
 
-def get_all_kpis() -> list:
+def get_all_kpis(period: str | None = None) -> list:
     base = load_base_case()
+    quarterly = load_dashboard_q1_2026() if period == "2026Q1" else {}
     kpis = []
     for kid in FRONTEND_KPIS:
         meta = KPI_META[kid]
-        val  = float(base.get(kid, 0.0))
+        snapshot = quarterly.get(kid)
+        val = float(snapshot["Value"]) if snapshot else float(base.get(kid, 0.0))
+        lower = float(snapshot["Lower_Threshold"]) if snapshot else float(meta["lower"])
+        upper = float(snapshot["Upper_Threshold"]) if snapshot else float(meta["upper"])
         kpis.append({
             "id":             kid,
             "name":           meta["name"],
             "category":       meta["category"],
             "unit":           meta["unit"],
             "fy25Value":      float(round(val, 4)),
-            "lowerThreshold": float(meta["lower"]),
-            "upperThreshold": float(meta["upper"]),
-            "currentStatus":  get_kpi_status(val, meta["lower"], meta["upper"], kid),
+            "lowerThreshold": lower,
+            "upperThreshold": upper,
+            "currentStatus":  get_kpi_status(val, lower, upper, kid),
             "trend24m":       _trend24m(val),
+            "reportingPeriod": str(snapshot["Period"]) if snapshot else "2025FY",
+            "sourcePeriod": str(snapshot["Source_Period"]) if snapshot else "2025FY",
+            "sourceType": str(snapshot["Source_Type"]) if snapshot else "Reported",
+            "notes": str(snapshot["Notes"]) if snapshot else "FY2025 base case",
         })
     return kpis
 

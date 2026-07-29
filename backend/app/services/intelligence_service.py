@@ -15,7 +15,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
-_SUMMARISE_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
+_SUMMARISE_URL = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-cnn"
 
 _CACHE: dict = {}
 _CACHE_TTL = 1800  # 30 min
@@ -52,12 +52,19 @@ def _extractive_summary(texts: list[str]) -> str:
     return " ".join(sentences[:3]) or "No significant developments in this category."
 
 
-def _hf_summarise(text: str) -> str:
+def _hf_summarise(text: str, *, max_length: int = 180, min_length: int = 70) -> str:
     if not HF_TOKEN:
         return ""
     payload = {
-        "inputs": text[:1200],
-        "parameters": {"max_length": 130, "min_length": 40, "do_sample": False},
+        # BART accepts roughly 1,024 input tokens. A 3,600-character ceiling
+        # leaves room for several article extracts without overflowing the
+        # model context window.
+        "inputs": text[:3600],
+        "parameters": {
+            "max_length": max_length,
+            "min_length": min_length,
+            "do_sample": False,
+        },
     }
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     try:
@@ -73,6 +80,32 @@ def _hf_summarise(text: str) -> str:
     except Exception as exc:
         logger.warning("HF summarise failed: %s", exc)
     return ""
+
+
+def _category_summary(items: list[dict]) -> str:
+    """Build a fuller digest without forcing all category news into one summary."""
+    article_texts = [
+        f"{article['title']}. {article['body'][:650]}".strip()
+        for article in items[:8]
+    ]
+    groups = (article_texts[:4], article_texts[4:8])
+    paragraphs = []
+    for group in groups:
+        if not group:
+            continue
+        combined = " ".join(group)[:3600]
+        paragraph = _hf_summarise(combined)
+        if paragraph and paragraph not in paragraphs:
+            paragraphs.append(paragraph.strip())
+
+    summary = "\n\n".join(paragraphs)
+    # Some inference responses ignore min_length. Keep the category useful by
+    # supplementing a very short response with distinct source-led context.
+    if len(summary.split()) < 90:
+        supplement = _extractive_summary(article_texts[4:] or article_texts)
+        if supplement and supplement not in summary:
+            summary = f"{summary}\n\n{supplement}".strip()
+    return summary or _extractive_summary(article_texts)
 
 
 def get_intelligence_summary() -> dict:
@@ -145,11 +178,7 @@ def get_intelligence_summary() -> dict:
     for cat, items in sorted(by_cat.items(), key=lambda x: -len(x[1])):
         if cat == "other":
             continue
-        texts = [f"{a['title']}. {a['body'][:300]}" for a in items[:5]]
-        combined = " ".join(texts)[:1200]
-        summary_text = _hf_summarise(combined) or _extractive_summary(
-            [a["title"] for a in items]
-        )
+        summary_text = _category_summary(items)
         critical_in_cat = sum(1 for a in items if a.get("alert_tier") == "Critical")
         sections.append(
             {
