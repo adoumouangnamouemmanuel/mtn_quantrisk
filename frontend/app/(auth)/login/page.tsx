@@ -1,55 +1,22 @@
 "use client";
 
-import React, { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { EyeOff, Eye, Key, Lock, Loader2 } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
+import React, { useEffect, useState } from 'react';
+import { EyeOff, Eye, Key, Lock } from 'lucide-react';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const allowedDomain = process.env.NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN ?? 'mtn.com';
-    if (allowedDomain && !normalizedEmail.endsWith(`@${allowedDomain.toLowerCase()}`)) {
-      setError(`Please use a valid @${allowedDomain} work email.`);
-      return;
-    }
-
-    setPending(true);
-    try {
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
-      });
-
-      if (signInError) {
-        setError(
-          signInError.message === 'Invalid login credentials'
-            ? 'The email or password is incorrect.'
-            : signInError.message
-        );
-        return;
-      }
-
-      router.replace('/dashboard');
-      router.refresh();
-    } catch (cause) {
-      console.error('[login] Supabase sign-in failed', cause);
-      setError('Unable to reach the authentication service. Please try again.');
-    } finally {
-      setPending(false);
-    }
-  }
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get('error');
+    const messages: Record<string, string> = {
+      configuration: 'Authentication is not configured. Contact an administrator.',
+      missing: 'Enter your email and password.',
+      domain: 'This email domain is not authorised.',
+      credentials: 'The email or password is incorrect.',
+    };
+    setError(code ? messages[code] ?? 'Unable to sign in. Please try again.' : null);
+  }, []);
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden font-sans bg-surface">
@@ -109,7 +76,8 @@ export default function LoginPage() {
 
           <form
             className="space-y-6"
-            onSubmit={handleSubmit}
+            action="/auth/login"
+            method="post"
           >
             {error && (
               <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded">
@@ -124,8 +92,6 @@ export default function LoginPage() {
                 type="email"
                 name="email"
                 placeholder="analyst@mtn.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-surface-container-low border border-outline/50 rounded p-3 text-white focus:border-mtn-yellow focus:ring-1 focus:ring-mtn-yellow focus:outline-none transition-all placeholder:text-outline"
                 required
               />
@@ -140,8 +106,6 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="........"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-surface-container-low border border-outline/50 rounded p-3 text-white focus:border-mtn-yellow focus:ring-1 focus:ring-mtn-yellow focus:outline-none transition-all pr-10"
                   required
                 />
@@ -157,10 +121,9 @@ export default function LoginPage() {
 
             <button 
               type="submit" 
-              disabled={pending}
-              className="w-full flex items-center justify-center bg-mtn-yellow text-black font-bold uppercase tracking-widest py-3.5 rounded mt-2 hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center bg-mtn-yellow text-black font-bold uppercase tracking-widest py-3.5 rounded mt-2 hover:bg-yellow-400 transition-colors"
             >
-              {pending ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
+              Sign In
             </button>
 
             <div className="flex items-center my-6">
