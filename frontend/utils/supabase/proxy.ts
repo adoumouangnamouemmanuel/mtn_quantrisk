@@ -18,6 +18,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  // The credential POST must reach its route handler before a session exists.
+  // That handler validates credentials and writes the new auth cookies.
+  if (request.nextUrl.pathname === '/auth/login') {
+    return NextResponse.next({ request })
+  }
+
   let response = NextResponse.next({ request })
   const supabase = createServerClient(url, publishableKey, {
     cookies: {
@@ -37,14 +43,21 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
-  // getClaims validates the signed JWT and refreshes the cookie when needed.
-  // Do not replace this with getSession(), which only reads local cookie state.
-  const { data } = await supabase.auth.getClaims()
-  const claims = data?.claims
+  // Use the same server-validated identity check as the protected app layout.
+  // This works with both symmetric and asymmetric Supabase signing keys.
+  const { data, error } = await supabase.auth.getUser()
+  const user = data.user
+  if (error) {
+    console.warn('[auth-proxy] Session validation failed', {
+      code: error.code,
+      status: error.status,
+      message: error.message,
+    })
+  }
 
   const isLoginPage = request.nextUrl.pathname === '/login'
 
-  if (!claims && !isLoginPage) {
+  if (!user && !isLoginPage) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
     loginUrl.searchParams.set(
@@ -54,7 +67,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (claims && isLoginPage) {
+  if (user && isLoginPage) {
     const dashboardUrl = request.nextUrl.clone()
     dashboardUrl.pathname = '/dashboard'
     dashboardUrl.search = ''
