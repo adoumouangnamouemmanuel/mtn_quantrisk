@@ -1,14 +1,55 @@
 "use client";
 
-import React, { useActionState, useState } from 'react';
+import React, { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { EyeOff, Eye, Key, Lock, Loader2 } from 'lucide-react';
-import { loginAction } from './actions';
+import { createClient } from '@/utils/supabase/client';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [state, formAction, pending] = useActionState(loginAction, { error: null });
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const allowedDomain = process.env.NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN ?? 'mtn.com';
+    if (allowedDomain && !normalizedEmail.endsWith(`@${allowedDomain.toLowerCase()}`)) {
+      setError(`Please use a valid @${allowedDomain} work email.`);
+      return;
+    }
+
+    setPending(true);
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+
+      if (signInError) {
+        setError(
+          signInError.message === 'Invalid login credentials'
+            ? 'The email or password is incorrect.'
+            : signInError.message
+        );
+        return;
+      }
+
+      router.replace('/dashboard');
+      router.refresh();
+    } catch (cause) {
+      console.error('[login] Supabase sign-in failed', cause);
+      setError('Unable to reach the authentication service. Please try again.');
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden font-sans bg-surface">
@@ -68,11 +109,11 @@ export default function LoginPage() {
 
           <form
             className="space-y-6"
-            action={formAction}
+            onSubmit={handleSubmit}
           >
-            {state.error && (
+            {error && (
               <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-sm p-3 rounded">
-                {state.error}
+                {error}
               </div>
             )}
             <div>
