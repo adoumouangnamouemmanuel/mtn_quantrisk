@@ -21,6 +21,10 @@ export interface Kpi {
   upperThreshold: number | null;
   currentStatus: StatusLevel;
   trend24m: number[];       // for sparkline
+  reportingPeriod?: string;
+  sourcePeriod?: string;
+  sourceType?: 'Reported' | 'Derived' | 'Carried forward';
+  notes?: string;
 }
 
 export interface Scenario {

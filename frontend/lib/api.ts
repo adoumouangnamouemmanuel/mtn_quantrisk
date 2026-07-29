@@ -22,12 +22,12 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function fetchKpis(): Promise<Kpi[]> {
+export async function fetchKpis(period?: '2025FY' | '2026Q1'): Promise<Kpi[]> {
   if (USE_MOCK_API) {
     const { MOCK_KPIS } = await import('./mockData');
     return MOCK_KPIS;
   }
-  return apiFetch<Kpi[]>('/api/kpis');
+  return apiFetch<Kpi[]>(`/api/kpis${period ? `?period=${period}` : ''}`);
 }
 
 export async function fetchScenarios(): Promise<Scenario[]> {

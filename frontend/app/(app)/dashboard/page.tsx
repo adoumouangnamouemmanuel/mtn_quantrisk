@@ -28,7 +28,7 @@ export default function DashboardPage() {
     async function loadData() {
       try {
         const [data, news, alerts, econ] = await Promise.allSettled([
-          fetchKpis(),
+          fetchKpis('2026Q1'),
           fetchNewsSummary(),
           fetchAlertSummary(),
           fetchEconomicsRiskContext(),
@@ -65,7 +65,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <h1 className="text-3xl font-hero font-bold text-on-surface">Core Anchors</h1>
-            <p className="text-on-surface-variant mt-0.5">Live monitoring of 14 foundational KPIs (FY25 Base Case)</p>
+            <p className="text-on-surface-variant mt-0.5">MTN Ghana Q1 2026 performance anchors · period ended 31 March 2026</p>
           </div>
         </div>
       </div>

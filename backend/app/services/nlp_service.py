@@ -14,7 +14,7 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
-_ZEROSHOT_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-mnli"
+_ZEROSHOT_URL = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli"
 _CANDIDATE_LABELS = ["regulatory", "financial", "competitive", "operational", "political", "reputational"]
 
 # ── spaCy (optional) ──────────────────────────────────────────────────────────

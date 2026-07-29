@@ -14,7 +14,7 @@ import os
 logger = logging.getLogger(__name__)
 
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
-_FINBERT_URL = "https://api-inference.huggingface.co/models/ProsusAI/finbert"
+_FINBERT_URL = "https://router.huggingface.co/hf-inference/models/ProsusAI/finbert"
 
 # ── HuggingFace Inference API (FinBERT) ───────────────────────────────────────
 
