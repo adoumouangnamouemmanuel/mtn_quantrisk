@@ -19,6 +19,7 @@ from ..services.history_service import (
 )
 from ..services.log_service import get_base_case_logs
 from ..services.feedback_service import submit_feedback, get_feedback
+from ..services.brief_service import list_board_briefs, generate_board_brief
 from ..services.upload_service import process_csv_upload, process_pdf_upload, apply_pdf_candidates, retrain_xgboost
 
 router = APIRouter(prefix="/api")
@@ -240,30 +241,15 @@ MOCK_BRIEFS = [
 
 @router.get("/briefs")
 def list_briefs():
-    return MOCK_BRIEFS
+    return list_board_briefs()
 
 
 @router.post("/briefs/generate")
 def generate_brief(payload: dict):
-    sc_ids = payload.get("scenarioIds", [])
-    now    = datetime.now(timezone.utc)
-    return {
-        "id":            f"B{random.randint(10, 99)}",
-        "title":         f"Scenario Analysis: {', '.join(sc_ids)}",
-        "scenarioIds":   sc_ids,
-        "status":        "Ready",
-        "generatedAt":   now.isoformat(),
-        "severityScore": round(random.uniform(2.5, 4.5), 1),
-        "estimatedImpact": {"currency": "GHS", "magnitude": random.randint(100, 800), "unit": "M"},
-        "executiveSummary": f"Combined stress analysis for scenarios {', '.join(sc_ids)} indicates material risk to EBITDA and service revenue under the modelled assumptions.",
-        "keyKpiImpacts": [
-            {"kpiId": "FIN01", "narrative": "Service revenue under pressure across combined scenario set."},
-            {"kpiId": "FIN03", "narrative": "EBITDA margin compressed by operating cost inflation."},
-        ],
-        "calibrationNotes": "Generated from live scenario engine output.",
-        "recommendedActions": ["Review hedging strategy", "Activate tariff repricing clause", "Engage regulator on timeline"],
-        "keyEntities": ["Bank of Ghana", "NCA", "GRA"],
-    }
+    try:
+        return generate_board_brief(payload.get("scenarioIds", []))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 # ── Pipeline Health ────────────────────────────────────────────────────────────

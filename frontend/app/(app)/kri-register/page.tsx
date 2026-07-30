@@ -38,7 +38,7 @@ export default function KriRegisterPage() {
   const [activeBookCat, setActiveBookCat] = useState<string>('Financial');
 
   useEffect(() => {
-    fetchKpis().then(data => {
+    fetchKpis('2026Q1').then(data => {
       setKpis(data);
       setLoading(false);
     });
@@ -52,7 +52,7 @@ export default function KriRegisterPage() {
         </div>
         <div>
           <h1 className="text-3xl font-hero font-bold text-on-surface">Full KRI Book</h1>
-          <p className="text-on-surface-variant mt-0.5">Comprehensive list of Key Risk Indicators</p>
+          <p className="text-on-surface-variant mt-0.5">Comprehensive list of Key Risk Indicators — Q1 2026 reported base case</p>
         </div>
       </div>
 
@@ -65,7 +65,7 @@ export default function KriRegisterPage() {
                   { label: 'ID' },
                   { label: 'Name' },
                   { label: 'Category' },
-                  { label: 'FY25 Value', icon: <ArrowUpDown className="w-3 h-3 inline ml-1 opacity-40" /> },
+                  { label: 'Q1 2026 Value', icon: <ArrowUpDown className="w-3 h-3 inline ml-1 opacity-40" /> },
                   { label: 'Thresholds (L–U)' },
                   { label: 'Status' },
                 ].map(({ label, icon }) => (

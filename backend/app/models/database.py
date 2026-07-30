@@ -45,4 +45,5 @@ def get_db():
 def init_db():
     """Create all tables if they don't exist."""
     from . import article, risk_score, alert  # noqa: F401 — registers models
+    from . import board_brief  # noqa: F401
     Base.metadata.create_all(bind=engine)

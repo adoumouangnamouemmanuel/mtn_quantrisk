@@ -16,7 +16,7 @@ from .data_loader import ROOT
 QUARTERLY_FINANCIAL = ROOT / "data/structured/quarterly.csv"
 QUARTERLY_SEGMENTS = ROOT / "data/structured/segments_quarterly.csv"
 QUARTERLY_OPERATIONAL = ROOT / "data/structured/operational_quarterly.csv"
-ANNUAL_MACRO = ROOT / "data/structured/macro_context.csv"
+MACRO_CONTEXT = ROOT / "data/structured/macro_context.csv"
 
 _QUALITY_LABELS = {"R": "Reported", "I": "Interpolated", "E": "Estimated"}
 
@@ -32,9 +32,9 @@ _KPI_SOURCES: dict[str, dict[str, Any]] = {
     "OPS01": {"path": QUARTERLY_OPERATIONAL, "column": "Total_Subscribers_M", "flag": "Subs_Flag"},
     "OPS04": {"path": QUARTERLY_OPERATIONAL, "column": "ARPU_GHS", "flag": "ARPU_Flag"},
     "OPS07": {"path": QUARTERLY_OPERATIONAL, "column": "4G_Coverage_Pct", "flag": "Coverage_Flag"},
-    "EXT01": {"path": ANNUAL_MACRO, "column": "Inflation_YoY_Pct", "frequency": "annual"},
-    "EXT02": {"path": ANNUAL_MACRO, "column": "Policy_Rate_Pct", "frequency": "annual"},
-    "EXT03": {"path": ANNUAL_MACRO, "column": "Cedi_USD_Avg", "frequency": "annual"},
+    "EXT01": {"path": MACRO_CONTEXT, "column": "Inflation_YoY_Pct", "frequency": "mixed"},
+    "EXT02": {"path": MACRO_CONTEXT, "column": "Policy_Rate_Pct", "frequency": "mixed"},
+    "EXT03": {"path": MACRO_CONTEXT, "column": "Cedi_USD_Avg", "frequency": "mixed"},
 }
 
 
@@ -68,8 +68,12 @@ def _series(kpi_id: str, requested_frequency: str, limit: int | None = None) -> 
         if pd.isna(value):
             continue
         period_id = str(row["Period_ID"])
-        if actual_frequency == "quarterly":
+        row_frequency = str(row.get("Period_Type", actual_frequency)).strip().lower()
+        is_quarter = row_frequency == "quarter" or "Q" in period_id.upper()
+        if is_quarter:
             quarter = str(row.get("Quarter", period_id[-2:]))
+            if quarter.lower() == "nan":
+                quarter = period_id[-2:]
             month_number = {"Q1": 3, "Q2": 6, "Q3": 9, "Q4": 12}.get(quarter, 12)
             display = f"FY{str(int(row['Year']))[-2:]}{quarter}"
             month = pd.Timestamp(int(row["Year"]), month_number, 1).strftime("%b %Y")
@@ -117,7 +121,7 @@ def get_monthly_series(kpi_id: str, n_months: int = 36) -> dict:
     # 36 requested months corresponds to at most 12 quarterly or 3 annual points.
     config = _KPI_SOURCES.get(kpi_id, {})
     actual = config.get("frequency", "quarterly")
-    limit = max(1, n_months // (12 if actual == "annual" else 3))
+    limit = max(1, n_months // (12 if actual in {"annual", "mixed"} else 3))
     return _series(kpi_id, "monthly", limit=limit)
 
 
