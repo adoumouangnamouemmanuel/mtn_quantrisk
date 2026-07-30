@@ -1,7 +1,19 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isDevAuthBypassEnabled } from './dev-auth'
 
 export async function updateSession(request: NextRequest) {
+  if (isDevAuthBypassEnabled(request.nextUrl.host)) {
+    if (request.nextUrl.pathname === '/login') {
+      const dashboardUrl = request.nextUrl.clone()
+      dashboardUrl.pathname = '/dashboard'
+      dashboardUrl.search = ''
+      return NextResponse.redirect(dashboardUrl)
+    }
+
+    return NextResponse.next({ request })
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const publishableKey =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
