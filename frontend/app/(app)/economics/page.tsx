@@ -17,6 +17,7 @@ const RISK_COLOR: Record<string, string> = {
   Warning:  'text-amber-600 bg-amber-50 border-amber-200',
   Watch:    'text-yellow-600 bg-yellow-50 border-yellow-200',
   Normal:   'text-emerald-600 bg-emerald-50 border-emerald-200',
+  Unavailable: 'text-zinc-500 bg-zinc-50 border-zinc-200 dark:bg-zinc-800 dark:border-zinc-600',
 };
 
 const INDICATOR_META: Record<string, { label: string; icon: React.ElementType; invert?: boolean }> = {
@@ -61,7 +62,7 @@ function IndicatorCard({ id, data }: { id: string; data: EconomicIndicator }) {
         <Icon size={18} className="text-zinc-400" />
         <div>
           <p className="text-xs text-zinc-500">{meta.label}</p>
-          <p className="text-sm font-medium text-zinc-400">No data</p>
+          <p className="text-sm font-medium text-zinc-400">Source unavailable</p>
         </div>
       </div>
     );
@@ -77,7 +78,7 @@ function IndicatorCard({ id, data }: { id: string; data: EconomicIndicator }) {
           </div>
           <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{meta.label}</p>
         </div>
-        <span className="text-[10px] text-zinc-400">{data.year}</span>
+        <span className="text-[10px] text-zinc-400">{data.period ?? data.year}</span>
       </div>
       <div className="flex items-end justify-between">
         <div>
@@ -85,6 +86,14 @@ function IndicatorCard({ id, data }: { id: string; data: EconomicIndicator }) {
           <span className="text-xs text-zinc-400 ml-1">{data.unit}</span>
         </div>
         <Sparkline history={data.history} invert={meta.invert} />
+      </div>
+      <div className="flex items-center justify-between gap-2 text-[10px] text-zinc-400">
+        <span>{data.frequency ?? 'Annual'}</span>
+        {data.sourceUrl ? (
+          <a href={data.sourceUrl} target="_blank" rel="noreferrer" className="truncate hover:text-yellow-500">
+            {data.source ?? 'Official source'}
+          </a>
+        ) : <span>{data.source}</span>}
       </div>
     </div>
   );
@@ -115,7 +124,10 @@ export default function EconomicsPage() {
     }
   }, []);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void load(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
   const indicatorIds = ['inflation', 'gdp_growth', 'fx_usd_ghs', 'unemployment', 'debt_service', 'fdi_inflows'];
 
@@ -127,7 +139,7 @@ export default function EconomicsPage() {
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Ghana Macro Dashboard</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            Latest annual indicators from World Bank Open Data — cached for 6 hours.
+            Latest official Ghana observations with World Bank historical fallback — cached for 6 hours.
           </p>
         </div>
         <button
@@ -195,7 +207,7 @@ export default function EconomicsPage() {
       {data && (
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 overflow-hidden">
           <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-700">
-            <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">Historical Trend (last 8 years)</h2>
+            <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">World Bank annual history (last 8 observations)</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-xs">

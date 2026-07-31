@@ -27,7 +27,7 @@ def process_article(article_id: str) -> dict | None:
     from ..models.article import Article
     from ..models.risk_score import RiskScore
     from ..models.alert import Alert
-    from .nlp_service import run_nlp
+    from .nlp_service import compute_mtn_relevance, run_nlp
     from .sentiment_service import run_sentiment
     from .impact_service import estimate_impact, compute_alert_tier
 
@@ -38,6 +38,12 @@ def process_article(article_id: str) -> dict | None:
             return None
 
         # ── Step 2 — NLP
+        article_text = f"{article.title or ''} {article.body or ''}"
+        mtn_relevance = compute_mtn_relevance(article_text)
+        if mtn_relevance < 0.2:
+            logger.debug("Skipping %s before remote NLP — mtn_relevance=%.2f", article_id[:8], mtn_relevance)
+            return None
+
         nlp_result = run_nlp(article.title or "", article.body or "")
         mtn_relevance = nlp_result["mtn_relevance"]
 

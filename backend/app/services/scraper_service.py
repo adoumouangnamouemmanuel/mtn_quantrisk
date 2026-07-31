@@ -340,10 +340,13 @@ def run_scrape_and_store() -> int:
     new_count = 0
 
     with SessionLocal() as db:
+        candidate_urls = [raw["url"] for raw in raw_articles if raw.get("url")]
+        existing_urls = {
+            url for (url,) in db.query(Article.url).filter(Article.url.in_(candidate_urls)).all()
+        }
         for raw in raw_articles:
             # Deduplication — UNIQUE constraint on url handles concurrent calls
-            exists = db.query(Article).filter(Article.url == raw["url"]).first()
-            if exists:
+            if raw["url"] in existing_urls:
                 continue
             article = Article(
                 url=raw["url"],
@@ -358,6 +361,7 @@ def run_scrape_and_store() -> int:
                 db.commit()
                 db.refresh(article)
                 new_count += 1
+                existing_urls.add(raw["url"])
                 # Immediately score the new article
                 try:
                     process_article(article.id)
