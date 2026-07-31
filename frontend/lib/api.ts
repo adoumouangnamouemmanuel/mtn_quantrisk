@@ -306,6 +306,10 @@ export interface EconomicIndicator {
   unit: string;
   description: string;
   history: { year: number; value: number }[];
+  period?: string | null;
+  source?: string;
+  sourceUrl?: string;
+  frequency?: 'Daily' | 'Monthly' | 'Quarterly' | 'Annual';
 }
 
 export interface GhanaEconomics {
@@ -323,9 +327,9 @@ export interface GhanaEconomics {
 }
 
 export interface EconomicsRiskContext {
-  inflation_risk: 'Critical' | 'Warning' | 'Watch' | 'Normal';
-  growth_risk:    'Critical' | 'Warning' | 'Normal';
-  fx_risk:        'Critical' | 'Warning' | 'Watch' | 'Normal';
+  inflation_risk: 'Critical' | 'Warning' | 'Watch' | 'Normal' | 'Unavailable';
+  growth_risk:    'Critical' | 'Warning' | 'Normal' | 'Unavailable';
+  fx_risk:        'Critical' | 'Warning' | 'Watch' | 'Normal' | 'Unavailable';
   summary: string;
   raw: GhanaEconomics;
 }
@@ -348,6 +352,8 @@ export interface IntelligenceTopArticle {
   severity: number | null;
   sentiment: string | null;
   impact_ghs_mid: number | null;
+  coverage_count?: number;
+  sources?: string[];
 }
 
 export interface IntelligenceSection {
@@ -355,8 +361,10 @@ export interface IntelligenceSection {
   label: string;
   icon: string;
   article_count: number;
+  unique_event_count: number;
   critical_count: number;
   summary: string;
+  movement: { current: number; previous: number; change: number; direction: 'up' | 'down' | 'flat' };
   top_articles: IntelligenceTopArticle[];
 }
 
@@ -364,6 +372,12 @@ export interface IntelligenceSummary {
   generated_at: string;
   period: string;
   total_articles: number;
+  relevant_articles: number;
+  unique_events: number;
+  source_count: number;
+  executive_summary: string;
+  recommended_actions: string[];
+  category_movement: Record<string, { current: number; previous: number; change: number; direction: 'up' | 'down' | 'flat' }>;
   tier_counts: { Critical: number; Warning: number; Watch: number };
   overall_risk: string;
   risk_color: string;

@@ -96,6 +96,9 @@ function ArticlePill({ article }: { article: IntelligenceTopArticle }) {
         </p>
         <div className="flex items-center gap-1.5 mt-1 text-xs text-on-surface-variant font-mono">
           {article.source && <span>{article.source}</span>}
+          {(article.coverage_count ?? 1) > 1 && (
+            <span className="text-blue-400">{article.coverage_count} reports</span>
+          )}
           {article.tier && (
             <span className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${tier?.badge ?? ''}`}>
               {article.tier}
@@ -138,6 +141,12 @@ function SectionCard({ section }: { section: IntelligenceSection }) {
             </h3>
             <p className="text-xs text-on-surface-variant font-mono">
               {section.article_count} article{section.article_count !== 1 ? 's' : ''}
+              <span className="text-blue-400 ml-1.5">· {section.unique_event_count} unique event{section.unique_event_count !== 1 ? 's' : ''}</span>
+              {section.movement.change !== 0 && (
+                <span className={section.movement.change > 0 ? 'text-orange-400 ml-1.5' : 'text-green-400 ml-1.5'}>
+                  · {section.movement.change > 0 ? '+' : ''}{section.movement.change} vs yesterday
+                </span>
+              )}
               {section.critical_count > 0 && (
                 <span className="text-red-400 ml-1.5">· {section.critical_count} Critical</span>
               )}
@@ -425,7 +434,10 @@ export default function IntelligencePage() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
   const banner = data ? (RISK_BANNER[data.overall_risk] ?? RISK_BANNER.Normal) : null;
 
@@ -441,7 +453,7 @@ export default function IntelligencePage() {
           <div>
             <h1 className="text-3xl font-hero font-bold text-on-surface">Daily Briefing</h1>
             <p className="text-on-surface-variant mt-0.5">
-              LLM-generated 24-hour risk intelligence digest
+              AI-assisted 24-hour digest of MTN-relevant online risk events
             </p>
           </div>
         </div>
@@ -511,7 +523,7 @@ export default function IntelligencePage() {
                     </span>
                   </div>
                   <p className="text-sm text-on-surface-variant mt-0.5">
-                    {data.total_articles} articles analysed · {data.period}
+                    {data.total_articles} collected · {data.relevant_articles} MTN-relevant · {data.unique_events} unique events
                   </p>
                 </div>
               </div>
@@ -531,6 +543,38 @@ export default function IntelligencePage() {
                 <div className="text-center">
                   <p className="text-yellow-400 font-bold text-lg">{data.tier_counts.Watch}</p>
                   <p className="text-xs text-on-surface-variant">Watch</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {[
+              { label: 'Articles collected', value: data.total_articles, color: 'text-on-surface' },
+              { label: 'MTN-relevant', value: data.relevant_articles, color: 'text-mtn-yellow' },
+              { label: 'Unique events', value: data.unique_events, color: 'text-blue-400' },
+              { label: 'Sources represented', value: data.source_count, color: 'text-green-400' },
+            ].map(item => (
+              <div key={item.label} className="rounded-xl border border-outline/15 bg-surface-container-low p-4">
+                <p className={`font-mono text-2xl font-bold ${item.color}`}>{item.value}</p>
+                <p className="mt-1 text-xs font-mono uppercase tracking-wider text-on-surface-variant">{item.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-xl border border-mtn-yellow/20 bg-mtn-yellow/5 p-5">
+            <div className="flex items-start gap-3">
+              <Brain className="mt-0.5 h-5 w-5 shrink-0 text-mtn-yellow" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-mono uppercase tracking-widest text-mtn-yellow">Executive overview</p>
+                <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{data.executive_summary}</p>
+                <div className="mt-4 border-t border-mtn-yellow/10 pt-3">
+                  <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">Recommended actions</p>
+                  <ul className="mt-2 space-y-1.5 text-sm text-on-surface-variant">
+                    {data.recommended_actions.map((action, index) => (
+                      <li key={index} className="flex gap-2"><span className="text-mtn-yellow">→</span><span>{action}</span></li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>

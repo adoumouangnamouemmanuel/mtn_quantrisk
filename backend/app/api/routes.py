@@ -474,8 +474,8 @@ def intelligence_summary():
     Falls back to extractive summarisation when HF_TOKEN not set.
     Cached 30 minutes.
     """
-    from ..services.intelligence_service import get_intelligence_summary
-    return get_intelligence_summary()
+    from ..services.intelligence_service import get_hierarchical_intelligence_summary
+    return get_hierarchical_intelligence_summary()
 
 
 # ── News Feed ──────────────────────────────────────────────────────────────────
