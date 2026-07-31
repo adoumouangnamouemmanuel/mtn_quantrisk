@@ -380,6 +380,23 @@ const TIER_COLOR: Record<string, string> = {
   Watch:    'text-yellow-400',
 };
 
+const MTN_IMPACT_BY_CATEGORY: Record<string, string> = {
+  fx_financial: 'May affect imported technology costs, capex and margins.',
+  regulatory: 'May change MTN compliance obligations, licence exposure or operating costs.',
+  competitive: 'May affect pricing, subscriber retention and service revenue.',
+  operational: 'May affect network availability, service quality or delivery costs.',
+  cyber: 'May expose MTN systems, customer data or service continuity.',
+  political: 'May affect policy stability, investment decisions or business continuity.',
+};
+
+function mtnImpactText(article: NewsArticle): string {
+  if (article.mtnRelevance == null || article.mtnRelevance < 0.25 || !article.category) {
+    return 'No direct material MTN impact identified.';
+  }
+  return MTN_IMPACT_BY_CATEGORY[article.category]
+    ?? 'May have an indirect effect on MTN Ghana’s operating environment.';
+}
+
 function FeedRow({ article }: { article: NewsArticle }) {
   const tc = article.alertTier ? TIER_COLOR[article.alertTier] : '';
   return (
@@ -400,6 +417,13 @@ function FeedRow({ article }: { article: NewsArticle }) {
           </span>
           {article.alertTier && <span className={`font-bold ${tc}`}>{article.alertTier}</span>}
         </div>
+        <p className="mt-1 text-[10px] leading-snug text-on-surface-variant/80 line-clamp-2">
+          <span className="font-semibold text-mtn-yellow/80">Potential MTN impact:</span>{' '}
+          {mtnImpactText(article)}
+          {article.impactGhsMid != null && article.mtnRelevance != null && article.mtnRelevance >= 0.25 && (
+            <span className="font-mono"> Modelled midpoint: {fmtGhs(article.impactGhsMid)}.</span>
+          )}
+        </p>
       </div>
       <ExternalLink className="w-3 h-3 shrink-0 text-on-surface-variant opacity-0 group-hover:opacity-50 mt-0.5" />
     </a>
@@ -679,6 +703,7 @@ export default function IntelligencePage() {
                   <span className="text-xs font-mono uppercase tracking-widest text-on-surface-variant">
                     Live Feed
                   </span>
+                  <span className="text-[9px] font-mono text-on-surface-variant/60">model estimates</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                 </div>
                 <Link href="/news" className="text-[10px] font-mono text-on-surface-variant hover:text-mtn-yellow transition-colors flex items-center gap-1">

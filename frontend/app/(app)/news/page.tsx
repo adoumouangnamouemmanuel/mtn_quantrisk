@@ -6,7 +6,7 @@ import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import {
   Newspaper, RefreshCw, AlertTriangle, TrendingUp, Tag,
   ChevronDown, ChevronUp, ExternalLink, Brain, Shield, Wifi,
-  Globe, Activity, Eye
+  Globe, Activity, Eye, Search, CalendarDays, X
 } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -292,6 +292,7 @@ function ArticleCard({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 20;
+const EMPTY_FILTERS = { keyword: '', dateFrom: '', dateTo: '' };
 
 export default function NewsPage() {
   const [articles,       setArticles]       = useState<NewsArticle[]>([]);
@@ -303,15 +304,29 @@ export default function NewsPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [expandedId,     setExpandedId]     = useState<string | null>(null);
   const [error,          setError]          = useState<string | null>(null);
+  const [keyword,        setKeyword]        = useState('');
+  const [dateFrom,       setDateFrom]       = useState('');
+  const [dateTo,         setDateTo]         = useState('');
+  const [filters,        setFilters]        = useState(EMPTY_FILTERS);
   const offsetRef = React.useRef(0);
 
-  const loadData = useCallback(async (category?: string) => {
+  const loadData = useCallback(async (
+    category?: string,
+    applied = EMPTY_FILTERS,
+  ) => {
     setLoading(true);
     setError(null);
     offsetRef.current = 0;
     try {
       const [arts, sum] = await Promise.all([
-        fetchNews({ category, limit: PAGE_SIZE, offset: 0 }),
+        fetchNews({
+          category,
+          keyword: applied.keyword || undefined,
+          dateFrom: applied.dateFrom || undefined,
+          dateTo: applied.dateTo || undefined,
+          limit: PAGE_SIZE,
+          offset: 0,
+        }),
         fetchNewsSummary(),
       ]);
       setArticles(arts);
@@ -330,6 +345,9 @@ export default function NewsPage() {
     try {
       const more = await fetchNews({
         category: activeCategory ?? undefined,
+        keyword: filters.keyword || undefined,
+        dateFrom: filters.dateFrom || undefined,
+        dateTo: filters.dateTo || undefined,
         limit: PAGE_SIZE,
         offset: offsetRef.current,
       });
@@ -341,15 +359,18 @@ export default function NewsPage() {
     } finally {
       setLoadingMore(false);
     }
-  }, [activeCategory]);
+  }, [activeCategory, filters]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadData(), 0);
+    return () => window.clearTimeout(timer);
+  }, [loadData]);
 
   async function handleScrape() {
     setScraping(true);
     try {
       const result = await triggerScrape();
-      await loadData(activeCategory ?? undefined);
+      await loadData(activeCategory ?? undefined, filters);
       alert(`Scrape complete — ${result.newArticles} new articles ingested.`);
     } catch (e) {
       alert(`Scrape failed: ${e}`);
@@ -361,7 +382,23 @@ export default function NewsPage() {
   function handleCategoryFilter(cat: string | null) {
     setActiveCategory(cat);
     setExpandedId(null);
-    loadData(cat ?? undefined);
+    loadData(cat ?? undefined, filters);
+  }
+
+  function applySearch() {
+    const next = { keyword: keyword.trim(), dateFrom, dateTo };
+    setFilters(next);
+    setExpandedId(null);
+    void loadData(activeCategory ?? undefined, next);
+  }
+
+  function clearSearch() {
+    setKeyword('');
+    setDateFrom('');
+    setDateTo('');
+    setFilters(EMPTY_FILTERS);
+    setExpandedId(null);
+    void loadData(activeCategory ?? undefined, EMPTY_FILTERS);
   }
 
   return (
@@ -392,6 +429,51 @@ export default function NewsPage() {
 
       {/* Summary bar */}
       {summary && <SummaryBar summary={summary} />}
+
+      {/* Search and publication-date filters */}
+      <div className="rounded-xl border border-white/7 bg-white/[0.02] p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+          <label className="flex-1 space-y-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-on-surface-variant">Keyword or source</span>
+            <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3 focus-within:border-mtn-yellow/40">
+              <Search className="h-4 w-4 shrink-0 text-on-surface-variant" />
+              <input
+                value={keyword}
+                onChange={event => setKeyword(event.target.value)}
+                onKeyDown={event => { if (event.key === 'Enter') applySearch(); }}
+                placeholder="e.g. MTN, cedi, NCA, data prices…"
+                className="w-full bg-transparent py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50"
+              />
+            </span>
+          </label>
+          <label className="space-y-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-on-surface-variant">From date</span>
+            <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3 focus-within:border-mtn-yellow/40">
+              <CalendarDays className="h-4 w-4 text-on-surface-variant" />
+              <input type="date" value={dateFrom} max={dateTo || undefined} onChange={event => setDateFrom(event.target.value)} className="bg-transparent py-2.5 text-xs text-on-surface [color-scheme:dark]" />
+            </span>
+          </label>
+          <label className="space-y-1.5">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-on-surface-variant">To date</span>
+            <span className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3 focus-within:border-mtn-yellow/40">
+              <CalendarDays className="h-4 w-4 text-on-surface-variant" />
+              <input type="date" value={dateTo} min={dateFrom || undefined} onChange={event => setDateTo(event.target.value)} className="bg-transparent py-2.5 text-xs text-on-surface [color-scheme:dark]" />
+            </span>
+          </label>
+          <div className="flex gap-2">
+            <button onClick={applySearch} className="flex items-center gap-2 rounded-lg bg-mtn-yellow px-4 py-2.5 text-xs font-bold text-black transition hover:bg-mtn-yellow-bright"><Search className="h-3.5 w-3.5" /> Search</button>
+            {(filters.keyword || filters.dateFrom || filters.dateTo) && <button onClick={clearSearch} title="Clear filters" className="rounded-lg border border-white/10 px-3 py-2.5 text-on-surface-variant transition hover:text-on-surface"><X className="h-4 w-4" /></button>}
+          </div>
+        </div>
+        {(filters.keyword || filters.dateFrom || filters.dateTo) && (
+          <p className="mt-3 text-[10px] font-mono text-on-surface-variant">
+            Showing {articles.length} result{articles.length === 1 ? '' : 's'}
+            {filters.keyword ? ` matching “${filters.keyword}”` : ''}
+            {filters.dateFrom ? ` from ${filters.dateFrom}` : ''}
+            {filters.dateTo ? ` through ${filters.dateTo}` : ''}
+          </p>
+        )}
+      </div>
 
       {/* Category filters */}
       <div className="flex flex-wrap gap-2">
@@ -438,7 +520,7 @@ export default function NewsPage() {
       ) : articles.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-on-surface-variant gap-3">
           <Newspaper className="w-10 h-10 opacity-30" />
-          <p className="text-sm">No articles yet. Click "Scrape Now" to fetch the latest news.</p>
+          <p className="text-sm">No articles found. Adjust the filters or click &quot;Scrape Now&quot; to fetch the latest news.</p>
         </div>
       ) : (
         <div className="space-y-2">

@@ -20,6 +20,7 @@ _CACHE_TTL = 6 * 3600  # 6 hours
 _WB_BASE = "https://api.worldbank.org/v2/country/GH/indicator"
 _GSS_URL = "https://www.statsghana.gov.gh/"
 _BOG_FX_URL = "https://www.bog.gov.gh/treasury-and-the-markets/daily-interbank-fx-rates/"
+_MARKET_FX_URL = "https://open.er-api.com/v6/latest/USD"
 _HEADERS = {"User-Agent": "MTN-Quantrisk/1.0 (+official macro dashboard)"}
 
 # (indicator_code, label, unit, description)
@@ -136,6 +137,33 @@ def _fetch_bog_fx() -> dict | None:
         return None
 
 
+def _fetch_market_fx() -> dict | None:
+    """Fallback current USD/GHS market reference rate (daily, keyless)."""
+    try:
+        import requests
+
+        response = requests.get(_MARKET_FX_URL, timeout=15, headers=_HEADERS)
+        response.raise_for_status()
+        payload = response.json()
+        value = round(float(payload.get("rates", {}).get("GHS")), 4)
+        if payload.get("result") != "success" or not 1 <= value <= 100:
+            raise ValueError("invalid USD/GHS market-rate response")
+        timestamp = int(payload.get("time_last_update_unix") or 0)
+        observed = datetime.fromtimestamp(timestamp, timezone.utc) if timestamp else datetime.now(timezone.utc)
+        return {
+            "latest": value,
+            "period": observed.strftime("%d %b %Y"),
+            "year": observed.year,
+            "source": "ExchangeRate-API market reference",
+            "sourceUrl": "https://www.exchangerate-api.com/",
+            "frequency": "Daily",
+            "description": "Current USD/GHS market reference rate; Bank of Ghana preferred when available",
+        }
+    except Exception as exc:
+        logger.warning("Current market FX fetch failed: %s", exc)
+        return None
+
+
 def get_ghana_economics(force_refresh: bool = False) -> dict:
     """
     Returns latest Ghana macro indicators from the World Bank.
@@ -191,9 +219,9 @@ def get_ghana_economics(force_refresh: bool = False) -> dict:
             }
 
     current = _fetch_gss_current()
-    bog_fx = _fetch_bog_fx()
-    if bog_fx:
-        current["fx_usd_ghs"] = bog_fx
+    current_fx = _fetch_bog_fx() or _fetch_market_fx()
+    if current_fx:
+        current["fx_usd_ghs"] = current_fx
     for key, override in current.items():
         if key in indicators:
             indicators[key].update(override)

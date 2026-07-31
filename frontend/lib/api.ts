@@ -231,12 +231,18 @@ export interface NewsSummary {
 export async function fetchNews(params: {
   category?: string;
   source?: string;
+  keyword?: string;
+  dateFrom?: string;
+  dateTo?: string;
   limit?: number;
   offset?: number;
 } = {}): Promise<NewsArticle[]> {
   const qs = new URLSearchParams();
   if (params.category) qs.set('category', params.category);
   if (params.source)   qs.set('source',   params.source);
+  if (params.keyword)  qs.set('q', params.keyword);
+  if (params.dateFrom) qs.set('date_from', params.dateFrom);
+  if (params.dateTo)   qs.set('date_to', params.dateTo);
   if (params.limit)    qs.set('limit',    String(params.limit));
   if (params.offset)   qs.set('offset',   String(params.offset));
   return apiFetch<NewsArticle[]>(`/api/news?${qs}`);
