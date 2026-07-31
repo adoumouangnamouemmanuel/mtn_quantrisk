@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Request
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, timezone, timedelta
 from dateutil.relativedelta import relativedelta
 import random
 import joblib
@@ -484,6 +484,9 @@ def intelligence_summary():
 def list_news(
     category: str | None = None,
     source: str | None = None,
+    q: str | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
     limit: int = 30,
     offset: int = 0,
 ):
@@ -492,7 +495,10 @@ def list_news(
     from ..services.news_service import list_news as _list_news
 
     with SessionLocal() as db:
-        return _list_news(db, category=category, source=source, limit=limit, offset=offset)
+        return _list_news(
+            db, category=category, source=source, keyword=q,
+            date_from=date_from, date_to=date_to, limit=limit, offset=offset,
+        )
 
 
 @router.get("/news/summary")

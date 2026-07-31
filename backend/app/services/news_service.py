@@ -2,7 +2,8 @@
 News feed — paginated article list with risk scores joined.
 """
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from ..models.article import Article
@@ -14,6 +15,8 @@ def list_news(
     category: str | None = None,
     source: str | None = None,
     date_from: date | None = None,
+    date_to: date | None = None,
+    keyword: str | None = None,
     limit: int = 30,
     offset: int = 0,
 ) -> list[dict]:
@@ -26,7 +29,18 @@ def list_news(
     if source:
         query = query.filter(Article.source_name.ilike(f"%{source}%"))
     if date_from:
-        query = query.filter(Article.published_at >= datetime(date_from.year, date_from.month, date_from.day))
+        start = datetime(date_from.year, date_from.month, date_from.day)
+        query = query.filter(func.coalesce(Article.published_at, Article.scraped_at) >= start)
+    if date_to:
+        end = datetime(date_to.year, date_to.month, date_to.day) + timedelta(days=1)
+        query = query.filter(func.coalesce(Article.published_at, Article.scraped_at) < end)
+    if keyword and keyword.strip():
+        search = f"%{keyword.strip()}%"
+        query = query.filter(or_(
+            Article.title.ilike(search),
+            Article.body.ilike(search),
+            Article.source_name.ilike(search),
+        ))
     if category:
         query = query.filter(RiskScore.category == category)
 
