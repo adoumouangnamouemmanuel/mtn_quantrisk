@@ -1,6 +1,8 @@
 fastapi
 uvicorn[standard]
 pydantic
+PyJWT
+python-multipart
 pandas
 numpy
 scikit-learn
@@ -8,7 +10,6 @@ xgboost
 shap
 joblib
 statsmodels
-python-multipart
 python-dateutil
 feedparser
 sqlalchemy
