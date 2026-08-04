@@ -3,8 +3,8 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-# Prefer a supplied database URL (for Supabase/Postgres). Fall back to SQLite for local dev.
-DATABASE_URL = os.environ.get("DATABASE_URL") or os.environ.get("SUPABASE_DB_URL")
+# Prefer a supplied database URL (Postgres). Fall back to SQLite for local dev.
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
     _DB_PATH = os.environ.get("DB_PATH") or str(
@@ -16,11 +16,6 @@ else:
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
-
-    if "supabase.com" in DATABASE_URL or "pooler.supabase.com" in DATABASE_URL:
-        separator = "?" if "?" not in DATABASE_URL else "&"
-        if "sslmode=" not in DATABASE_URL:
-            DATABASE_URL = f"{DATABASE_URL}{separator}sslmode=require"
 
 engine_kwargs = {"echo": False}
 if DATABASE_URL.startswith("sqlite"):
