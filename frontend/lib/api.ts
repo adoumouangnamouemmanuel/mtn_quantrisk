@@ -5,14 +5,20 @@ import type {
   KpiId, MacroOverlays, ScenarioFormData,
   FeedbackPayload, BaseCaseLogEntry, UploadResult, PdfKpiCandidate,
 } from './types';
+import { getAccessToken } from './auth';
 
 const USE_MOCK_API = false;
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8000';
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getAccessToken();
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(init?.headers ?? {}),
+    },
   });
   if (!res.ok) {
     const body = await res.text();
@@ -141,7 +147,12 @@ export async function fetchPipelineHealth(): Promise<PipelineHealth> {
 export async function uploadCsv(file: File): Promise<UploadResult> {
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch(`${API_BASE}/api/upload/csv`, { method: 'POST', body: form });
+  const token = getAccessToken();
+  const res = await fetch(`${API_BASE}/api/upload/csv`, {
+    method: 'POST',
+    body: form,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   if (!res.ok) { const t = await res.text(); throw new Error(`Upload failed: ${t.slice(0, 200)}`); }
   return res.json();
 }
@@ -149,7 +160,12 @@ export async function uploadCsv(file: File): Promise<UploadResult> {
 export async function uploadPdf(file: File): Promise<UploadResult> {
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch(`${API_BASE}/api/upload/pdf`, { method: 'POST', body: form });
+  const token = getAccessToken();
+  const res = await fetch(`${API_BASE}/api/upload/pdf`, {
+    method: 'POST',
+    body: form,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   if (!res.ok) { const t = await res.text(); throw new Error(`Upload failed: ${t.slice(0, 200)}`); }
   return res.json();
 }
