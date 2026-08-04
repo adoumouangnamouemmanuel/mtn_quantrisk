@@ -1,5 +1,5 @@
-import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
+import { TOKEN_COOKIE, USER_COOKIE } from '@/lib/auth';
 
 function relativeRedirect(location: string) {
   return new NextResponse(null, {
@@ -13,14 +13,7 @@ function loginRedirect(error: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const publishableKey =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!url || !publishableKey) {
-    return loginRedirect('configuration');
-  }
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8000';
 
   const formData = await request.formData();
   const email = String(formData.get('email') ?? '').trim().toLowerCase();
@@ -34,29 +27,51 @@ export async function POST(request: NextRequest) {
     return loginRedirect('domain');
   }
 
-  const response = relativeRedirect('/dashboard');
-  const supabase = createServerClient(url, publishableKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) =>
-          response.cookies.set(name, value, options)
-        );
-      },
-    },
-  });
-
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    console.warn('[auth-login] Sign-in rejected', {
-      code: error.code,
-      status: error.status,
-      message: error.message,
+  // Call the backend JWT login endpoint
+  let res: Response;
+  try {
+    res = await fetch(`${apiBase}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      cache: 'no-store',
     });
+  } catch {
+    return loginRedirect('configuration');
+  }
+
+  if (!res.ok) {
+    console.warn('[auth-login] Sign-in rejected', { status: res.status });
     return loginRedirect('credentials');
   }
+
+  const data = await res.json();
+  const token = data.access_token;
+  const user = data.user;
+
+  if (!token || !user) {
+    return loginRedirect('credentials');
+  }
+
+  const response = relativeRedirect('/dashboard');
+  response.cookies.set(TOKEN_COOKIE, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: data.expires_in ?? 28800,
+  });
+  response.cookies.set(
+    USER_COOKIE,
+    encodeURIComponent(JSON.stringify(user)),
+    {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: data.expires_in ?? 28800,
+    }
+  );
 
   return response;
 }
