@@ -39,3 +39,7 @@ tsc_output.txt
 lint_output.txt
 build_output.txt
 depcheck_output.txt
+
+# Database / data
+*.db
+data/uploads/
