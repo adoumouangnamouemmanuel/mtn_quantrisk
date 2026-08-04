@@ -1,37 +1,31 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User, Settings, Shield, HelpCircle, LogOut, X } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { getStoredUser, type AuthUser } from '@/lib/auth';
+
 export function ProfilePanel({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => listener.subscription.unsubscribe();
-  }, [supabase]);
+    setUser(getStoredUser());
+  }, []);
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) return;
+    try {
+      await fetch('/auth/logout', { method: 'POST' });
+    } catch {
+      // Ignore — cookies will be cleared client-side anyway
+    }
     onClose();
     router.replace('/login');
     router.refresh();
   };
 
-  const displayName =
-    user?.user_metadata?.full_name ??
-    user?.user_metadata?.name ??
-    user?.email?.split('@')[0] ??
-    'Authenticated User';
+  const displayName = user?.name ?? user?.email?.split('@')[0] ?? 'Authenticated User';
 
   return (
     <div className="absolute top-12 right-0 w-64 bg-surface border border-outline/20 rounded-lg shadow-2xl overflow-hidden z-50 flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
