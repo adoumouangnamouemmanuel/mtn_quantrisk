@@ -1,7 +1,8 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
+import { TOKEN_COOKIE, USER_COOKIE } from '@/lib/auth'
+import { cookies } from 'next/headers'
 
 export type LoginState = { error: string | null }
 
@@ -21,25 +22,49 @@ export async function loginAction(
     return { error: `Please use a valid @${allowedDomain} work email.` }
   }
 
-  let supabase
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8000'
+
+  let res: Response
   try {
-    supabase = await createClient()
+    res = await fetch(`${apiBase}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+      cache: 'no-store',
+    })
   } catch {
     return {
-      error: 'Authentication is not configured on the server. Contact an administrator.',
+      error: 'Authentication service is unreachable. Contact an administrator.',
     }
   }
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-  if (error) {
-    return {
-      error:
-        error.message === 'Invalid login credentials'
-          ? 'The email or password is incorrect.'
-          : error.message,
-    }
+  if (!res.ok) {
+    return { error: 'The email or password is incorrect.' }
   }
+
+  const data = await res.json()
+  const token = data.access_token
+  const user = data.user
+
+  if (!token || !user) {
+    return { error: 'The email or password is incorrect.' }
+  }
+
+  const cookieStore = await cookies()
+  cookieStore.set(TOKEN_COOKIE, token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: data.expires_in ?? 28800,
+  })
+  cookieStore.set(USER_COOKIE, encodeURIComponent(JSON.stringify(user)), {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: data.expires_in ?? 28800,
+  })
 
   redirect('/dashboard')
 }
