@@ -3,10 +3,12 @@ import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .api.routes import router
+from .api.auth import router as auth_router
+from .core.security import get_current_user
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -73,7 +75,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="MTN QuantRisk API",
     description="AI-powered quantitative risk intelligence for MTN Ghana",
-    version="2.0.0",
+    version="2.1.0",
     lifespan=lifespan,
 )
 
@@ -92,9 +94,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+# Public routes (no auth required)
+app.include_router(auth_router)
+
+# Protected API routes — all /api/* endpoints require a valid JWT
+app.include_router(router, dependencies=[Depends(get_current_user)])
 
 
 @app.get("/")
 def root():
-    return {"status": "ok", "service": "MTN QuantRisk API", "version": "2.0.0"}
+    return {"status": "ok", "service": "MTN QuantRisk API", "version": "2.1.0"}
