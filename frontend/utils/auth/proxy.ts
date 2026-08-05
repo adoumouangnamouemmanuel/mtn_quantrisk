@@ -35,7 +35,7 @@ export async function updateSession(request: NextRequest) {
   // If token exists but user cookie is missing, try to refresh from /api/auth/me
   if (token && !userRaw && !isLoginPage) {
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8000';
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8001';
       const res = await fetch(`${apiBase}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
         cache: 'no-store',

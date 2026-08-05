@@ -8,7 +8,7 @@ import type {
 import { getAccessToken } from './auth';
 
 const USE_MOCK_API = false;
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8001';
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getAccessToken();

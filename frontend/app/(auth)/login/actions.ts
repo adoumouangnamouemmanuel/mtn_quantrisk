@@ -22,7 +22,7 @@ export async function loginAction(
     return { error: `Please use a valid @${allowedDomain} work email.` }
   }
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8000'
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8001'
 
   let res: Response
   try {
@@ -50,16 +50,19 @@ export async function loginAction(
     return { error: 'The email or password is incorrect.' }
   }
 
+  // NOTE: cookies are intentionally NOT httpOnly because the client-side API
+  // layer (frontend/lib/api.ts) reads the token from document.cookie to attach
+  // it as an Authorization: Bearer header to backend requests.
   const cookieStore = await cookies()
   cookieStore.set(TOKEN_COOKIE, token, {
-    httpOnly: true,
+    httpOnly: false,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
     maxAge: data.expires_in ?? 28800,
   })
   cookieStore.set(USER_COOKIE, encodeURIComponent(JSON.stringify(user)), {
-    httpOnly: true,
+    httpOnly: false,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
