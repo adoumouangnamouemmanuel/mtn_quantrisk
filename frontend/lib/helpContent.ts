@@ -200,8 +200,8 @@ export const GLOSSARY: GlossaryTerm[] = [
     category: 'platform',
   },
   {
-    term: 'Supabase Authentication',
-    definition: 'The platform login system. Credentials are verified by Supabase Auth, protected routes require an active server-side session, and signing out clears that session.',
+    term: 'JWT Authentication',
+    definition: 'The platform login system. Credentials are verified against the local backend user store, protected routes require a valid JSON Web Token (JWT), and signing out clears the session cookie.',
     category: 'platform',
   },
   {
@@ -493,11 +493,11 @@ export const GUIDES: HelpGuide[] = [
     steps: [
       {
         heading: 'Use an approved account',
-        detail: 'Enter the email address and password of a user created in Supabase Authentication. Database connection credentials are not application login credentials.',
+        detail: 'Enter the email address and password of a user in the backend user store (default: analyst@mtn.com). Database connection credentials are not application login credentials.',
       },
       {
         heading: 'Confirm frontend configuration',
-        detail: 'The frontend requires NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in frontend/.env.local. Restart or rebuild the frontend after changing them.',
+        detail: 'The frontend requires NEXT_PUBLIC_API_BASE to point at the running backend (http://127.0.0.1:8000 by default). Restart or rebuild the frontend after changing it.',
       },
       {
         heading: 'Understand protected routes',
@@ -505,7 +505,7 @@ export const GUIDES: HelpGuide[] = [
       },
     ],
     warnings: [
-      'Never place the Supabase database password or service-role key in a NEXT_PUBLIC environment variable.',
+      'Never place the JWT_SECRET or database password in a NEXT_PUBLIC environment variable.',
     ],
   },
   {
@@ -774,11 +774,11 @@ export const QNA_CATEGORIES: QnACategory[] = [
       },
       {
         question: 'The login page is not working — nothing happens when I click Submit.',
-        answer: 'Confirm that NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY exist in frontend/.env.local, then restart the frontend. Verify that the user exists in Supabase Authentication and is using an email/password login, not the PostgreSQL database password. Development WebSocket warnings concern hot reload and do not validate credentials.',
+        answer: 'Confirm that the backend is running and that NEXT_PUBLIC_API_BASE in frontend/.env.local points to it (default: http://127.0.0.1:8000). Verify that the email and password match a configured user in the backend user store. Development WebSocket warnings concern hot reload and do not validate credentials.',
       },
       {
         question: 'How do I create or approve a user account?',
-        answer: 'Create the user in Supabase Dashboard under Authentication → Users, or use an approved organisational invitation flow. The application intentionally has no public self-registration screen. The user then signs in with that email and password.',
+        answer: 'User accounts are configured in the backend user store. The default analyst account (analyst@mtn.com) is seeded automatically. Add or modify accounts via the AUTH_EMAIL and AUTH_PASSWORD environment variables on the backend. The application intentionally has no public self-registration screen.',
       },
       {
         question: 'The scraper is scheduled but articles are stale. What should I check?',
