@@ -99,12 +99,11 @@ $env:ANTHROPIC_API_KEY = "your-anthropic-key"
 | `SCRAPE_INTERVAL_MINUTES` | No | RSS scraping interval; defaults to 15 minutes |
 | `DB_PATH` | No | Local SQLite file; defaults to `backend/quantrisk_news.db` |
 | `DATABASE_URL` | No | PostgreSQL connection URL; takes precedence over SQLite |
-| `SUPABASE_DB_URL` | No | Alternative name for the PostgreSQL connection URL |
 | `HF_TOKEN` | No | Hugging Face sentiment and briefing models |
 | `GNEWS_TOKEN` | No | Additional GNews results |
 | `ANTHROPIC_API_KEY` | No | LLM-assisted PDF extraction |
 
-For local development, SQLite is the simplest option. To use Supabase Postgres, provide a complete SQLAlchemy-compatible database URL through `DATABASE_URL` or `SUPABASE_DB_URL`. Never commit the database password, Supabase secret key, or `service_role` key.
+For local development, SQLite is the default. To use Postgres, provide a complete SQLAlchemy-compatible database URL through `DATABASE_URL`.
 
 ## 5. Start the backend
 
@@ -157,20 +156,16 @@ Edit `frontend/.env.local` and provide these values:
 
 ```dotenv
 NEXT_PUBLIC_API_BASE=http://127.0.0.1:8001
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN=mtn.com
 ```
 
 Important rules:
 
 - `NEXT_PUBLIC_API_BASE` must use port `8001`.
-- Use a Supabase publishable key (or legacy anon key) in the frontend.
-- Never place a Supabase secret key or `service_role` key in a `NEXT_PUBLIC_*` variable.
 - The default login policy accepts `@mtn.com` addresses. Change `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN` only if the intended users use another domain.
 - Restart Next.js after editing `.env.local`.
 
-The Supabase URL and publishable key are available in the Supabase project dashboard under the API/project settings. Create permitted users under Supabase Authentication, or enable the required sign-up/invitation flow for the project.
+The backend uses a local JWT authentication system. The default analyst account is `analyst@mtn.com` / `Pass.word.123`. Configure via `AUTH_EMAIL` and `AUTH_PASSWORD` environment variables on the backend.
 
 ## 7. Start the frontend
 
@@ -185,7 +180,7 @@ Keep terminal 2 open, then visit:
 - Login: `http://127.0.0.1:3000/login`
 - Dashboard: `http://127.0.0.1:3000/dashboard`
 
-Sign in with a Supabase Authentication user whose email matches the configured allowed domain.
+Sign in with the configured analyst account whose email matches the allowed domain.
 
 ## 8. First-run verification
 
@@ -272,7 +267,7 @@ Stop them with:
 docker compose down
 ```
 
-The current Compose configuration supplies the backend API address but does not supply the Supabase frontend build variables. Therefore, the two-terminal local method above is recommended when testing real login. Add the public Supabase build arguments to the frontend image configuration before expecting Supabase Auth to work in a Docker-built frontend.
+The current Compose configuration supplies the backend API address. The two-terminal local method above is recommended for development.
 
 ## 13. How to stop the local app
 
@@ -290,11 +285,11 @@ Press `Ctrl+C` once in the frontend terminal and once in the backend terminal. T
 
 ### Login says authentication is incomplete
 
-`NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` is missing or still contains a placeholder. Correct `frontend/.env.local` and restart the frontend.
+The backend is not running or `NEXT_PUBLIC_API_BASE` is wrong. Ensure the backend is running on the configured port.
 
 ### Login rejects the email address
 
-The address must match `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN` (default `mtn.com`) and the user must exist/be permitted in Supabase Auth.
+The address must match `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN` (default `mtn.com`) and the user must exist in the backend user store.
 
 ### `npm.ps1` cannot be loaded
 
