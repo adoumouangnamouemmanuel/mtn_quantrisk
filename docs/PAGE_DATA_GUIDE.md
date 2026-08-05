@@ -39,7 +39,7 @@ The browser does not normally read project CSV files directly. Page components c
 
 | Page | Route | Main source | Current data character |
 |---|---|---|---|
-| Login | `/login` | Supabase Auth | Real email/password authentication |
+| Login | `/login` | JWT Auth (local) | Real email/password authentication |
 | Core Anchors | `/dashboard` | KPI CSV, SQLite, World Bank | Mixed live/local |
 | News Feed | `/news` | SQLite populated from RSS/GNews | Live when scraping is available |
 | Risk Alerts | `/alerts` | SQLite alerts | Derived from news NLP scores |
@@ -68,11 +68,11 @@ The page displays the MTN QuantRisk sign-in presentation, email and password fie
 Data source and behavior:
 
 - The screen is defined in `frontend/app/(auth)/login/page.tsx`.
-- Email/password credentials are validated by Supabase Auth.
-- `frontend/proxy.ts` refreshes session cookies and redirects unauthenticated requests to `/login`.
+- Email/password credentials are validated by the backend JWT auth endpoint (`/api/auth/login`).
+- `frontend/proxy.ts` checks the JWT cookie and redirects unauthenticated requests to `/login`.
 - The protected application layout verifies the user server-side before rendering pages.
 - The profile panel displays the authenticated user's real email and metadata.
-- When Supabase environment variables are missing, authentication fails closed and the login page reports that setup is incomplete.
+- When the backend is unreachable, authentication fails closed and the login page reports that setup is incomplete.
 - MTN SSO is visibly disabled and marked as coming soon; it does not simulate authentication.
 
 ### 2. Core Anchors
@@ -395,7 +395,7 @@ The application shell supplies the sidebar, top bar, profile panel, notification
 
 - Sidebar destinations are static route definitions.
 - Top-bar KPI/scenario search currently uses frontend mock metadata rather than a backend search endpoint.
-- Profile identity comes from the authenticated Supabase user. Some account-detail fields on Settings remain presentation data.
+- Profile identity comes from the authenticated JWT user. Some account-detail fields on Settings remain presentation data.
 - The feedback widget sends feedback to the backend feedback service.
 
 ## Primary data sources
@@ -437,7 +437,7 @@ Artifacts in `models/artefacts/` include KPI impact models, a feature scaler, tr
 4. Scenario, reverse-stress, and Monte Carlo results are model outputs, not actual financial outcomes.
 5. World Bank observation years vary by indicator and may lag the current year.
 6. News intelligence quality depends on feed availability, article text quality, optional API tokens, and fallback NLP behavior.
-7. Login and session protection use Supabase Auth, but MTN SSO is not implemented and some Settings account fields remain static.
+7. Login and session protection use local JWT Auth, but MTN SSO is not implemented and some Settings account fields remain static.
 8. The health endpoint verifies readable input files and artifact presence; it does not prove forecast accuracy or external feed availability.
 
 ## Verification record
