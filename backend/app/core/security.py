@@ -2,12 +2,14 @@
 JWT authentication and password security for the MTN QuantRisk API.
 
 Implements:
-  - Password hashing with PBKDF2-HMAC-SHA256 (stdlib only, no bcrypt dependency)
-  - JWT access token creation and verification (HS256)
+  - Password hashing with PBKDF2-HMAC-SHA256 (stdlib only)
+  - JWT access token creation and verification (HS256, stdlib-only)
   - FastAPI dependency for protecting routes
 """
+import base64
 import hashlib
 import hmac
+import json
 import logging
 import os
 import secrets
@@ -65,7 +67,27 @@ def verify_password(password: str, hashed: str) -> bool:
         return False
 
 
-# ── JWT helpers ────────────────────────────────────────────────────────────────
+# ── JWT helpers (stdlib-only HS256) ────────────────────────────────────────────
+
+
+def _b64url_encode(data: bytes) -> str:
+    """Base64url encode without padding."""
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def _b64url_decode(data: str) -> bytes:
+    """Base64url decode with padding restoration."""
+    padding = "=" * (-len(data) % 4)
+    return base64.urlsafe_b64decode(data + padding)
+
+
+def _sign(header_b64: str, payload_b64: str) -> str:
+    """Create an HMAC-SHA256 signature."""
+    message = f"{header_b64}.{payload_b64}".encode("ascii")
+    sig = hmac.new(
+        JWT_SECRET.encode("utf-8"), message, hashlib.sha256
+    ).digest()
+    return _b64url_encode(sig)
 
 
 def create_access_token(
@@ -74,14 +96,14 @@ def create_access_token(
     role: str = "analyst",
     expires_delta: Optional[timedelta] = None,
 ) -> str:
-    """Create a signed JWT access token."""
-    import jwt
-
+    """Create a signed JWT access token (HS256, stdlib-only)."""
     now = datetime.now(timezone.utc)
     expire = now + (
         expires_delta
         or timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     )
+
+    header = {"alg": JWT_ALGORITHM, "typ": "JWT"}
     payload = {
         "sub": subject,
         "email": email,
@@ -91,33 +113,77 @@ def create_access_token(
         "iss": "mtn-quantrisk",
         "aud": "mtn-quantrisk-api",
     }
-    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+    header_b64 = _b64url_encode(
+        json.dumps(header, separators=(",", ":")).encode("utf-8")
+    )
+    payload_b64 = _b64url_encode(
+        json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    )
+    signature = _sign(header_b64, payload_b64)
+
+    return f"{header_b64}.{payload_b64}.{signature}"
 
 
 def decode_access_token(token: str) -> dict[str, Any]:
-    """Decode and validate a JWT access token. Raises on invalid/expired."""
-    import jwt
-
+    """Decode and validate a JWT access token. Raises HTTPException on invalid/expired."""
     try:
-        payload = jwt.decode(
-            token,
-            JWT_SECRET,
-            algorithms=[JWT_ALGORITHM],
-            audience="mtn-quantrisk-api",
-            issuer="mtn-quantrisk",
-        )
-    except jwt.ExpiredSignatureError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired",
-            headers={"WWW-Authenticate": "Bearer"},
-        ) from exc
-    except jwt.InvalidTokenError as exc:
+        header_b64, payload_b64, signature = token.split(".")
+    except (ValueError, AttributeError) as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication token",
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
+
+    # Verify signature
+    expected_sig = _sign(header_b64, payload_b64)
+    if not hmac.compare_digest(expected_sig, signature):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Decode payload
+    try:
+        payload = json.loads(_b64url_decode(payload_b64).decode("utf-8"))
+    except (ValueError, UnicodeDecodeError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
+    # Verify issuer and audience
+    if payload.get("iss") != "mtn-quantrisk":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if payload.get("aud") != "mtn-quantrisk-api":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Verify expiry
+    exp = payload.get("exp")
+    if not isinstance(exp, (int, float)):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if time.time() > exp:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     return payload
 
 
@@ -157,7 +223,7 @@ def _seed_default_user() -> None:
         return
     email = os.environ.get("AUTH_EMAIL", "analyst@mtn.com")
     password = os.environ.get("AUTH_PASSWORD", "Pass.word.123")
-    _USERS[email] = {
+    _USERS[email.lower()] = {
         "password_hash": hash_password(password),
         "role": "analyst",
         "name": "Risk Analyst",
@@ -167,13 +233,14 @@ def _seed_default_user() -> None:
 def authenticate_user(email: str, password: str) -> Optional[dict[str, str]]:
     """Validate credentials and return the user dict (without password hash)."""
     _seed_default_user()
-    user = _USERS.get(email.strip().lower())
+    normalized = email.strip().lower()
+    user = _USERS.get(normalized)
     if not user:
         return None
     if not verify_password(password, user["password_hash"]):
         return None
     return {
-        "email": email.strip().lower(),
+        "email": normalized,
         "role": user["role"],
         "name": user["name"],
     }
