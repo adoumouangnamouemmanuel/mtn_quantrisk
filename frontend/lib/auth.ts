@@ -35,7 +35,7 @@ export function getAccessToken(): string | null {
   const match = document.cookie
     .split('; ')
     .find((row) => row.startsWith(`${TOKEN_COOKIE}=`));
-  return match ? match.split('=')[1] : null;
+  return match ? (match.split('=')[1] ?? null) : null;
 }
 
 export function clearAuthCookies(): void {
