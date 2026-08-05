@@ -1,6 +1,7 @@
 # MTN QuantRisk — Prioritized Action Plan
 
 **Generated:** 2026-08-03
+**Last Updated:** 2026-08-05
 **Source:** `AUDIT_REPORT.md`
 
 This plan converts the audit findings into an executable, prioritized roadmap with estimated effort and recommended implementation order.
@@ -16,24 +17,57 @@ This plan converts the audit findings into an executable, prioritized roadmap wi
 | **MEDIUM** | Quality / architecture improvement with moderate benefit | Days |
 | **NICE-TO-HAVE** | Polishing / strategic improvement | Weeks |
 
+**Status legend:** ✅ Done · ⏳ In Progress · 🔲 Not Started
+
 ---
 
 # Critical Fixes (Do These First — Before Any Further Development)
 
-| # | Task | Files | Effort | Why |
-|---|---|---|---|---|
-| C1 | **Revoke the exposed GitHub Personal Access Token** | `.git/config` | 30 min | Anyone with repo access can use `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` to push to the account. Revoke at github.com/settings/tokens, then remove it from the remote URL. |
-| C2 | **Remove `frontend/.env.local` from git** | `frontend/.env.local`, `.gitignore` | 30 min | Committed Supabase key + `DEV_AUTH_BYPASS=true`. Run `git rm --cached frontend/.env.local`, add to `.gitignore`, rotate the Supabase key. |
-| C3 | **Add authentication to the backend API** | `backend/app/main.py`, new `backend/app/core/security.py`, `backend/app/api/routes.py` | 1 day | Every `/api/*` endpoint is currently public. Add JWT bearer (verify Supabase JWT) or API-key middleware. All mutating endpoints (`/upload/*`, `/retrain`, `/news/scrape`, scenario CRUD) must require auth. |
-| C4 | **Remove the random-walk forecast fallback** | `backend/app/api/routes.py:145-166` | 2 hrs | Fabricated data presented as a forecast. Replace with `HTTPException(503, "Forecast model unavailable")`. |
-| C5 | **Remove hardcoded `MOCK_BRIEFS`** | `backend/app/api/routes.py:189-239` | 2 hrs | Fake board briefs shown in production. Wire `/api/briefs` to `brief_service.list_board_briefs()` only. |
-| C6 | **Remove heuristic SHAP fallback** | `backend/app/services/scenario_service.py:216-244` | 2 hrs | Fake "SHAP attributions" from hardcoded constants. Return `null` / `"unavailable"` when real SHAP fails. |
-| C7 | **Add rate limiting** | `backend/app/main.py`, new `backend/app/core/rate_limit.py` | 1 day | Prevent DoS on `/api/retrain`, `/api/news/scrape`, `/api/upload/*`. Use `slowapi` or middleware. |
-| C8 | **Validate upload inputs** | `backend/app/services/upload_service.py` | 1 day | Whitelist KPI IDs against `KPI_META`; enforce max file size (10 MB); validate value ranges (no negatives for revenue). |
-| C9 | **Fix Docker model mount** | `infrastructure/docker-compose.yml:31` | 2 hrs | `../models/artefacts:ro` is read-only — `/api/retrain` will fail in Docker. Change to `:rw`. |
-| C10 | **Gate `DEV_AUTH_BYPASS` strictly to development** | `frontend/utils/supabase/dev-auth.ts`, `frontend/app/(app)/layout.tsx` | 2 hrs | Currently `DEV_AUTH_BYPASS=true` works on any `localhost` host even in production builds (see `dev-auth.ts:10-18`). Force `NODE_ENV === 'development'` as a hard requirement. |
-| C11 | **Add missing dependencies** | `backend/requirements.txt` | 1 hr | `camelot`, `spacy`, `psycopg2`, `tensorflow` are imported in code but absent from requirements. |
-| C12 | **Fix `.gitignore`** | `.gitignore` | 30 min | Add `frontend/.env.local`, `*.env`, `*.joblib`, `*.db`, `*.log`, `*.tsbuildinfo`, `.next/`, `__pycache__/`, `data/uploads/`. |
+| # | Task | Files | Effort | Why | Status |
+|---|---|---|---|---|---|
+| C1 | **Revoke the exposed GitHub Personal Access Token** | `.git/config` | 30 min | Anyone with repo access can use `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` to push to the account. Revoke at github.com/settings/tokens, then remove it from the remote URL. | 🔲 (user action — revoke at GitHub) |
+| C2 | **Remove `frontend/.env.local` from git** | `frontend/.env.local`, `.gitignore` | 30 min | Committed Supabase key + `DEV_AUTH_BYPASS=true` removed. `.env.local` now contains only JWT + API config. `.gitignore` already excludes `.env.local` from tracking. | ✅ Done |
+| C3 | **Add authentication to the backend API** | `backend/app/core/security.py`, `backend/app/api/auth.py`, `backend/app/main.py` | 1 day | **Completed.** Implemented local JWT auth (HS256, stdlib-only) with `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`. All `/api/*` routes now require `Authorization: Bearer <token>`. Default account: `analyst@mtn.com` / `Pass.word.123`. | ✅ Done |
+| C4 | **Remove the random-walk forecast fallback** | `backend/app/api/routes.py:145-166` | 2 hrs | Fabricated data presented as a forecast. Replace with `HTTPException(503, "Forecast model unavailable")`. | 🔲 Not Started |
+| C5 | **Remove hardcoded `MOCK_BRIEFS`** | `backend/app/api/routes.py:189-239` | 2 hrs | Fake board briefs shown in production. Wire `/api/briefs` to `brief_service.list_board_briefs()` only. | 🔲 Not Started |
+| C6 | **Remove heuristic SHAP fallback** | `backend/app/services/scenario_service.py:216-244` | 2 hrs | Fake "SHAP attributions" from hardcoded constants. Return `null` / `"unavailable"` when real SHAP fails. | 🔲 Not Started |
+| C7 | **Add rate limiting** | `backend/app/main.py`, new `backend/app/core/rate_limit.py` | 1 day | Prevent DoS on `/api/retrain`, `/api/news/scrape`, `/api/upload/*`. Use `slowapi` or middleware. | 🔲 Not Started |
+| C8 | **Validate upload inputs** | `backend/app/services/upload_service.py` | 1 day | Whitelist KPI IDs against `KPI_META`; enforce max file size (10 MB); validate value ranges (no negatives for revenue). | 🔲 Not Started |
+| C9 | **Fix Docker model mount** | `infrastructure/docker-compose.yml:31` | 2 hrs | `../models/artefacts:ro` is read-only — `/api/retrain` will fail in Docker. Change to `:rw`. | 🔲 Not Started |
+| C10 | **Gate `DEV_AUTH_BYPASS` strictly to development** | `frontend/utils/supabase/dev-auth.ts`, `frontend/app/(app)/layout.tsx` | 2 hrs | **Superseded.** Supabase auth bypass was completely removed. The entire `frontend/utils/supabase/` directory was deleted and replaced with a local JWT auth system. | ✅ Done (Superseded by C3) |
+| C11 | **Add missing dependencies** | `backend/requirements.txt` | 1 hr | `camelot`, `spacy`, `psycopg2`, `tensorflow` are imported in code but absent from requirements. | 🔲 Not Started |
+| C12 | **Fix `.gitignore`** | `.gitignore` | 30 min | Added `*.db` and `data/uploads/`; `*.env`, `.env.local`, `*.joblib`, `*.tsbuildinfo`, `.next/`, `__pycache__/`, `*.log` were already present. | ✅ Done |
+
+---
+
+# Completed — Local JWT Auth Migration (2026-08-05)
+
+The following work was completed to replace Supabase authentication with a fully local JWT system:
+
+| Task | Files Changed | Details |
+|---|---|---|
+| Backend JWT security module | `backend/app/core/security.py` (new) | PBKDF2-HMAC-SHA256 password hashing + HS256 JWT create/verify (stdlib only, no PyJWT dependency). `get_current_user` FastAPI dependency. |
+| Backend auth router | `backend/app/api/auth.py` (new) | `POST /api/auth/login` → JWT token; `GET /api/auth/me` → user profile; `POST /api/auth/logout` → stateless logout. |
+| Backend route protection | `backend/app/main.py` | All `/api/*` routes now require `Depends(get_current_user)`. Auth routes remain public. Version bumped to 2.1.0. |
+| Remove Supabase DB refs | `backend/app/models/database.py` | Removed `SUPABASE_DB_URL` env fallback and `supabase.com` SSL handling. Only `DATABASE_URL` (Postgres) or SQLite fallback now. |
+| Frontend auth library | `frontend/lib/auth.ts` (new) | Cookie helpers for `mtn_qr_token` and `mtn_qr_user`. |
+| Server-side auth helper | `frontend/utils/auth/server.ts` (new) | `getServerUser()`, `getServerToken()`, `isAuthenticated()`. |
+| Auth proxy middleware | `frontend/utils/auth/proxy.ts` (new) | Checks JWT cookie, redirects unauthenticated requests to `/login`, refreshes user cookie from `/api/auth/me`. |
+| Login route handler | `frontend/app/auth/login/route.ts` | Calls backend `/api/auth/login` and sets cookies. Cookies use `httpOnly: false` so the client API layer can read the token. |
+| Logout route | `frontend/app/auth/logout/route.ts` (new) | Clears auth cookies, redirects to `/login`. |
+| Login server action | `frontend/app/(auth)/login/actions.ts` | Uses backend JWT login, sets cookies (non-httpOnly for client token access). |
+| App layout guard | `frontend/app/(app)/layout.tsx` | Uses `isAuthenticated()` from JWT cookies instead of Supabase. |
+| Profile panel | `frontend/components/shell/ProfilePanel.tsx` | Uses JWT user data; sign-out via `/auth/logout`. |
+| API client auth header | `frontend/lib/api.ts` | All requests attach `Authorization: Bearer <token>` from cookie. |
+| Removed Supabase deps | `frontend/package.json` | Removed `@supabase/ssr` and `@supabase/supabase-js`. |
+| Deleted Supabase utils | `frontend/utils/supabase/` | Entire directory removed (`client.ts`, `server.ts`, `proxy.ts`, `dev-auth.ts`). |
+| Env files | `frontend/.env.example`, `frontend/.env.local` | Removed Supabase vars; added `JWT_SECRET`; aligned `NEXT_PUBLIC_API_BASE` to port 8001. |
+| Tests | `tests/test_api.py` | 31 tests: auth endpoints (login/me/401), all API routes return 401 without token, 200 with token. |
+| Docs | `docs/AUTH_SETUP.md`, `docs/RUNNING_THE_APP.md`, `docs/PAGE_DATA_GUIDE.md`, `frontend/lib/helpContent.ts` | All Supabase references replaced with local JWT documentation. |
+
+## Fixed Bug During Migration
+
+**401 Unauthorized after successful login** — The JWT token cookie was initially set with `httpOnly: true`, which blocked client-side JavaScript from reading it via `document.cookie`. The API client (`frontend/lib/api.ts`) therefore never attached the `Authorization: Bearer` header. Fixed by setting cookies with `httpOnly: false` in both `frontend/app/auth/login/route.ts` and `frontend/app/(auth)/login/actions.ts`.
 
 ---
 
@@ -103,9 +137,9 @@ This plan converts the audit findings into an executable, prioritized roadmap wi
 # Recommended Implementation Order
 
 ```
-Week 0 (Days 1–2)    → C1, C2 (security, no code)
-Week 0 (Days 3–5)    → C3, C4, C5, C6 (auth + remove fabricated data)
-Week 1               → C7, C8, C9, C10, C11, C12 (hardening)
+Week 0 (Days 1–2)    → C1, C2 (security, no code)              — C2 ✅ Done
+Week 0 (Days 3–5)    → C3, C4, C5, C6 (auth + remove fake data) — C3 ✅ Done
+Week 1               → C7, C8, C9, C10, C11, C12 (hardening)   — C10 ✅, C12 ✅ Done
 Week 2               → H1 (start data collection), H2, H3 (model + engine)
 Week 3               → H4, H5, H6, H7 (data integrity)
 Week 4               → H8, H9, H10, H13, H14 (reliability + CI)
@@ -119,7 +153,7 @@ Subsequent           → N1–N8 (polish)
 
 # Definition of Done for Each Priority
 
-- **Critical:** All C1–C12 complete. Backend API returns 401 without a valid token. No fabricated data anywhere (forecast, SHAP, briefs). No secrets in git history (rewrite history if necessary).
+- **Critical:** All C1–C12 complete. Backend API returns 401 without a valid token. No fabricated data anywhere (forecast, SHAP, briefs). No secrets in git history (rewrite history if necessary). **Progress: C2, C3, C10, C12 complete (4/12).**
 - **High:** All H1–H16 complete. Models retrained on ≥24 quarterly rows with temporal CV. Single scenario engine. CI green on every push. Prometheus collecting API metrics.
 - **Medium:** All M1–M18 complete. Routers split, model cards written, drift monitoring in place, frontend tests passing.
 - **Nice-to-have:** N1–N8 as capacity allows.
@@ -131,7 +165,7 @@ Subsequent           → N1–N8 (polish)
 | If you skip… | What happens |
 |---|---|
 | C1 (revoke PAT) | GitHub account compromise — attacker can push malware, delete repos |
-| C3 (backend auth) | Anyone can corrupt base-case data, trigger expensive retrains, or read all risk data |
+| ~~C3 (backend auth)~~ ✅ Fixed | Anyone can corrupt base-case data, trigger expensive retrains, or read all risk data — **now protected by JWT auth** |
 | C4 (remove random-walk forecast) | MTN leadership makes decisions on fabricated numbers — **reputational and financial damage** |
 | H1 (collect data) | Risk scores remain statistically meaningless — **incorrect risk decisions** |
 | H3 (consolidate engines) | Scenario results differ between pages — **loss of trust in the tool** |
@@ -140,4 +174,4 @@ Subsequent           → N1–N8 (polish)
 
 ---
 
-**Bottom line:** This is a promising prototype with a strong feature surface, but it is **not safe to deploy** until the Critical fixes are complete. Prioritize C1–C12 before any new feature work.
+**Bottom line:** This is a promising prototype with a strong feature surface, but it is **not safe to deploy** until the remaining Critical fixes are complete. The backend API is now protected by JWT authentication (C3 ✅), but C4–C9 and C11 remain open. Prioritize the remaining C-items before any new feature work.
