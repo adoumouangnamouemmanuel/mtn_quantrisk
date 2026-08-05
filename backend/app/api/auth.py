@@ -1,6 +1,6 @@
 """Authentication endpoints for the MTN QuantRisk API."""
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 from ..core.security import (
     authenticate_user,
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 
