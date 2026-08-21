@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, scoped_session, sessionmaker
 
 # Prefer a supplied database URL (Postgres). Fall back to SQLite for local dev.
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -22,7 +22,12 @@ if DATABASE_URL.startswith("sqlite"):
     engine_kwargs["connect_args"] = {"check_same_thread": False}
 
 engine = create_engine(DATABASE_URL, **engine_kwargs)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# scoped_session gives thread-local sessions so the APScheduler worker thread
+# and request threads cannot share a single non-thread-safe session
+# (audit finding M16 / TD-15).
+SessionLocal = scoped_session(
+    sessionmaker(autocommit=False, autoflush=False, bind=engine)
+)
 
 
 class Base(DeclarativeBase):
@@ -41,4 +46,5 @@ def init_db():
     """Create all tables if they don't exist."""
     from . import article, risk_score, alert  # noqa: F401 — registers models
     from . import board_brief  # noqa: F401
+    from . import feedback  # noqa: F401 — Feedback + BaseCaseChangeLog
     Base.metadata.create_all(bind=engine)
