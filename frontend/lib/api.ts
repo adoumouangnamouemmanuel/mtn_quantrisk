@@ -1,13 +1,19 @@
 import type {
   Kpi, Scenario, ScenarioOutput, ReverseStressResult, ReverseStressInput,
-  ForecastPoint, MonteCarloResult, BoardBrief, PipelineHealth,
+  ForecastPoint, EventForecast, MonteCarloResult, BoardBrief, PipelineHealth,
   QuarterlySeries, MonthlySeries,
   KpiId, MacroOverlays, ScenarioFormData,
   FeedbackPayload, BaseCaseLogEntry, UploadResult, PdfKpiCandidate,
+  NewsReasoning,
 } from './types';
 import { getAccessToken } from './auth';
 
-const USE_MOCK_API = false;
+// Mock data is strictly a development aid. It is only enabled when
+// NEXT_PUBLIC_USE_MOCK_API === 'true' AND we are not in a production build,
+// so fabricated data can never ship to real users (audit finding H12 / TD-12).
+const USE_MOCK_API =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8001';
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -82,6 +88,11 @@ export async function fetchForecast(kpiId: KpiId, horizon: 7 | 30 | 90): Promise
     return MOCK_FORECAST;
   }
   return apiFetch<ForecastPoint[]>(`/api/forecast/${kpiId}?horizon=${horizon}`);
+}
+
+/** Real-time, event-aware forecast with per-point drill-down reasons. */
+export async function fetchEventForecast(kpiId: KpiId, horizon: 7 | 30 | 90 = 90): Promise<EventForecast> {
+  return apiFetch<EventForecast>(`/api/forecast/${kpiId}/events?horizon=${horizon}`);
 }
 
 // fetchMonteCarlo kept for backwards compat — prefer runMonteCarlo(scenarioId)
@@ -266,6 +277,11 @@ export async function fetchNews(params: {
 
 export async function fetchNewsArticle(id: string): Promise<NewsArticle> {
   return apiFetch<NewsArticle>(`/api/news/${id}`);
+}
+
+/** Drill-down reasoning for an article's relevance, severity, and category. */
+export async function fetchNewsReasoning(id: string): Promise<NewsReasoning> {
+  return apiFetch<NewsReasoning>(`/api/news/${id}/reasoning`);
 }
 
 export async function fetchNewsSummary(): Promise<NewsSummary> {
