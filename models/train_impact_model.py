@@ -49,64 +49,84 @@ TARGETS = {
 # 4. Function to Augment Dataset with Synthetic Scenarios
 #    Uses Foureira's scenario_engine.apply_scenario()
 # ------------------------------
+# Map macro-feature column names to the external KPI IDs the scenario engine
+# stresses. This is the fix for audit finding H2 / TD-06: previously the
+# augmented rows reused *identical* base macro features with different targets,
+# so the model could not learn any macro->target relationship. Now each
+# synthetic row carries the scenario's actually-stressed macro features.
+_FEATURE_TO_KPI = {
+    "Inflation_YoY_Pct":      "EXT01",
+    "Policy_Rate_Pct":       "EXT02",
+    "Cedi_USD_Avg":          "EXT03",
+}
+
+# KPI IDs whose stressed value is a valid target column for training.
+_KPI_TO_TARGET = {
+    "FIN06": "Service_Rev_Growth_Pct",
+    "FIN03": "EBITDA_Margin_Pct",
+    "FIN05": "PAT_Margin_Pct",
+    "SEG03": "MoMo_Revenue",
+    "OPS04": "ARPU_GHS",
+    "SEG01": "Data_Growth_Pct",   # Data Revenue growth used as the Data target
+}
+
+
 def build_augmented_dataset(real_df):
     """
-    Augment real historical data (6 rows) with synthetic scenario rows.
-    Each scenario creates one synthetic row.
+    Augment real historical data with synthetic scenario rows.
+
+    Each synthetic row is built from ONE scenario run at severity 1.0:
+      - macro features = the scenario's stressed EXT values (capped to the
+        observed range so synthetic rows cannot explode outside history)
+      - target columns = the scenario's stressed KPI values
+
+    This preserves the macro->target signal that the previous implementation
+    destroyed by reusing identical base macro features (audit H2 / 4.2).
+    ``train_all_models`` defaults to ``augment=False`` until the quarterly
+    dataset is large enough to make augmentation worth the leakage risk.
     """
     from pipeline.scenario_engine import apply_scenario, load_scenario_library
-    
+
     lib = load_scenario_library()
     scenario_ids = lib["Scenario_ID"].unique()
-    
+
     print(f"Found {len(scenario_ids)} unique scenarios for augmentation")
-    
-    synthetic_rows = []
-    base_case = None
-    
-    # We need the base case values for macro features (FY25)
-    # For simplicity, we will take the last row of real_df as the "base" macro context
-    # This is a simplification – the master plan uses a more complex mapping.
-    # For now, we will use the actual macro values from the latest year (2025) as the base.
+
     base_macro = real_df[FEATURE_COLS].iloc[-1].to_dict()
-    
+    # Sanity bounds: synthetic macro features must stay within the historical
+    # min/max so they look like real, in-distribution observations.
+    macro_min = real_df[FEATURE_COLS].min()
+    macro_max = real_df[FEATURE_COLS].max()
+
+    synthetic_rows = []
     for sc_id in scenario_ids:
         try:
-            # Run the scenario at severity 1.0
             result = apply_scenario(sc_id, severity_multiplier=1.0)
-            
-            # Stressed macro values are not directly in result. We need to extract from the scenario impacts.
-            # The master plan's build_augmented_dataset uses a mapping from KPI to feature.
-            # For now, we will use the base macro values (i.e., no macro shift) – this is a limitation.
-            # A proper implementation would require scenario macro impacts in the library.
-            
-            # Build a synthetic row: macro features = base macro (or could be stressed if available)
+            stressed = {row["kpiId"]: row["scenarioValue"] for row in result["results"]}
+
             row = base_macro.copy()
-            
-            # Add target values from the scenario result
-            # Map KPI IDs to target column names
-            kpi_to_target = {
-                "FIN06": "Service_Rev_Growth_Pct",
-                "FIN03": "EBITDA_Margin_Pct",
-                "FIN05": "PAT_Margin_Pct",
-                "SEG03": "MoMo_Revenue",
-                "OPS04": "ARPU_GHS",
-                # "Data_Growth_Pct" – need to map from scenario library; for now leave as NaN
-            }
-            for kpi, target in kpi_to_target.items():
-                if target in TARGETS:
-                    row[target] = result["stressed"].get(kpi, np.nan)
-            
-            # Add source identifier
+            # Overwrite the macro features the scenario actually stressed.
+            for feat, kpi in _FEATURE_TO_KPI.items():
+                if kpi in stressed:
+                    val = stressed[kpi]
+                    # Clamp synthetic macro features to the observed range.
+                    if feat in macro_min.index:
+                        val = float(min(max(val, macro_min[feat]), macro_max[feat]))
+                    row[feat] = val
+
+            # Targets come from the stressed KPI values.
+            for kpi, target in _KPI_TO_TARGET.items():
+                if target in TARGETS and kpi in stressed:
+                    row[target] = stressed[kpi]
+
             row["source"] = f"synthetic_{sc_id}"
             synthetic_rows.append(row)
         except Exception as e:
             print(f"  [WARN] Skipping {sc_id}: {e}")
-    
+
     synth_df = pd.DataFrame(synthetic_rows)
     print(f"Generated {len(synth_df)} synthetic rows")
-    
-    # Combine real and synthetic
+
     real_df = real_df.copy()
     real_df["source"] = "real"
     combined = pd.concat([real_df, synth_df], ignore_index=True)
