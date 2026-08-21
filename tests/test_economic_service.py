@@ -14,10 +14,16 @@ def setup_function():
 
 
 def test_economics_uses_available_debt_service_series():
-    def fake_fetch(code, mrv=8):
+    def fake_fetch(code, history_years=8):
         return [{"year": 2025, "value": 42.0}]
 
-    with patch.object(economic_service, "_fetch_indicator", side_effect=fake_fetch):
+    with patch.object(
+        economic_service, "_fetch_indicator", side_effect=fake_fetch
+    ), patch.object(economic_service, "_fetch_gss_current", return_value={}), patch.object(
+        economic_service, "_fetch_bog_fx", return_value=None
+    ), patch.object(
+        economic_service, "_fetch_market_fx", return_value=None
+    ):
         result = economic_service.get_ghana_economics()
 
     assert "debt_service" in result["indicators"]
@@ -41,7 +47,11 @@ def test_force_refresh_bypasses_cache():
 def test_failed_refresh_preserves_existing_cache():
     cached = {"lastUpdated": "old", "indicators": {}}
     economic_service._CACHE.update({"data": cached, "fetched_at": 0})
-    with patch.object(economic_service, "_fetch_indicator", return_value=[]):
+    with patch.object(economic_service, "_fetch_indicator", return_value=[]), patch.object(
+        economic_service, "_fetch_gss_current", return_value={}
+    ), patch.object(economic_service, "_fetch_bog_fx", return_value=None), patch.object(
+        economic_service, "_fetch_market_fx", return_value=None
+    ):
         result = economic_service.get_ghana_economics(force_refresh=True)
 
     assert result is cached
@@ -58,6 +68,7 @@ def test_risk_context_includes_fx_risk():
                     {"year": 2024, "value": 10.0},
                     {"year": 2025, "value": 12.0},
                 ],
+                "frequency": "Annual",
             },
         }
     }
