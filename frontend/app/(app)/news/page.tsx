@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { fetchNews, fetchNewsSummary, triggerScrape, NewsArticle, NewsSummary } from '@/lib/api';
+import { NewsReasoningPanel } from '@/components/news/NewsReasoningPanel';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import {
   Newspaper, RefreshCw, AlertTriangle, TrendingUp, Tag,
@@ -222,6 +223,14 @@ function ArticleCard({
               )}
             </div>
           )}
+
+          {/* ── Why this score? drill-down ── */}
+          <div className="space-y-2">
+            <p className="text-xs font-mono uppercase tracking-widest text-on-surface-variant flex items-center gap-1.5">
+              <Brain className="w-3.5 h-3.5" /> Why this score?
+            </p>
+            <NewsReasoningPanel articleId={article.id} />
+          </div>
 
           {/* ── Full article body ── */}
           {bodyFull && (
