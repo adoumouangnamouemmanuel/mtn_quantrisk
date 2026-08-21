@@ -14,7 +14,9 @@ export type KpiId = 'FIN01' | 'FIN02' | 'FIN03' | 'FIN04' | 'FIN05' | 'FIN06'
 export interface Kpi {
   id: KpiId;
   name: string;
-  category: 'Financial' | 'Segment' | 'Operational' | 'External';
+  // One of the six canonical risk categories: strategic / financial /
+  // operational / technological / governance / external.
+  category: string;
   unit: string;             // 'GHSm' | '%' | 'GHS' | 'M' | 'GHS/USD'
   fy25Value: number;
   lowerThreshold: number | null;
@@ -62,6 +64,7 @@ export interface ScenarioOutput {
     feature: string;
     contribution: number;   // SHAP value, can be negative
   }>;
+  shapUnavailable?: boolean; // true when real SHAP attributions could not be computed
   waterfallDrivers?: {
     FIN01: Array<{ name: string; contribution: number }>;
     FIN03: Array<{ name: string; contribution: number }>;
@@ -76,6 +79,68 @@ export interface ForecastPoint {
   p50: number;
   p95: number;
   isHistorical: boolean;
+}
+
+/** An event that pressures a forecast point, surfaced for drill-down. */
+export interface ForecastEvent {
+  articleId: string;
+  title: string;
+  source: string | null;
+  category: string;
+  severity: number;
+  mtnRelevance: number;
+  alertTier: string | null;
+  scrapedAt: string;
+  ageDays: number;
+  decayWeight: number;
+  pressureDirection: 'up' | 'down';
+  pressureAbs: number;
+  pressurePct: number;
+  url: string | null;
+}
+
+/** A forecast point enriched with live-event pressure + drill-down. */
+export interface EventForecastPoint extends ForecastPoint {
+  adjustmentAbs?: number;
+  adjustmentPct?: number;
+  events?: ForecastEvent[];
+}
+
+export interface EventForecast {
+  kpiId: string;
+  baselineModel: string;
+  eventAdjusted: boolean;
+  eventCount: number;
+  aggregatePressure: { up: number; down: number; net: number };
+  narrative: string;
+  llmUsed: boolean;
+  points: EventForecastPoint[];
+  generatedAt: string;
+}
+
+/** Reasoning breakdown for a news article's scores. */
+export interface NewsReasoning {
+  articleId: string;
+  title: string;
+  scored: boolean;
+  note?: string;
+  category?: string;
+  categoryLabel?: string;
+  originalCategory?: string;
+  severity?: number;
+  mtnRelevance?: number;
+  confidence?: number;
+  alertTier?: string | null;
+  sentiment?: string | null;
+  relevanceReasons?: Array<{ signal: string; keyword: string | null; weight: number; note?: string }>;
+  severityReasons?: Array<{ signal: string; keyword?: string; category?: string; mappedCategory?: string; value?: number | string; note?: string }>;
+  sentimentReasons?: Array<{ signal: string; value?: string | null; confidence?: number | null; note?: string }>;
+  impactReasons?: Array<{ signal: string; min: number | null; mid: number | null; max: number | null; note?: string }>;
+  entities?: { orgs: string[]; money: string[]; locations: string[]; persons: string[] } | null;
+  keywordHits?: Record<string, number>;
+  matchedCategoryKeywords?: string[];
+  llmExplanation?: string | null;
+  llmUsed?: boolean;
 }
 
 export interface MonteCarloKpiResult {
