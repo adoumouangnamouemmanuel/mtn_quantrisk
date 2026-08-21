@@ -7,14 +7,30 @@ import { KpiTile } from '@/components/ui/KpiTile';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
 import { Kpi } from '@/lib/types';
 import Link from 'next/link';
-import { LayoutDashboard, DollarSign, PieChart, Cpu, Globe, Newspaper, Bell, AlertOctagon, AlertTriangle, Eye, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Newspaper, Bell, AlertOctagon, AlertTriangle, Eye, TrendingUp } from 'lucide-react';
+import { RISK_CATEGORY_LIST, RiskCategory } from '@/lib/riskTaxonomy';
 
-const CATEGORY_META: Record<string, { icon: React.ReactNode; color: string }> = {
-  Financial:   { icon: <DollarSign className="w-3.5 h-3.5" />, color: 'text-mtn-yellow' },
-  Segment:     { icon: <PieChart   className="w-3.5 h-3.5" />, color: 'text-blue-400'   },
-  Operational: { icon: <Cpu        className="w-3.5 h-3.5" />, color: 'text-purple-400' },
-  External:    { icon: <Globe      className="w-3.5 h-3.5" />, color: 'text-green-400'  },
+// Icon per risk category — mirrors riskTaxonomy.ts lucide names.
+import { Target, DollarSign, Activity, Cpu, Scale, Globe } from 'lucide-react';
+const CATEGORY_ICON: Record<RiskCategory, React.ReactNode> = {
+  strategic:     <Target      className="w-3.5 h-3.5" />,
+  financial:     <DollarSign  className="w-3.5 h-3.5" />,
+  operational:   <Activity    className="w-3.5 h-3.5" />,
+  technological: <Cpu         className="w-3.5 h-3.5" />,
+  governance:    <Scale       className="w-3.5 h-3.5" />,
+  external:      <Globe       className="w-3.5 h-3.5" />,
 };
+
+const CATEGORY_COLOR: Record<RiskCategory, string> = {
+  strategic:     'text-mtn-yellow',
+  financial:     'text-green-400',
+  operational:   'text-orange-400',
+  technological: 'text-blue-400',
+  governance:    'text-purple-400',
+  external:      'text-cyan-400',
+};
+
+const CATEGORIES: RiskCategory[] = RISK_CATEGORY_LIST.map(c => c.id);
 
 export default function DashboardPage() {
   const { dispatch } = useAppState();
@@ -54,7 +70,7 @@ export default function DashboardPage() {
     loadData();
   }, [dispatch]);
 
-  const categories = ['Financial', 'Segment', 'Operational', 'External'];
+  const categories = CATEGORIES;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -159,15 +175,16 @@ export default function DashboardPage() {
           {categories.map(category => {
             const categoryKpis = kpis.filter(k => k.category === category);
             if (categoryKpis.length === 0) return null;
+            const meta = RISK_CATEGORY_LIST.find(c => c.id === category)!;
             
             return (
               <div key={category}>
                 <div className="flex items-center gap-2 mb-4 border-b border-outline/20 pb-2">
-                  <span className={CATEGORY_META[category]?.color ?? 'text-on-surface-variant'}>
-                    {CATEGORY_META[category]?.icon}
+                  <span className={CATEGORY_COLOR[category]}>
+                    {CATEGORY_ICON[category]}
                   </span>
                   <h2 className="text-sm font-mono text-outline uppercase tracking-widest">
-                    {category} Metrics
+                    {meta.label} Metrics
                   </h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
