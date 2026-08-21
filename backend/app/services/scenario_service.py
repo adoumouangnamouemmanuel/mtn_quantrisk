@@ -5,6 +5,7 @@ Also handles the scenario list / single-scenario lookups.
 import random
 import math
 from datetime import datetime, timezone
+from ..core.file_lock import file_lock
 from .data_loader import (
     load_base_case, load_dashboard_q1_2026, load_scenario_details, load_scenario_meta,
     KPI_META, FRONTEND_KPIS, PILLAR_MAP, get_kpi_status,
@@ -201,20 +202,28 @@ def apply_scenario(sc_id: str, severity_multiplier: float, macro_overlays: dict)
             "status":        status,
         })
 
-    # SHAP attributions — try real model, fall back to heuristic
+    # SHAP attributions — try real model, fall back to explicit unavailable flag
     shap_attrs = _get_shap_attributions(sc_id, severity_multiplier)
 
-    return {
+    output: dict = {
         "scenarioId":        sc_id,
         "severityMultiplier": severity_multiplier,
         "results":           results,
-        "shapAttributions":  shap_attrs,
+        "shapAttributions":  shap_attrs if shap_attrs is not None else [],
+        "shapUnavailable":   shap_attrs is None,
         "generatedAt":       datetime.now(timezone.utc).isoformat(),
     }
+    return output
 
 
-def _get_shap_attributions(sc_id: str, severity: float) -> list:
-    """Try real SHAP, fall back to heuristic ranking."""
+def _get_shap_attributions(sc_id: str, severity: float) -> list | None:
+    """Return real SHAP attributions for the scenario's EBITDA-margin driver.
+
+    Falls back to ``None`` (not a fabricated list) when the SHAP explainer or
+    its model artefacts are unavailable. The caller surfaces this as an
+    explicit ``shapUnavailable`` flag so the UI can show "attribution
+    unavailable" instead of invented numbers (audit finding C6 / 4.9).
+    """
     try:
         import sys
         from pathlib import Path
@@ -232,16 +241,8 @@ def _get_shap_attributions(sc_id: str, severity: float) -> list:
     except Exception:
         pass
 
-    # Heuristic fallback
-    features = [
-        ("Cedi_USD_Avg",          -0.38 * severity),
-        ("Inflation_YoY_Pct",     -0.22 * severity),
-        ("Policy_Rate_Pct",       -0.18 * severity),
-        ("GDP_Growth_Pct",         0.12 * severity),
-        ("Mobile_Penetration_Pct", 0.06),
-        ("Data_Penetration_Pct",   0.04),
-    ]
-    return [{"feature": f, "contribution": round(v, 5)} for f, v in features]
+    # No fabricated SHAP values — surface an explicit unavailable state.
+    return None
 
 
 # ── CRUD helpers ───────────────────────────────────────────────────────────────
@@ -318,23 +319,26 @@ def create_scenario(data: dict) -> dict:
     import pandas as pd
     sc_id = _next_scenario_id()
 
-    detail_df = _read_raw_detail()
-    new_rows = pd.DataFrame(_detail_rows_for(sc_id, data))
-    for col in detail_df.columns:
-        if col not in new_rows.columns:
-            new_rows[col] = ""
-    new_rows = new_rows.reindex(columns=detail_df.columns)
-    detail_df = pd.concat([detail_df, new_rows], ignore_index=True)
-    detail_df.to_csv(SCENARIO_DETAIL_CSV, index=False, encoding="utf-8-sig")
+    # Serialise detail + meta writes under a lock so concurrent CRUD calls
+    # cannot interleave and corrupt the CSVs (audit finding H5 / TD-11).
+    with file_lock(SCENARIO_DETAIL_CSV), file_lock(SCENARIO_META_CSV):
+        detail_df = _read_raw_detail()
+        new_rows = pd.DataFrame(_detail_rows_for(sc_id, data))
+        for col in detail_df.columns:
+            if col not in new_rows.columns:
+                new_rows[col] = ""
+        new_rows = new_rows.reindex(columns=detail_df.columns)
+        detail_df = pd.concat([detail_df, new_rows], ignore_index=True)
+        detail_df.to_csv(SCENARIO_DETAIL_CSV, index=False, encoding="utf-8-sig")
 
-    meta_df = _read_raw_meta()
-    new_meta = pd.DataFrame([_meta_row_for(sc_id, data)])
-    for col in meta_df.columns:
-        if col not in new_meta.columns:
-            new_meta[col] = ""
-    new_meta = new_meta.reindex(columns=meta_df.columns)
-    meta_df = pd.concat([meta_df, new_meta], ignore_index=True)
-    meta_df.to_csv(SCENARIO_META_CSV, index=False, encoding="utf-8-sig")
+        meta_df = _read_raw_meta()
+        new_meta = pd.DataFrame([_meta_row_for(sc_id, data)])
+        for col in meta_df.columns:
+            if col not in new_meta.columns:
+                new_meta[col] = ""
+        new_meta = new_meta.reindex(columns=meta_df.columns)
+        meta_df = pd.concat([meta_df, new_meta], ignore_index=True)
+        meta_df.to_csv(SCENARIO_META_CSV, index=False, encoding="utf-8-sig")
 
     clear_scenario_cache()
     return _build_scenario_obj(sc_id, load_scenario_details(), load_scenario_meta())
@@ -346,40 +350,45 @@ def update_scenario(sc_id: str, data: dict) -> dict | None:
     if not (detail_df["Scenario_ID"] == sc_id).any():
         return None
 
-    detail_df = detail_df[detail_df["Scenario_ID"] != sc_id].copy()
-    new_rows = pd.DataFrame(_detail_rows_for(sc_id, data))
-    for col in detail_df.columns:
-        if col not in new_rows.columns:
-            new_rows[col] = ""
-    new_rows = new_rows.reindex(columns=detail_df.columns)
-    detail_df = pd.concat([detail_df, new_rows], ignore_index=True)
-    detail_df.to_csv(SCENARIO_DETAIL_CSV, index=False, encoding="utf-8-sig")
+    with file_lock(SCENARIO_DETAIL_CSV), file_lock(SCENARIO_META_CSV):
+        # Re-read inside the lock to avoid the read-modify-write race.
+        detail_df = _read_raw_detail()
+        if not (detail_df["Scenario_ID"] == sc_id).any():
+            return None
+        detail_df = detail_df[detail_df["Scenario_ID"] != sc_id].copy()
+        new_rows = pd.DataFrame(_detail_rows_for(sc_id, data))
+        for col in detail_df.columns:
+            if col not in new_rows.columns:
+                new_rows[col] = ""
+        new_rows = new_rows.reindex(columns=detail_df.columns)
+        detail_df = pd.concat([detail_df, new_rows], ignore_index=True)
+        detail_df.to_csv(SCENARIO_DETAIL_CSV, index=False, encoding="utf-8-sig")
 
-    meta_df = _read_raw_meta()
-    meta_df = meta_df[meta_df["Scenario ID"] != sc_id].copy()
-    new_meta = pd.DataFrame([_meta_row_for(sc_id, data)])
-    for col in meta_df.columns:
-        if col not in new_meta.columns:
-            new_meta[col] = ""
-    new_meta = new_meta.reindex(columns=meta_df.columns)
-    meta_df = pd.concat([meta_df, new_meta], ignore_index=True)
-    meta_df.to_csv(SCENARIO_META_CSV, index=False, encoding="utf-8-sig")
+        meta_df = _read_raw_meta()
+        meta_df = meta_df[meta_df["Scenario ID"] != sc_id].copy()
+        new_meta = pd.DataFrame([_meta_row_for(sc_id, data)])
+        for col in meta_df.columns:
+            if col not in new_meta.columns:
+                new_meta[col] = ""
+        new_meta = new_meta.reindex(columns=meta_df.columns)
+        meta_df = pd.concat([meta_df, new_meta], ignore_index=True)
+        meta_df.to_csv(SCENARIO_META_CSV, index=False, encoding="utf-8-sig")
 
     clear_scenario_cache()
     return _build_scenario_obj(sc_id, load_scenario_details(), load_scenario_meta())
 
 
 def delete_scenario(sc_id: str) -> bool:
-    detail_df = _read_raw_detail()
-    if not (detail_df["Scenario_ID"] == sc_id).any():
-        return False
+    with file_lock(SCENARIO_DETAIL_CSV), file_lock(SCENARIO_META_CSV):
+        detail_df = _read_raw_detail()
+        if not (detail_df["Scenario_ID"] == sc_id).any():
+            return False
+        detail_df = detail_df[detail_df["Scenario_ID"] != sc_id]
+        detail_df.to_csv(SCENARIO_DETAIL_CSV, index=False, encoding="utf-8-sig")
 
-    detail_df = detail_df[detail_df["Scenario_ID"] != sc_id]
-    detail_df.to_csv(SCENARIO_DETAIL_CSV, index=False, encoding="utf-8-sig")
-
-    meta_df = _read_raw_meta()
-    meta_df = meta_df[meta_df["Scenario ID"] != sc_id]
-    meta_df.to_csv(SCENARIO_META_CSV, index=False, encoding="utf-8-sig")
+        meta_df = _read_raw_meta()
+        meta_df = meta_df[meta_df["Scenario ID"] != sc_id]
+        meta_df.to_csv(SCENARIO_META_CSV, index=False, encoding="utf-8-sig")
 
     clear_scenario_cache()
     return True
