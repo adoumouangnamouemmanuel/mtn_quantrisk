@@ -1,0 +1,118 @@
+{
+  "title": "MTN QuantRisk — API & Pipeline Health",
+  "uid": "mtn-quantrisk-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "tags": ["mtn", "quantrisk", "risk"],
+  "timezone": "browser",
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "30s",
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": { "text": "Prometheus", "value": "Prometheus" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "title": "Request Rate (req/s) by path",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum by (path) (rate(quantrisk_http_requests_total[1m]))",
+          "legendFormat": "{{path}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" }
+      }
+    },
+    {
+      "title": "Error Rate (5xx / total)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "sum(rate(quantrisk_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(quantrisk_http_requests_total[5m]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "thresholds": { "mode": "absolute", "steps": [ { "color": "green" }, { "color": "yellow", "value": 0.01 }, { "color": "red", "value": 0.05 } ] } }
+      }
+    },
+    {
+      "title": "p95 Latency by path",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 18, "y": 0 },
+      "datasource": { "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (path, le) (rate(quantrisk_http_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{path}} p95",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "title": "Scrape Runs (total)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 4 },
+      "datasource": { "uid": "${datasource}" },
+      "targets": [ { "expr": "quantrisk_scrape_runs_total", "refId": "A" } ]
+    },
+    {
+      "title": "New Articles Stored (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "rate(quantrisk_scrape_new_articles_total[5m]) * 60",
+          "legendFormat": "new articles / min",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Last Successful Scrape",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 8 },
+      "datasource": { "uid": "${datasource}" },
+      "targets": [
+        {
+          "expr": "time() - quantrisk_scrape_last_success_timestamp",
+          "refId": "A",
+          "unit": "s"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green" }, { "color": "yellow", "value": 1800 }, { "color": "red", "value": 3600 } ] }
+        }
+      }
+    },
+    {
+      "title": "Scheduler Status",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 8 },
+      "datasource": { "uid": "${datasource}" },
+      "targets": [ { "expr": "quantrisk_scheduler_status", "refId": "A" } ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [ { "type": "value", "options": { "1": { "text": "OK", "color": "green" }, "0": { "text": "DOWN", "color": "red" } } } ]
+        }
+      }
+    }
+  ]
+}
