@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api.routes import router
 from .api.auth import router as auth_router
 from .core.security import get_current_user
+from .core.rate_limit import RateLimitMiddleware
+from .core.metrics import MetricsMiddleware, metrics_endpoint
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -79,6 +81,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(MetricsMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -104,3 +109,9 @@ app.include_router(router, dependencies=[Depends(get_current_user)])
 @app.get("/")
 def root():
     return {"status": "ok", "service": "MTN QuantRisk API", "version": "2.1.0"}
+
+
+# Prometheus metrics — intentionally public (no auth) so scrapers can poll.
+@app.get("/metrics")
+def metrics():
+    return metrics_endpoint()
