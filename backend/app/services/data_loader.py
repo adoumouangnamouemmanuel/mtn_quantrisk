@@ -28,20 +28,22 @@ PILLAR_MAP = {
 }
 
 KPI_META = {
-    "FIN01": {"name": "Service Revenue",    "category": "Financial",    "unit": "GHSm",    "lower": 23000, "upper": 26000},
-    "FIN02": {"name": "EBITDA",             "category": "Financial",    "unit": "GHSm",    "lower": 14000, "upper": 15500},
-    "FIN03": {"name": "EBITDA Margin",      "category": "Financial",    "unit": "%",       "lower": 58.0,  "upper": 62.0},
-    "FIN04": {"name": "PAT",                "category": "Financial",    "unit": "GHSm",    "lower": 7500,  "upper": 8500},
-    "FIN05": {"name": "PAT Margin",         "category": "Financial",    "unit": "%",       "lower": 31.0,  "upper": 35.0},
-    "FIN06": {"name": "Revenue Growth YoY", "category": "Financial",    "unit": "%",       "lower": 30.0,  "upper": 40.0},
-    "SEG01": {"name": "Data Revenue",       "category": "Segment",      "unit": "GHSm",    "lower": 8000,  "upper": 9000},
-    "SEG03": {"name": "MoMo Revenue",       "category": "Segment",      "unit": "GHSm",    "lower": 5500,  "upper": 6500},
-    "OPS01": {"name": "Total Subscribers",  "category": "Operational",  "unit": "M",       "lower": 29.0,  "upper": 32.0},
-    "OPS04": {"name": "ARPU",               "category": "Operational",  "unit": "GHS",     "lower": 64.0,  "upper": 70.0},
-    "OPS07": {"name": "4G Coverage",        "category": "Operational",  "unit": "%",       "lower": 98.0,  "upper": 100.0},
-    "EXT01": {"name": "Inflation",          "category": "External",     "unit": "%",       "lower": 4.0,   "upper": 10.0},
-    "EXT02": {"name": "BoG Policy Rate",    "category": "External",     "unit": "%",       "lower": 25.0,  "upper": 30.0},
-    "EXT03": {"name": "Cedi/USD",           "category": "External",     "unit": "GHS/USD", "lower": 11.0,  "upper": 13.0},
+    # Category uses the six-category risk taxonomy (strategic / financial /
+    # operational / technological / governance / external).
+    "FIN01": {"name": "Service Revenue",    "category": "financial",     "unit": "GHSm",    "lower": 23000, "upper": 26000},
+    "FIN02": {"name": "EBITDA",             "category": "financial",     "unit": "GHSm",    "lower": 14000, "upper": 15500},
+    "FIN03": {"name": "EBITDA Margin",      "category": "financial",     "unit": "%",       "lower": 58.0,  "upper": 62.0},
+    "FIN04": {"name": "PAT",                "category": "financial",     "unit": "GHSm",    "lower": 7500,  "upper": 8500},
+    "FIN05": {"name": "PAT Margin",         "category": "financial",     "unit": "%",       "lower": 31.0,  "upper": 35.0},
+    "FIN06": {"name": "Revenue Growth YoY", "category": "financial",     "unit": "%",       "lower": 30.0,  "upper": 40.0},
+    "SEG01": {"name": "Data Revenue",       "category": "strategic",     "unit": "GHSm",    "lower": 8000,  "upper": 9000},
+    "SEG03": {"name": "MoMo Revenue",       "category": "strategic",     "unit": "GHSm",    "lower": 5500,  "upper": 6500},
+    "OPS01": {"name": "Total Subscribers",  "category": "strategic",     "unit": "M",       "lower": 29.0,  "upper": 32.0},
+    "OPS04": {"name": "ARPU",               "category": "strategic",     "unit": "GHS",     "lower": 64.0,  "upper": 70.0},
+    "OPS07": {"name": "4G Coverage",        "category": "technological", "unit": "%",       "lower": 98.0,  "upper": 100.0},
+    "EXT01": {"name": "Inflation",          "category": "external",      "unit": "%",       "lower": 4.0,   "upper": 10.0},
+    "EXT02": {"name": "BoG Policy Rate",    "category": "external",      "unit": "%",       "lower": 25.0,  "upper": 30.0},
+    "EXT03": {"name": "Cedi/USD",           "category": "external",      "unit": "GHS/USD", "lower": 11.0,  "upper": 13.0},
 }
 
 FRONTEND_KPIS = list(KPI_META.keys())
