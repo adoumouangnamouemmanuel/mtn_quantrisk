@@ -40,7 +40,7 @@ def acknowledge_alert(db: Session, alert_id: str) -> dict | None:
 
 def get_alert_summary(db: Session) -> dict:
     """Returns counts per tier for dashboard display."""
-    all_active = db.query(Alert).filter(Alert.acknowledged == False).all()  # noqa: E712
+    all_active = db.query(Alert).filter(Alert.acknowledged.is_(False)).all()
     return {
         "total_active": len(all_active),
         "critical": sum(1 for a in all_active if a.tier == "Critical"),
