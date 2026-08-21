@@ -7,22 +7,27 @@ import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { formatNumber, formatPct } from '@/lib/format';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
-import { BookOpen, DollarSign, PieChart, Cpu, Globe, CheckCircle2, AlertTriangle, XCircle, Eye, ArrowUpDown } from 'lucide-react';
+import { BookOpen, CheckCircle2, AlertTriangle, XCircle, Eye, ArrowUpDown } from 'lucide-react';
 import { LiveRiskEvents } from '@/components/intelligence/LiveRiskEvents';
+import { RISK_CATEGORIES, nlpCategoryToRisk } from '@/lib/riskTaxonomy';
 
-// KPI book category → risk category mapping
+// KPI risk category → live-intelligence NLP category (for the Live panel)
 const BOOK_TO_RISK: Record<string, string> = {
-  Financial:   'fx_financial',
-  Segment:     'competitive',
-  Operational: 'operational',
-  External:    'political',
+  strategic:     'competitive',
+  financial:     'fx_financial',
+  operational:   'operational',
+  technological: 'technological',
+  governance:    'regulatory',
+  external:      'political',
 };
 
 const CATEGORY_ICON: Record<string, React.ReactNode> = {
-  Financial:   <DollarSign className="w-3.5 h-3.5 text-mtn-yellow" />,
-  Segment:     <PieChart   className="w-3.5 h-3.5 text-blue-400"   />,
-  Operational: <Cpu        className="w-3.5 h-3.5 text-purple-400" />,
-  External:    <Globe      className="w-3.5 h-3.5 text-green-400"  />,
+  strategic:     <span className="w-3.5 h-3.5" />,
+  financial:     <span className="w-3.5 h-3.5" />,
+  operational:   <span className="w-3.5 h-3.5" />,
+  technological: <span className="w-3.5 h-3.5" />,
+  governance:    <span className="w-3.5 h-3.5" />,
+  external:      <span className="w-3.5 h-3.5" />,
 };
 
 const STATUS_ICON: Record<string, React.ReactNode> = {
@@ -35,7 +40,7 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
 export default function KriRegisterPage() {
   const [kpis,        setKpis]        = useState<Kpi[]>([]);
   const [loading,     setLoading]     = useState(true);
-  const [activeBookCat, setActiveBookCat] = useState<string>('Financial');
+  const [activeBookCat, setActiveBookCat] = useState<string>('financial');
 
   useEffect(() => {
     fetchKpis('2026Q1').then(data => {
@@ -129,7 +134,7 @@ export default function KriRegisterPage() {
           <LiveRiskEvents
             key={bookCat}
             category={riskCat}
-            label={`${bookCat} KPIs`}
+            label={`${RISK_CATEGORIES[bookCat as keyof typeof RISK_CATEGORIES]?.label ?? bookCat} KPIs`}
             limit={4}
             className={activeBookCat === bookCat ? 'ring-1 ring-mtn-yellow/30' : ''}
           />
