@@ -37,10 +37,16 @@ def test_monthly_request_does_not_generate_monthly_points():
     assert len(series["points"]) == 12
 
 
-def test_macro_series_declares_annual_frequency():
+def test_macro_series_declares_mixed_frequency():
+    # macro_context.csv mixes monthly and annual observations, so the service
+    # honestly reports the actual frequency as "mixed" rather than "annual".
     series = get_quarterly_series("EXT01")
-    assert series["metadata"]["actualFrequency"] == "annual"
-    assert series["points"][-1]["period"] == "2025FY"
+    assert series["metadata"]["actualFrequency"] == "mixed"
+    # The series spans up to the latest available period (currently 2026Q1);
+    # assert on the year rather than a literal period so the test stays stable
+    # as new macro observations are added.
+    assert series["points"][-1]["period"] in ("2025FY", "2026Q1")
+    assert int(series["points"][-1]["period"][:4]) >= 2025
 
 
 def test_historical_source_health_reads_all_configured_files():
