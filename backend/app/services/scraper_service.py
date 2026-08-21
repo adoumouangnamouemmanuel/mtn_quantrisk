@@ -4,9 +4,11 @@ Google News RSS (free, no key) aggregates both traditional media and social medi
 Set GNEWS_TOKEN env var (free at gnews.io) to also enable direct MTN Ghana targeted search.
 """
 
+import hashlib
 import logging
 import os
 import re
+import time
 from copy import deepcopy
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -18,6 +20,37 @@ import feedparser
 GNEWS_TOKEN = os.environ.get("GNEWS_TOKEN", "")
 
 logger = logging.getLogger(__name__)
+
+
+def _retry_fetch(fetcher, *args, retries=3, backoff=1.0, **kwargs):
+    """Call ``fetcher(*args, **kwargs)`` with exponential backoff.
+
+    The scraper previously had no retry logic (audit finding M13 / TD-13);
+    transient network blips therefore dropped whole feeds. This wraps each
+    per-source fetch so a single timeout does not lose the source's articles.
+    Returns ``None`` (and logs) when all attempts fail.
+    """
+    last_exc = None
+    for attempt in range(retries):
+        try:
+            return fetcher(*args, **kwargs)
+        except Exception as exc:  # broad: feedparser/requests errors vary
+            last_exc = exc
+            if attempt + 1 < retries:
+                time.sleep(backoff * (2 ** attempt))
+    logger.warning("fetch failed after %d attempts: %s", retries, last_exc)
+    return None
+
+
+def _title_hash(title: str) -> str:
+    """Stable hash of a normalised article title for cross-URL dedup.
+
+    Audit finding M14 / TD-13: the same story syndicated across sources was
+    duplicated because only ``url`` was UNIQUE. A title hash catches the same
+    headline published under different URLs.
+    """
+    normalised = re.sub(r"\s+", " ", title.strip().lower())
+    return hashlib.sha1(normalised.encode("utf-8")).hexdigest()[:16]
 
 _STATUS_LOCK = Lock()
 _SCRAPER_STATUS = {
@@ -215,8 +248,16 @@ def scrape_all_sources() -> list[dict]:
     source_results = []
     checked_at = datetime.now(timezone.utc).isoformat()
     for source in RSS_SOURCES:
+        # Retry the feed fetch itself; feedparser.parse swallows network
+        # errors by setting bozo, so treat an all-failure source as retryable.
+        feed = _retry_fetch(feedparser.parse, source["url"], retries=3, backoff=1.0)
         try:
-            feed = feedparser.parse(source["url"])
+            if feed is None:
+                source_results.append({
+                    "name": source["name"], "url": source["url"], "status": "Failed",
+                    "entryCount": 0, "checkedAt": checked_at, "error": "all retries failed",
+                })
+                continue
             if feed.bozo and not feed.entries:
                 logger.warning("Feed %s may be malformed: %s", source["name"], feed.bozo_exception)
                 source_results.append({
@@ -344,10 +385,17 @@ def run_scrape_and_store() -> int:
         existing_urls = {
             url for (url,) in db.query(Article.url).filter(Article.url.in_(candidate_urls)).all()
         }
+        # Pre-compute title hashes so the same syndicated story under different
+        # URLs is only stored once (audit finding M14 / TD-13).
+        seen_title_hashes: set[str] = set()
         for raw in raw_articles:
             # Deduplication — UNIQUE constraint on url handles concurrent calls
             if raw["url"] in existing_urls:
                 continue
+            thash = _title_hash(raw.get("title", ""))
+            if thash in seen_title_hashes:
+                continue
+            seen_title_hashes.add(thash)
             article = Article(
                 url=raw["url"],
                 title=raw["title"],
@@ -377,5 +425,11 @@ def run_scrape_and_store() -> int:
         _SCRAPER_STATUS["newArticleCount"] = new_count
         if new_count:
             _SCRAPER_STATUS["lastNewArticleAt"] = completed_at
+    # Record Prometheus metrics for the scrape run (audit finding H11).
+    try:
+        from ..core.metrics import record_scrape_run
+        record_scrape_run(new_count, success=True)
+    except Exception:
+        pass
     logger.info("Scrape complete — %d new articles stored", new_count)
     return new_count
