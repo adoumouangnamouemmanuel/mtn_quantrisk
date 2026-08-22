@@ -14,7 +14,7 @@ The following findings from this report have been **resolved** in the latest cha
 |---|---|---|
 | **TD-02 / 7.2:** Committed `.env.local` with Supabase key + `DEV_AUTH_BYPASS=true` | Critical | **Resolved.** Supabase was completely removed. `frontend/.env.local` now contains only JWT + API config. Supabase keys are gone from the codebase (0 references). `.gitignore` updated with `*.db` and `data/uploads/`. |
 | **TD-03 / 7.3:** Backend API has zero authentication | Critical | **Resolved.** Implemented local JWT auth (HS256, stdlib-only, no PyJWT dependency). All `/api/*` endpoints now require `Authorization: Bearer <token>` and return 401 without a valid token. New endpoints: `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`. |
-| **Auth (Supabase) feature row:** Partial with bypass enabled | High | **Resolved.** Supabase auth removed entirely and replaced with a local JWT system. Default account: `analyst@mtn.com` / `Pass.word.123`. Auth bypass (`DEV_AUTH_BYPASS`) deleted. |
+| **Auth (Supabase) feature row:** Partial with bypass enabled | High | **Resolved.** Supabase auth removed entirely and replaced with a local JWT system. **⚠️ Default credentials removed — set AUTH_EMAIL and AUTH_PASSWORD in environment.** Auth bypass (`DEV_AUTH_BYPASS`) deleted. |
 | **Frontend dependency `@supabase/ssr` + `@supabase/supabase-js`** | Medium | **Resolved.** Both dependencies removed from `frontend/package.json`. `frontend/utils/supabase/` directory deleted. |
 | **C10 / `DEV_AUTH_BYPASS` gate** | High | **Superseded.** The bypass mechanism no longer exists — it was deleted with the Supabase code. |
 | **`SUPABASE_DB_URL` env reference** | Low | **Resolved.** Removed from `backend/app/models/database.py`; only `DATABASE_URL` (Postgres) or SQLite fallback remains. |
@@ -391,7 +391,7 @@ mtn_quantrisk/
 
 ### 7.1 Exposed GitHub Personal Access Token
 - **Location:** `.git/config` (remote URL)
-- **Evidence:** `https://adoumouangnamouemmanuel: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@github.com/...`
+- **Evidence:** `https://adoumouangnamouemmanuel:ghp_[REDACTED]@github.com/...`
 - **Risk:** **CRITICAL** — Anyone with repo access can read the token and gain full GitHub access.
 - **Exploit:** Clone repo → read `.git/config` → use token to push to any repo the user can access.
 - **Fix:** **Immediately** revoke the token on GitHub, remove it from `.git/config`, and use SSH or a credential manager.
