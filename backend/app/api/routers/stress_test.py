@@ -1,8 +1,12 @@
 """Business stress tester endpoint."""
+import logging
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from ...services.stress_test_service import run_stress_test, SHOCK_PRESETS
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["stress-test"])
 
@@ -23,7 +27,12 @@ def post_stress_test(body: StressTestInput):
     tornado sensitivity, and management action signals.
     """
     shocks = body.shocks
-    if body.preset and body.preset in SHOCK_PRESETS:
+    if body.preset:
+        if body.preset not in SHOCK_PRESETS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown preset '{body.preset}'. Valid: {list(SHOCK_PRESETS.keys())}",
+            )
         shocks = SHOCK_PRESETS[body.preset]
     if not shocks:
         raise HTTPException(status_code=400, detail="Provide shocks or a valid preset")
@@ -35,7 +44,8 @@ def post_stress_test(body: StressTestInput):
             n_simulations=body.nSimulations,
         )
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+        logger.exception("Stress test failed")
+        raise HTTPException(status_code=500, detail="Stress test simulation failed") from exc
 
 
 @router.get("/stress-test/presets")
