@@ -502,3 +502,121 @@ export async function fetchLLMUsage(): Promise<{
   return apiFetch('/api/llm/usage');
 }
 
+// ── Backtesting ─────────────────────────────────────────────────────────────
+
+export interface BacktestFold {
+  foldIndex: number;
+  mae: number;
+  rmse: number;
+  mape: number;
+  mdape: number;
+  biasPct: number;
+  rSquared: number;
+  directionAccuracy?: number;
+  n: number;
+  trainStart: string;
+  trainEnd: string;
+  testPeriods: string[];
+  actualValues: number[];
+  predictedValues: number[];
+}
+
+export interface BacktestResult {
+  kpiId: string;
+  kpiName: string;
+  modelName: string;
+  trainWindowSize: number;
+  testWindowSize: number;
+  totalFolds: number;
+  folds: BacktestFold[];
+  aggregate: {
+    mae: number;
+    rmse: number;
+    mape: number;
+    mdape: number;
+    biasPct: number;
+    rSquared: number;
+    directionAccuracy?: number;
+    totalFolds: number;
+    totalTestPoints: number;
+  };
+  actualVsPredicted: Array<{
+    period: string;
+    actual: number;
+    predicted: number | null;
+  }>;
+  generatedAt: string;
+  error?: string;
+}
+
+export async function fetchBacktest(
+  kpiId: string,
+  trainSize?: number,
+  testSize?: number,
+): Promise<BacktestResult> {
+  const params = new URLSearchParams();
+  if (trainSize) params.set('train_size', String(trainSize));
+  if (testSize) params.set('test_size', String(testSize));
+  return apiFetch<BacktestResult>(
+    `/api/backtest/${kpiId}${params.toString() ? `?${params}` : ''}`,
+  );
+}
+
+export async function fetchAllBacktests(): Promise<BacktestResult[]> {
+  return apiFetch<BacktestResult[]>('/api/backtest');
+}
+
+// ── Business Stress Test ──────────────────────────────────────────────────
+
+export interface StressTestResult {
+  plan: {
+    revenue: number[];
+    ebitda: number[];
+    capex: number[];
+    subscribers: number[];
+    years: string[];
+  };
+  shocks: Record<string, number>;
+  deterministic: {
+    ebitda: number[];
+    impact: number;
+    revenueAtRisk: number;
+    margin: number;
+    resilience: number;
+    baseTotal: number;
+    stressedTotal: number;
+  };
+  monteCarlo: {
+    nSimulations: number;
+    years: string[];
+    p05: number[];
+    p25: number[];
+    p50: number[];
+    p75: number[];
+    p95: number[];
+    mean: number[];
+    std: number[];
+  };
+  tornado: Array<{
+    param: string;
+    label: string;
+    lowTotal: number;
+    highTotal: number;
+    spread: number;
+  }>;
+  signals: Array<{ title: string; status: string; detail: string }>;
+  generatedAt: string;
+}
+
+export async function runStressTest(params: {
+  plan?: Record<string, number[]>;
+  shocks?: Record<string, number>;
+  preset?: string;
+  nSimulations?: number;
+}): Promise<StressTestResult> {
+  return apiFetch<StressTestResult>('/api/stress-test', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+}
+

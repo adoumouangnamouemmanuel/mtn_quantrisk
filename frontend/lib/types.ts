@@ -157,13 +157,34 @@ export interface MonteCarloKpiResult {
   std: number;
   worstCase: number;
   bestCase: number;
+  var95?: number;
+  cvar95?: number;
+}
+
+export interface TornadoItem {
+  kpiId: string;
+  variance: number;
+  stdPct: number;
+}
+
+export interface PortfolioVar {
+  var95: number;
+  cvar95: number;
+  expectedLoss: number;
+  totalBaseExposure: number;
+  weights: Record<string, number>;
 }
 
 export interface MonteCarloResult {
   scenarioId: string;
+  scenarioName?: string;
   nSimulations: number;
   uncertaintyPct: number;
+  severityMultiplier?: number;
   results: MonteCarloKpiResult[];
+  tornado?: TornadoItem[];
+  portfolioVar?: PortfolioVar;
+  correlationLabels?: string[];
 }
 
 export interface FeedbackPayload {
