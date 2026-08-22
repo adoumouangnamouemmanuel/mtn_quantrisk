@@ -10,12 +10,54 @@ available.
 from __future__ import annotations
 
 import logging
-import os
-from typing import Any
 
 from ..core.risk_taxonomy import normalise_category, RISK_CATEGORY_META
 
 logger = logging.getLogger(__name__)
+
+
+def _persist_reasoning(article_id: str, reasoning: dict) -> None:
+    """Persist a reasoning breakdown to SQLite for queryability.
+
+    Deduplicates by article_id — only stores the latest reasoning per article.
+    """
+    try:
+        from ..models.database import SessionLocal
+        from ..models.news_reasoning import NewsReasoningRecord
+
+        with SessionLocal() as db:
+            # Remove any existing reasoning for this article to avoid duplicates
+            db.query(NewsReasoningRecord).filter(
+                NewsReasoningRecord.article_id == article_id
+            ).delete()
+
+        record = NewsReasoningRecord(
+            article_id=article_id,
+            title=reasoning.get("title"),
+            scored=reasoning.get("scored", False),
+            category=reasoning.get("category"),
+            category_label=reasoning.get("categoryLabel"),
+            original_category=reasoning.get("originalCategory"),
+            severity=reasoning.get("severity"),
+            mtn_relevance=reasoning.get("mtnRelevance"),
+            confidence=reasoning.get("confidence"),
+            alert_tier=reasoning.get("alertTier"),
+            sentiment=reasoning.get("sentiment"),
+            relevance_reasons=reasoning.get("relevanceReasons"),
+            severity_reasons=reasoning.get("severityReasons"),
+            sentiment_reasons=reasoning.get("sentimentReasons"),
+            impact_reasons=reasoning.get("impactReasons"),
+            entities=reasoning.get("entities"),
+            keyword_hits=reasoning.get("keywordHits"),
+            matched_category_keywords=reasoning.get("matchedCategoryKeywords"),
+            llm_explanation=reasoning.get("llmExplanation"),
+            llm_used=reasoning.get("llmUsed", False),
+        )
+        with SessionLocal() as db:
+            db.add(record)
+            db.commit()
+    except Exception as exc:
+        logger.debug("Failed to persist news reasoning: %s", exc)
 
 
 def build_reasoning(article_id: str) -> dict | None:
@@ -135,7 +177,7 @@ def build_reasoning(article_id: str) -> dict | None:
             matched_keywords,
         )
 
-        return {
+        result = {
             "articleId": article_id,
             "title": article.title,
             "scored": True,
@@ -158,6 +200,11 @@ def build_reasoning(article_id: str) -> dict | None:
             "llmUsed": bool(os.environ.get("ANTHROPIC_API_KEY")) and llm_summary is not None,
         }
 
+        # Persist reasoning breakdown to SQLite
+        _persist_reasoning(article_id, result)
+
+        return result
+
 
 def _llm_explanation(
     title: str,
@@ -167,14 +214,14 @@ def _llm_explanation(
     relevance: float,
     matched_keywords: list[str],
 ) -> str | None:
-    """Ask the LLM for a one-paragraph explanation of the score."""
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        return None
-    try:
-        import anthropic
+    """Ask the LLM for a one-paragraph explanation of the score.
 
-        client = anthropic.Anthropic(api_key=api_key)
+    Uses the provider-agnostic LLM client with cost/latency controls.
+    """
+    try:
+        from ..core.llm_client import get_llm_client
+
+        client = get_llm_client()
         kw_str = ", ".join(matched_keywords[:10]) or "none"
         prompt = (
             "You are an MTN Ghana risk analyst. Explain in 2-3 short sentences why this "
@@ -187,13 +234,8 @@ def _llm_explanation(
             "Ground the explanation in the keywords and entities. Do not invent facts. "
             "Return only the explanation."
         )
-        msg = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=220,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = msg.content[0].text.strip() if msg.content else ""
-        return text or None
+        resp = client.complete(prompt, max_tokens=220)
+        return resp.text or None
     except Exception as exc:
         logger.debug("LLM news explanation failed: %s", exc)
         return None
