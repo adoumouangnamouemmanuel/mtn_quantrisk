@@ -71,8 +71,11 @@ RISK_CATEGORY_META: dict[str, dict] = {
 }
 
 
-# Legacy → new category mapping.
-_LEGACY_MAP: dict[str, str] = {
+# Legacy → new category mapping.  Canonical values map to themselves so
+# normalise_category is idempotent — a second pass over an already-normalised
+# value returns the same category.
+_LEGACY_MAP: dict[str, str] = {c.value: c.value for c in RiskCategory}
+_LEGACY_MAP.update({
     # KPI categories
     "Financial": "financial",
     "Segment": "strategic",
@@ -97,7 +100,10 @@ _LEGACY_MAP: dict[str, str] = {
     "E": "operational",
     "F": "strategic",
     "G": "external",
-}
+})
+
+# Case-insensitive lookup table for robust matching.
+_NORMALISED_MAP: dict[str, str] = {k.lower(): v for k, v in _LEGACY_MAP.items()}
 
 
 def normalise_category(legacy: str | None) -> str:
@@ -108,4 +114,8 @@ def normalise_category(legacy: str | None) -> str:
     """
     if not legacy:
         return RiskCategory.OPERATIONAL.value
-    return _LEGACY_MAP.get(legacy, RiskCategory.OPERATIONAL.value)
+    mapped = _NORMALISED_MAP.get(legacy.strip().lower())
+    if mapped is None:
+        logger.warning("Unmapped risk category %r; defaulting to operational", legacy)
+        return RiskCategory.OPERATIONAL.value
+    return mapped
