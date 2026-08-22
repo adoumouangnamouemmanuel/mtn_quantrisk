@@ -127,7 +127,7 @@ def run_correlated_monte_carlo(
     deterministic = apply_scenario(scenario_id, severity_multiplier, {})
 
     # Run correlated simulation
-    stressed_kpis = _apply_macro_shock(base, severity_multiplier, uncertainty_pct, n_sims, rng)
+    stressed_kpis = _apply_macro_shock(base, severity_multiplier, uncertainty_pct, n_simulations, rng)
 
     # Also apply scenario-specific impacts on top of correlated macro
     scenario_impacts = {}
@@ -166,8 +166,15 @@ def run_correlated_monte_carlo(
         std = float(np.std(arr))
 
         # VaR and CVaR (relative to base)
-        var_95 = float(base_val - p05) if base_val > 0 else 0.0  # 95% VaR
-        cvar_95 = float(base_val - np.mean(arr[arr <= p05])) if np.any(arr <= p05) else var_95
+        # For most KPIs, lower = worse (loss tail is P05).
+        # For inverse KPIs (EXT01 Inflation, EXT03 Cedi/USD), higher = worse (loss tail is P95).
+        inverse_kpis = {"EXT01", "EXT03"}
+        if kpi_id in inverse_kpis:
+            var_95 = float(p95 - base_val) if base_val > 0 else 0.0
+            cvar_95 = float(np.mean(arr[arr >= p95]) - base_val) if np.any(arr >= p95) else var_95
+        else:
+            var_95 = float(base_val - p05) if base_val > 0 else 0.0
+            cvar_95 = float(base_val - np.mean(arr[arr <= p05])) if np.any(arr <= p05) else var_95
 
         all_percentiles[kpi_id] = {
             "p05": round(float(p05), 4),
