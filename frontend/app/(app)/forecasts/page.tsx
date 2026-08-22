@@ -63,6 +63,11 @@ export default function ForecastsPage() {
         borderWidth: 2,
         borderDash: [5, 5],
         tension: 0.1,
+        pointRadius: 2,
+        pointHoverRadius: 6,
+        pointBackgroundColor: points.map(p =>
+          selectedPoint?.date === p.date ? '#FFD000' : ThemeTokens.colors.mtnYellow
+        ),
       },
       {
         label: 'Upper (P95)',
@@ -84,6 +89,7 @@ export default function ForecastsPage() {
       },
     ],
   };
+
 
   return (
     <div className="flex flex-col h-full overflow-y-auto p-4 md:p-6 space-y-5 animate-in fade-in duration-500">
@@ -162,6 +168,10 @@ export default function ForecastsPage() {
                 <LineChart
                   data={chartData as unknown as React.ComponentProps<typeof LineChart>['data']}
                   height="100%"
+                  onElementClick={(index: number) => {
+                    const pt = points[index];
+                    if (pt) setSelectedPoint(pt);
+                  }}
                   options={{
                     maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
@@ -176,10 +186,25 @@ export default function ForecastsPage() {
                           },
                         },
                       },
+                      legend: {
+                        display: true,
+                        position: 'top' as const,
+                        labels: { color: 'rgba(240,237,232,0.5)', font: { size: 10, family: 'monospace' }, boxWidth: 12, padding: 12 },
+                      },
                     },
                     scales: {
-                      x: { grid: { color: ThemeTokens.colors.outline + '20' } },
-                      y: { grid: { color: ThemeTokens.colors.outline + '20' } },
+                      x: {
+                        grid: { color: ThemeTokens.colors.outline + '20' },
+                        ticks: { color: 'rgba(240,237,232,0.4)', font: { size: 9 }, maxTicksLimit: 12 },
+                      },
+                      y: {
+                        grid: { color: ThemeTokens.colors.outline + '20' },
+                        ticks: {
+                          color: 'rgba(240,237,232,0.4)',
+                          font: { size: 9 },
+                          callback: (val: number) => fmt(val),
+                        },
+                      },
                     },
                   }}
                 />
@@ -194,7 +219,7 @@ export default function ForecastsPage() {
             <SkeletonBlock className="h-full w-full" />
           ) : forecast ? (
             <>
-              {/* Narrative */}
+              {/* Narrative + Trend Summary */}
               <Card className="p-4 bg-surface-container-low border border-outline/20">
                 <div className="flex items-center gap-2 mb-2">
                   {forecast.llmUsed ? <Sparkles className="w-3.5 h-3.5 text-secondary" /> : <Info className="w-3.5 h-3.5 text-on-surface-variant" />}
@@ -217,6 +242,16 @@ export default function ForecastsPage() {
                     <p className="font-mono text-base font-bold text-error">-{forecast.aggregatePressure.down.toFixed(1)}</p>
                   </div>
                 </div>
+                {/* Trend indicator */}
+                {points.length > 1 && (
+                  <div className="mt-3 pt-3 border-t border-outline/10 flex items-center justify-between">
+                    <span className="font-mono text-[9px] uppercase text-on-surface-variant">Net trend</span>
+                    <span className={`flex items-center gap-1 font-mono text-xs font-bold ${forecast.aggregatePressure.net >= 0 ? 'text-success' : 'text-error'}`}>
+                      {forecast.aggregatePressure.net >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                      {forecast.aggregatePressure.net >= 0 ? '+' : ''}{forecast.aggregatePressure.net.toFixed(2)} GHSm
+                    </span>
+                  </div>
+                )}
               </Card>
 
               {/* Drill-down for a selected point */}
