@@ -7,7 +7,7 @@ module for maintainability (audit finding M1 / TD-07).
 """
 from fastapi import APIRouter
 
-from .routers import kpis, scenarios, forecasts, briefs, news, economics, history
+from .routers import kpis, scenarios, forecasts, briefs, news, economics, history, backtest, monte_carlo, stress_test
 
 router = APIRouter()
 
@@ -19,3 +19,6 @@ router.include_router(briefs.router)
 router.include_router(news.router)
 router.include_router(economics.router)
 router.include_router(history.router)
+router.include_router(backtest.router)
+router.include_router(monte_carlo.router)
+router.include_router(stress_test.router)
