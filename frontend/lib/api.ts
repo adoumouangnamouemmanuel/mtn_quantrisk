@@ -592,9 +592,14 @@ export async function fetchBacktest(
   const params = new URLSearchParams();
   if (trainSize) params.set('train_size', String(trainSize));
   if (testSize) params.set('test_size', String(testSize));
-  return apiFetch<BacktestResult>(
+  const result = await apiFetch<BacktestResult>(
     `/api/backtest/${kpiId}${params.toString() ? `?${params}` : ''}`,
   );
+  // Reject responses with no folds — indicates insufficient data or bad config
+  if (!result.folds || result.folds.length === 0) {
+    return { ...result, error: result.error ?? `No backtest folds produced for ${kpiId}. Need more historical data.` };
+  }
+  return result;
 }
 
 export async function fetchAllBacktests(): Promise<BacktestResult[]> {

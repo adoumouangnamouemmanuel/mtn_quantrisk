@@ -241,17 +241,19 @@ function KpiRow({ r, nSims }: { r: MonteCarloKpiResult; nSims: number }) {
 
           {/* VaR / CVaR row */}
           {r.var95 !== undefined && (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div className="rounded-lg bg-surface-container p-3 text-center">
                 <p className="text-[9px] font-mono uppercase text-on-surface-variant">95% VaR</p>
                 <p className="text-sm font-mono font-bold text-error mt-0.5">{fmt(r.var95)} {r.unit}</p>
-                <p className="text-[8px] font-mono text-on-surface-variant">Max expected loss at 95%</p>
+                <p className="text-[8px] font-mono text-on-surface-variant">Loss threshold at 95% confidence</p>
               </div>
-              <div className="rounded-lg bg-surface-container p-3 text-center">
-                <p className="text-[9px] font-mono uppercase text-on-surface-variant">95% CVaR</p>
-                <p className="text-sm font-mono font-bold text-error mt-0.5">{fmt(r.cvar95 ?? r.var95 ?? 0)} {r.unit}</p>
-                <p className="text-[8px] font-mono text-on-surface-variant">Expected shortfall beyond VaR</p>
-              </div>
+              {r.cvar95 !== undefined && r.cvar95 !== null && (
+                <div className="rounded-lg bg-surface-container p-3 text-center">
+                  <p className="text-[9px] font-mono uppercase text-on-surface-variant">95% CVaR</p>
+                  <p className="text-sm font-mono font-bold text-error mt-0.5">{fmt(r.cvar95)} {r.unit}</p>
+                  <p className="text-[8px] font-mono text-on-surface-variant">Expected shortfall beyond VaR</p>
+                </div>
+              )}
               <div className="rounded-lg bg-surface-container p-3 text-center">
                 <p className="text-[9px] font-mono uppercase text-on-surface-variant">Std Dev</p>
                 <p className="text-sm font-mono font-bold text-mtn-yellow mt-0.5">±{((r.std / r.baseValue) * 100).toFixed(1)}%</p>
@@ -644,7 +646,7 @@ export default function MonteCarloPage() {
                     <div className="text-center">
                       <p className="text-[9px] font-mono uppercase text-on-surface-variant">95% VaR</p>
                       <p className="text-xl font-mono font-bold text-error">GHS {fmt(result.portfolioVar.var95)}m</p>
-                      <p className="text-[8px] font-mono text-on-surface-variant">Max portfolio loss at 95% confidence</p>
+                      <p className="text-[8px] font-mono text-on-surface-variant">Portfolio loss threshold at 95%</p>
                     </div>
                     <div className="text-center">
                       <p className="text-[9px] font-mono uppercase text-on-surface-variant">95% CVaR</p>
@@ -669,7 +671,7 @@ export default function MonteCarloPage() {
                     <span className="font-mono text-[8px] text-on-surface-variant ml-auto">Which KPIs drive portfolio variance</span>
                   </div>
                   <div className="space-y-2">
-                    {result.tornado!.slice(0, 8).map((t, i) => {
+                    {[...result.tornado!].sort((a, b) => b.variance - a.variance).slice(0, 8).map((t, i) => {
                       const maxVar = result.tornado![0]?.variance ?? 1;
                       const pct = maxVar > 0 ? (t.variance / maxVar) * 100 : 0;
                       return (
