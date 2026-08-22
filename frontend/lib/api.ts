@@ -434,3 +434,71 @@ export async function fetchIntelligenceSummary(): Promise<IntelligenceSummary> {
   return apiFetch<IntelligenceSummary>('/api/intelligence/summary');
 }
 
+// ── History (persisted forecast adjustments + news reasoning) ────────────────
+
+export interface ForecastAdjustmentRecord {
+  id: string;
+  kpiId: string;
+  date: string;
+  baselineP50: number;
+  adjustedP50: number;
+  adjustmentAbs: number;
+  adjustmentPct: number;
+  eventCount: number;
+  aggregatePressure: { up: number; down: number; net: number };
+  events: unknown[];
+  narrative: string | null;
+  llmUsed: boolean;
+  computedAt: string;
+}
+
+export async function fetchForecastAdjustments(
+  kpiId: string,
+  limit = 50,
+): Promise<ForecastAdjustmentRecord[]> {
+  return apiFetch<ForecastAdjustmentRecord[]>(
+    `/api/history/forecast-adjustments?kpi_id=${kpiId}&limit=${limit}`,
+  );
+}
+
+export interface NewsReasoningRecord {
+  id: string;
+  articleId: string;
+  title: string | null;
+  scored: boolean;
+  category: string | null;
+  categoryLabel: string | null;
+  severity: number | null;
+  mtnRelevance: number | null;
+  computedAt: string;
+}
+
+export async function fetchNewsReasoningHistory(
+  params: { articleId?: string; category?: string; limit?: number } = {},
+): Promise<NewsReasoningRecord[]> {
+  const qs = new URLSearchParams();
+  if (params.articleId) qs.set('article_id', params.articleId);
+  if (params.category) qs.set('category', params.category);
+  if (params.limit) qs.set('limit', String(params.limit));
+  return apiFetch<NewsReasoningRecord[]>(`/api/history/news-reasoning?${qs}`);
+}
+
+export interface LLMUsageEntry {
+  provider: string;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  latencyMs: number;
+  success: boolean;
+  error: string | null;
+}
+
+export async function fetchLLMUsage(): Promise<{
+  totalCostUsd: number;
+  totalLatencyMs: number;
+  calls: LLMUsageEntry[];
+}> {
+  return apiFetch('/api/llm/usage');
+}
+
