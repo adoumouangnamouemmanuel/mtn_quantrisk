@@ -53,7 +53,7 @@ def process_article(article_id: str) -> dict | None:
             return None
 
         # ── Step 4 — Sentiment
-        sentiment_result = run_sentiment(f"{article.title} {article.body or ''}")
+        sentiment_result = run_sentiment(f"{article.title or ''} {article.body or ''}")
 
         # ── Step 5 — Impact
         impact = estimate_impact(
@@ -99,7 +99,7 @@ def process_article(article_id: str) -> dict | None:
             db.add(alert)
             logger.info(
                 "[%s] %s — %s severity=%.1f relevance=%.2f",
-                alert_tier.upper(), article.source_name, article.title[:60],
+                alert_tier.upper(), article.source_name, (article.title or "")[:60],
                 nlp_result["severity"], mtn_relevance,
             )
 
