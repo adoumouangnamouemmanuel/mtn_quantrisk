@@ -55,7 +55,11 @@ def process_csv_upload(file_bytes: bytes, filename: str) -> dict:
             f"{MAX_UPLOAD_BYTES // (1024 * 1024)} MB limit."
         )
 
-    save_path = UPLOAD_DIR / filename
+    # Sanitize filename to prevent path traversal
+    safe_name = Path(filename).name
+    if not safe_name or safe_name in {".", ".."}:
+        raise ValueError("Invalid filename")
+    save_path = UPLOAD_DIR / safe_name
     save_path.write_bytes(file_bytes)
 
     try:
@@ -220,7 +224,11 @@ def process_pdf_upload(file_bytes: bytes, filename: str) -> dict:
             f"Upload too large: {len(file_bytes)} bytes exceeds the "
             f"{MAX_UPLOAD_BYTES // (1024 * 1024)} MB limit."
         )
-    save_path = UPLOAD_DIR / filename
+    # Sanitize filename to prevent path traversal
+    safe_name = Path(filename).name
+    if not safe_name or safe_name in {".", ".."}:
+        raise ValueError("Invalid filename")
+    save_path = UPLOAD_DIR / safe_name
     save_path.write_bytes(file_bytes)
 
     text = _extract_pdf_tables(save_path)
