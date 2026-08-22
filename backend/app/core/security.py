@@ -224,15 +224,24 @@ _USERS: dict[str, dict[str, str]] = {}
 
 
 def _seed_default_user() -> None:
-    """Seed the default analyst user if no users exist yet."""
+    """Seed default users if no users exist yet."""
     if _USERS:
         return
+    # Default analyst
     email = os.environ.get("AUTH_EMAIL", "analyst@mtn.com")
     password = os.environ.get("AUTH_PASSWORD", "Pass.word.123")
     _USERS[email.lower()] = {
         "password_hash": hash_password(password),
         "role": "analyst",
         "name": "Risk Analyst",
+    }
+    # Default admin
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@mtn.com")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "Admin.secure.123")
+    _USERS[admin_email.lower()] = {
+        "password_hash": hash_password(admin_password),
+        "role": "admin",
+        "name": "System Admin",
     }
 
 
