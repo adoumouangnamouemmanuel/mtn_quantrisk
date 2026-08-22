@@ -8,6 +8,7 @@ from ..core.security import (
     get_current_user,
     get_user_by_email,
 )
+from ..core.rbac import get_user_permissions
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -28,6 +29,7 @@ class UserResponse(BaseModel):
     email: str
     role: str
     name: str
+    permissions: list[str]
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -58,10 +60,11 @@ def login(body: LoginRequest):
 
 @router.get("/me", response_model=UserResponse)
 def me(current_user: dict = Depends(get_current_user)):
-    """Return the currently authenticated user's profile."""
+    """Return the currently authenticated user's profile with permissions."""
     user = get_user_by_email(current_user["email"])
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    user["permissions"] = get_user_permissions(user)
     return user
 
 
