@@ -23,10 +23,8 @@ walk), but it now reflects the live risk picture instead of a stale trend.
 from __future__ import annotations
 
 import logging
-import math
 import os
 from datetime import datetime, timezone, timedelta
-from typing import Any
 
 from .data_loader import KPI_META
 
@@ -169,17 +167,15 @@ def _aggregate_event_pressure(events: list[dict]) -> dict[str, float]:
 def _llm_narrative(kpi_id: str, baseline_points: list[dict], events: list[dict]) -> str | None:
     """Ask the LLM for a one-sentence explanation of the forecast adjustment.
 
-    Returns None when no API key is set or the call fails — the caller falls
-    back to a deterministic summary.
+    Uses the provider-agnostic LLM client with cost/latency controls.
+    Returns None when no provider is configured or the call fails.
     """
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key or not events:
+    if not events:
         return None
     try:
-        import json
-        import anthropic
+        from ..core.llm_client import get_llm_client
 
-        client = anthropic.Anthropic(api_key=api_key)
+        client = get_llm_client()
         kpi_name = KPI_META.get(kpi_id, {}).get("name", kpi_id)
         event_brief = "\n".join(
             f"- [{e['category']}] sev {e['severity']}: {e['title'][:90]} "
@@ -193,16 +189,44 @@ def _llm_narrative(kpi_id: str, baseline_points: list[dict], events: list[dict])
             "and the single most important driver. Do not invent numbers. "
             "Return only the sentence."
         )
-        msg = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=160,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = msg.content[0].text.strip() if msg.content else ""
-        return text or None
+        resp = client.complete(prompt, max_tokens=160)
+        return resp.text or None
     except Exception as exc:
         logger.debug("LLM forecast narrative failed: %s", exc)
         return None
+
+
+def _persist_forecast_adjustment(
+    kpi_id: str,
+    point: dict,
+    events: list[dict],
+    pressure: dict,
+    narrative: str | None,
+    llm_used: bool,
+) -> None:
+    """Persist a single forecast adjustment point to SQLite."""
+    try:
+        from ..models.database import SessionLocal
+        from ..models.forecast_adjustment import ForecastAdjustment
+
+        record = ForecastAdjustment(
+            kpi_id=kpi_id,
+            date=point["date"],
+            baseline_p50=point.get("p50", 0.0),
+            adjusted_p50=point.get("p50", 0.0),
+            adjustment_abs=point.get("adjustmentAbs", 0.0),
+            adjustment_pct=point.get("adjustmentPct", 0.0),
+            event_count=len(events),
+            aggregate_pressure=pressure,
+            events=events,
+            narrative=narrative,
+            llm_used=llm_used,
+        )
+        with SessionLocal() as db:
+            db.add(record)
+            db.commit()
+    except Exception as exc:
+        logger.debug("Failed to persist forecast adjustment: %s", exc)
 
 
 def build_event_adjusted_forecast(
@@ -226,6 +250,8 @@ def build_event_adjusted_forecast(
     horizon = len(baseline_points)
 
     enriched: list[dict] = []
+    llm_used = bool(os.environ.get("ANTHROPIC_API_KEY"))
+
     for i, pt in enumerate(baseline_points):
         if pt.get("isHistorical"):
             enriched.append({**pt, "events": [], "adjustmentAbs": 0.0, "adjustmentPct": 0.0})
@@ -265,6 +291,13 @@ def build_event_adjusted_forecast(
         else:
             narrative = "No qualifying live events; forecast follows the trained ARIMA baseline."
 
+    llm_used = llm_used and narrative is not None
+
+    # Persist sampled adjustment points to SQLite (every 7th non-zero point)
+    for idx, pt in enumerate(enriched):
+        if pt.get("adjustmentAbs", 0) != 0 and idx % 7 == 0:
+            _persist_forecast_adjustment(kpi_id, pt, pt.get("events", []), pressure, narrative, llm_used)
+
     return {
         "kpiId": kpi_id,
         "baselineModel": "ARIMA(2,1,1)",
@@ -272,7 +305,7 @@ def build_event_adjusted_forecast(
         "eventCount": len(events),
         "aggregatePressure": pressure,
         "narrative": narrative,
-        "llmUsed": bool(os.environ.get("ANTHROPIC_API_KEY")) and narrative is not None,
+        "llmUsed": llm_used,
         "points": enriched,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
     }
