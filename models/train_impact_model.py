@@ -101,7 +101,7 @@ def build_augmented_dataset(real_df):
     synthetic_rows = []
     for sc_id in scenario_ids:
         try:
-            result = apply_scenario(sc_id, severity_multiplier=1.0)
+            result = apply_scenario(sc_id, severity_multiplier=1.0, macro_overlays={})
             stressed = {row["kpiId"]: row["scenarioValue"] for row in result["results"]}
 
             row = base_macro.copy()
