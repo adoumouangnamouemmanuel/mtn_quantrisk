@@ -24,7 +24,13 @@ logger = logging.getLogger(__name__)
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 
-JWT_SECRET = os.environ.get("JWT_SECRET", "dev-secret-change-me-in-production")
+_jwt_secret = os.environ.get("JWT_SECRET")
+if not _jwt_secret:
+    if os.environ.get("ENVIRONMENT", "development") == "production":
+        raise RuntimeError("JWT_SECRET must be set in production")
+    import secrets as _secrets
+    _jwt_secret = _secrets.token_hex(32)
+JWT_SECRET: str = _jwt_secret
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(
     os.environ.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "480")
