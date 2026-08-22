@@ -89,7 +89,10 @@ async def upload_csv(file: UploadFile = File(...)):
 async def upload_pdf(file: UploadFile = File(...)):
     filename = _safe_filename(file.filename, ".pdf")
     contents = await file.read()
-    return process_pdf_upload(contents, filename)
+    try:
+        return process_pdf_upload(contents, filename)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
 
 
 @router.post("/upload/pdf/apply")
