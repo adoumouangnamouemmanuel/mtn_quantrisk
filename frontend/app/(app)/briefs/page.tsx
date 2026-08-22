@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { fetchBriefs, fetchScenarios, generateBoardBrief } from '@/lib/api';
+import { fetchBriefs, fetchScenarios, generateBoardBrief, downloadBriefPdf } from '@/lib/api';
 import { BoardBrief, Scenario } from '@/lib/types';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -163,10 +163,7 @@ export default function BriefsPage() {
                       variant="secondary"
                       size="sm"
                       disabled={brief.status !== 'Ready'}
-                      onClick={() => {
-                        setSelectedBrief(brief);
-                        setTimeout(() => window.print(), 100);
-                      }}
+                      onClick={() => downloadBriefPdf(brief.id).catch(console.error)}
                     >
                       <Download className="w-4 h-4 mr-2" /> PDF
                     </Button>
