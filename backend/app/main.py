@@ -11,6 +11,7 @@ from .api.auth import router as auth_router
 from .core.security import get_current_user
 from .core.rate_limit import RateLimitMiddleware
 from .core.metrics import MetricsMiddleware, metrics_endpoint
+from .core.audit import AuditMiddleware
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -83,6 +84,7 @@ app = FastAPI(
 
 app.add_middleware(RateLimitMiddleware)
 app.add_middleware(MetricsMiddleware)
+app.add_middleware(AuditMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

@@ -17,7 +17,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
@@ -199,9 +199,14 @@ _bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer_scheme),
 ) -> dict[str, Any]:
-    """FastAPI dependency that validates the Bearer JWT and returns the user."""
+    """FastAPI dependency that validates the Bearer JWT and returns the user.
+
+    Also sets request.state.user_email and request.state.user_role for the
+    audit middleware to pick up.
+    """
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -209,11 +214,15 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     payload = decode_access_token(credentials.credentials)
-    return {
+    user = {
         "sub": payload.get("sub"),
         "email": payload.get("email"),
         "role": payload.get("role", "analyst"),
     }
+    # Propagate to request.state for audit middleware
+    request.state.user_email = user["email"]
+    request.state.user_role = user["role"]
+    return user
 
 
 # ── Local user store ───────────────────────────────────────────────────────────
