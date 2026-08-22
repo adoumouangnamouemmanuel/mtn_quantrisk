@@ -655,3 +655,56 @@ export async function runStressTest(params: {
   });
 }
 
+// ── Export ────────────────────────────────────────────────────────────────
+
+export async function downloadKriExcel(period?: string): Promise<void> {
+  const token = getAccessToken();
+  const qs = period ? `?period=${period}` : '';
+  const res = await fetch(`${API_BASE}/api/export/kri-excel${qs}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('Export failed');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kri_register.xlsx';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadBriefPdf(briefId?: string): Promise<void> {
+  const token = getAccessToken();
+  const qs = briefId ? `?brief_id=${briefId}` : '';
+  const res = await fetch(`${API_BASE}/api/export/brief-pdf${qs}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('Export failed');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'board_brief.pdf';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadScenarioComparisonExcel(
+  scenarioAId: string,
+  scenarioBId: string,
+): Promise<void> {
+  const token = getAccessToken();
+  const qs = `?scenario_a_id=${scenarioAId}&scenario_b_id=${scenarioBId}`;
+  const res = await fetch(`${API_BASE}/api/export/scenario-comparison-excel${qs}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('Export failed');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `compare_${scenarioAId}_vs_${scenarioBId}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
