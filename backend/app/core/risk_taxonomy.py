@@ -10,7 +10,10 @@ history.
 """
 from __future__ import annotations
 
+import logging
 from enum import Enum
+
+logger = logging.getLogger(__name__)
 
 
 class RiskCategory(str, Enum):
