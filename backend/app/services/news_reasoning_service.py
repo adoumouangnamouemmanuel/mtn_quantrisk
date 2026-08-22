@@ -31,33 +31,32 @@ def _persist_reasoning(article_id: str, reasoning: dict) -> None:
                 NewsReasoningRecord.article_id == article_id
             ).delete()
 
-        record = NewsReasoningRecord(
-            article_id=article_id,
-            title=reasoning.get("title"),
-            scored=reasoning.get("scored", False),
-            category=reasoning.get("category"),
-            category_label=reasoning.get("categoryLabel"),
-            original_category=reasoning.get("originalCategory"),
-            severity=reasoning.get("severity"),
-            mtn_relevance=reasoning.get("mtnRelevance"),
-            confidence=reasoning.get("confidence"),
-            alert_tier=reasoning.get("alertTier"),
-            sentiment=reasoning.get("sentiment"),
-            relevance_reasons=reasoning.get("relevanceReasons"),
-            severity_reasons=reasoning.get("severityReasons"),
-            sentiment_reasons=reasoning.get("sentimentReasons"),
-            impact_reasons=reasoning.get("impactReasons"),
-            entities=reasoning.get("entities"),
-            keyword_hits=reasoning.get("keywordHits"),
-            matched_category_keywords=reasoning.get("matchedCategoryKeywords"),
-            llm_explanation=reasoning.get("llmExplanation"),
-            llm_used=reasoning.get("llmUsed", False),
-        )
-        with SessionLocal() as db:
+            record = NewsReasoningRecord(
+                article_id=article_id,
+                title=reasoning.get("title"),
+                scored=reasoning.get("scored", False),
+                category=reasoning.get("category"),
+                category_label=reasoning.get("categoryLabel"),
+                original_category=reasoning.get("originalCategory"),
+                severity=reasoning.get("severity"),
+                mtn_relevance=reasoning.get("mtnRelevance"),
+                confidence=reasoning.get("confidence"),
+                alert_tier=reasoning.get("alertTier"),
+                sentiment=reasoning.get("sentiment"),
+                relevance_reasons=reasoning.get("relevanceReasons"),
+                severity_reasons=reasoning.get("severityReasons"),
+                sentiment_reasons=reasoning.get("sentimentReasons"),
+                impact_reasons=reasoning.get("impactReasons"),
+                entities=reasoning.get("entities"),
+                keyword_hits=reasoning.get("keywordHits"),
+                matched_category_keywords=reasoning.get("matchedCategoryKeywords"),
+                llm_explanation=reasoning.get("llmExplanation"),
+                llm_used=reasoning.get("llmUsed", False),
+            )
             db.add(record)
             db.commit()
     except Exception as exc:
-        logger.debug("Failed to persist news reasoning: %s", exc)
+        logger.warning("Failed to persist news reasoning: %s", exc)
 
 
 def build_reasoning(article_id: str) -> dict | None:
@@ -197,7 +196,7 @@ def build_reasoning(article_id: str) -> dict | None:
             "keywordHits": score.keyword_hits or {},
             "matchedCategoryKeywords": matched_keywords,
             "llmExplanation": llm_summary,
-            "llmUsed": bool(os.environ.get("ANTHROPIC_API_KEY")) and llm_summary is not None,
+            "llmUsed": llm_summary is not None,
         }
 
         # Persist reasoning breakdown to SQLite
