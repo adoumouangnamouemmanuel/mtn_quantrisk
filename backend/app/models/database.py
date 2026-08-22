@@ -47,4 +47,6 @@ def init_db():
     from . import article, risk_score, alert  # noqa: F401 — registers models
     from . import board_brief  # noqa: F401
     from . import feedback  # noqa: F401 — Feedback + BaseCaseChangeLog
+    from . import forecast_adjustment  # noqa: F401
+    from . import news_reasoning  # noqa: F401
     Base.metadata.create_all(bind=engine)
