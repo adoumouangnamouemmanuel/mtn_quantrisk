@@ -137,11 +137,14 @@ export default function BacktestPage() {
 
   useEffect(() => {
     if (!selectedKpi) return;
+    let cancelled = false;
     setLoadingDetail(true);
+    setDetail(null);
     fetchBacktest(selectedKpi)
-      .then(setDetail)
-      .catch(e => setError(String(e)))
-      .finally(() => setLoadingDetail(false));
+      .then((data) => { if (!cancelled) setDetail(data); })
+      .catch((e) => { if (!cancelled) setError(String(e)); })
+      .finally(() => { if (!cancelled) setLoadingDetail(false); });
+    return () => { cancelled = true; };
   }, [selectedKpi]);
 
   // Summary stats across all KPIs
