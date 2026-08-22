@@ -146,21 +146,19 @@ function TornadoChart({ tornado }: { tornado: StressTestResult['tornado'] }) {
 }
 
 export default function BusinessStressPage() {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
   const [selectedPreset, setSelectedPreset] = useState(0);
   const [shocks, setShocks] = useState<Shocks>(PRESETS[0]!.shocks);
   const [result, setResult] = useState<StressTestResult | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Local plan state (for editing)
-  const [plan, setPlan] = useState({
+  const DEFAULT_PLAN = {
     revenue: [18240, 20790, 23540],
     ebitda: [10030, 11640, 13380],
     capex: [3560, 3920, 4260],
     subscribers: [30.8, 32.4, 34.1],
-  });
+  };
+  const [plan, setPlan] = useState(DEFAULT_PLAN);
 
   function choosePreset(index: number) {
     setSelectedPreset(index);
@@ -205,7 +203,7 @@ export default function BusinessStressPage() {
   const mc = result?.monteCarlo;
 
   const workflowSteps: { number: string; title: string; state: string; icon: LucideIcon }[] = [
-    { number: '01', title: 'Business plan', state: fileName ? 'File ready' : 'Demo plan loaded', icon: FileSpreadsheet },
+    { number: '01', title: 'Business plan', state: 'Demo plan loaded', icon: FileSpreadsheet },
     { number: '02', title: 'Stress design', state: PRESETS[selectedPreset]?.name ?? 'Custom case', icon: Gauge },
     { number: '03', title: 'Decision output', state: result ? 'Results generated' : 'Ready to simulate', icon: Target },
   ];
@@ -231,13 +229,13 @@ export default function BusinessStressPage() {
         <button onClick={runSimulation} disabled={running} className="group flex items-center gap-2 rounded-xl bg-mtn-yellow px-5 py-3 font-mono text-xs font-black uppercase tracking-wider text-black shadow-[0_0_30px_rgba(255,208,0,.14)] transition hover:bg-mtn-yellow-bright disabled:opacity-60">
           {running ? <Activity className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4 fill-black" />}
           {running ? 'Running 10,000 paths' : 'Run simulation'}
-          {!running && <ArrowRight className="h-4 h-4 transition-transform group-hover:translate-x-1" />}
+          {!running && <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />}
         </button>
       </header>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {workflowSteps.map(({ number, title, state, icon: Icon }, index) => (
-          <div key={number} className={`relative flex items-center gap-3 overflow-hidden rounded-xl border px-4 py-3 ${index === (result ? 2 : fileName ? 1 : 0) ? 'border-mtn-yellow/35 bg-mtn-yellow/[0.06]' : 'border-white/7 bg-white/[0.02]'}`}>
+          <div key={number} className={`relative flex items-center gap-3 overflow-hidden rounded-xl border px-4 py-3 ${index === (result ? 2 : 1) ? 'border-mtn-yellow/35 bg-mtn-yellow/[0.06]' : 'border-white/7 bg-white/[0.02]'}`}>
             <span className="font-mono text-xl font-black text-mtn-yellow/30">{number}</span>
             <Icon className="h-4 w-4 text-on-surface-variant" />
             <div><p className="text-xs font-bold text-on-surface">{title}</p><p className="text-[9px] font-mono text-on-surface-variant">{state}</p></div>
@@ -341,8 +339,21 @@ export default function BusinessStressPage() {
                     <div className="flex-1 flex items-center gap-1">
                       <span className="font-mono text-[8px] text-error w-16 text-right">{mc.p05[i]?.toLocaleString()}</span>
                       <div className="flex-1 h-3 rounded bg-surface-container relative">
-                        <div className="absolute top-0 bottom-0 bg-mtn-yellow/15 rounded" style={{ left: '10%', width: '80%' }} />
-                        <div className="absolute top-0 bottom-0 w-0.5 bg-mtn-yellow rounded" style={{ left: '50%' }} />
+                        {(() => {
+                          const allVals = mc.p05.concat(mc.p95);
+                          const bandMin = Math.min(...allVals);
+                          const bandMax = Math.max(...allVals);
+                          const bandRange = bandMax - bandMin || 1;
+                          const p05Pct = ((mc.p05[i]! - bandMin) / bandRange) * 80 + 10;
+                          const p95Pct = ((mc.p95[i]! - bandMin) / bandRange) * 80 + 10;
+                          const p50Pct = ((mc.p50[i]! - bandMin) / bandRange) * 80 + 10;
+                          return (
+                            <>
+                              <div className="absolute top-0 bottom-0 bg-mtn-yellow/15 rounded" style={{ left: `${p05Pct}%`, width: `${p95Pct - p05Pct}%` }} />
+                              <div className="absolute top-0 bottom-0 w-0.5 bg-mtn-yellow rounded" style={{ left: `${p50Pct}%` }} />
+                            </>
+                          );
+                        })()}
                       </div>
                       <span className="font-mono text-[8px] text-green-400 w-16">{mc.p95[i]?.toLocaleString()}</span>
                     </div>
@@ -363,7 +374,7 @@ export default function BusinessStressPage() {
             </div>
           </div>
 
-          <button onClick={() => { choosePreset(0); setFileName(null); setResult(null); }} className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 py-2.5 text-[10px] font-mono text-on-surface-variant transition hover:border-white/20 hover:text-on-surface"><RotateCcw className="h-3.5 w-3.5" /> Reset workspace</button>
+          <button onClick={() => { choosePreset(0); setPlan(DEFAULT_PLAN); setResult(null); }} className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 py-2.5 text-[10px] font-mono text-on-surface-variant transition hover:border-white/20 hover:text-on-surface"><RotateCcw className="h-3.5 w-3.5" /> Reset workspace</button>
         </aside>
       </div>
     </div>
