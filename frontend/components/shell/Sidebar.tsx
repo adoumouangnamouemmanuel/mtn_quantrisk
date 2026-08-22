@@ -5,15 +5,13 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FlaskConical, GitCompare, ActivitySquare, Dices,
   Settings, HelpCircle, LineChart, Newspaper, Bell, TrendingUp, Brain,
-  FileText, CalendarDays, Calendar,
+  FileText, CalendarDays, Calendar, BookOpen, Grid3X3,
 } from 'lucide-react';
-import { Tooltip } from '@/components/ui/Tooltip';
 
 interface NavItem {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
-  tip: string;
   badge?: string;
 }
 
@@ -26,29 +24,31 @@ const NAV_ITEMS: NavGroup[] = [
   {
     group: 'Overview',
     items: [
-      { href: '/dashboard',  label: 'Dashboard',      icon: LayoutDashboard, tip: 'Core KPI anchors and live status across all six risk categories.' },
-      { href: '/quarterly',  label: 'Quarterly',      icon: CalendarDays,   tip: 'Quarterly trend with provenance and drill-down per point.' },
-      { href: '/monthly',    label: 'Monthly',         icon: Calendar,       tip: 'Monthly trend with provenance and drill-down per point.' },
+      { href: '/dashboard',    label: 'Dashboard',      icon: LayoutDashboard },
+      { href: '/risk-heatmap', label: 'Risk Heatmap',   icon: Grid3X3, badge: 'NEW' },
+      { href: '/quarterly',    label: 'Quarterly',      icon: CalendarDays },
+      { href: '/monthly',      label: 'Monthly',         icon: Calendar },
     ],
   },
   {
     group: 'Predict & Stress',
     items: [
-      { href: '/forecasts',   label: 'Forecasts',     icon: LineChart,       tip: 'Real-time, event-aware forecasts with per-point drill-down.', badge: 'AI' },
-      { href: '/scenarios',   label: 'Scenarios',     icon: FlaskConical,    tip: 'Apply stress scenarios to the base case.' },
-      { href: '/compare',     label: 'Compare',       icon: GitCompare,      tip: 'Compare two scenarios side by side.' },
-      { href: '/reverse',     label: 'Reverse',       icon: ActivitySquare,  tip: 'Find the severity that breaches a target.' },
-      { href: '/monte-carlo', label: 'Monte Carlo',   icon: Dices,           tip: 'Stochastic distribution across N simulations.', badge: 'AI' },
-      { href: '/briefs',      label: 'Briefs',        icon: FileText,        tip: 'Board-ready scenario briefs.' },
+      { href: '/forecasts',   label: 'Forecasts',     icon: LineChart,       badge: 'AI' },
+      { href: '/scenarios',   label: 'Scenarios',     icon: FlaskConical },
+      { href: '/compare',     label: 'Compare',       icon: GitCompare },
+      { href: '/reverse',     label: 'Reverse',       icon: ActivitySquare },
+      { href: '/monte-carlo', label: 'Monte Carlo',   icon: Dices,           badge: 'AI' },
+      { href: '/briefs',      label: 'Briefs',        icon: FileText },
     ],
   },
   {
     group: 'Live Risk',
     items: [
-      { href: '/news',         label: 'News',         icon: Newspaper,   tip: 'Scraped articles with relevance & severity reasoning.', badge: 'LIVE' },
-      { href: '/alerts',       label: 'Alerts',       icon: Bell,        tip: 'Active risk alerts by tier.', badge: 'LIVE' },
-      { href: '/economics',   label: 'Macro',         icon: TrendingUp,  tip: 'Ghana macro indicators from the World Bank.' },
-      { href: '/intelligence', label: 'Briefing',     icon: Brain,       tip: 'Daily LLM risk digest.', badge: 'LLM' },
+      { href: '/news',         label: 'News',         icon: Newspaper,   badge: 'LIVE' },
+      { href: '/alerts',       label: 'Alerts',       icon: Bell,        badge: 'LIVE' },
+      { href: '/economics',   label: 'Macro',         icon: TrendingUp },
+      { href: '/intelligence', label: 'Briefing',     icon: Brain,       badge: 'LLM' },
+      { href: '/kri-register', label: 'KRI Register', icon: BookOpen },
     ],
   },
 ];
@@ -110,9 +110,7 @@ export function Sidebar() {
                 );
                 return (
                   <li key={item.href}>
-                    <Tooltip content={item.tip} side="right" maxWidth={260}>
-                      {link}
-                    </Tooltip>
+                    {link}
                   </li>
                 );
               })}
@@ -124,27 +122,26 @@ export function Sidebar() {
       {/* Footer */}
       <div className="px-2 py-2 border-t space-y-0.5" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
         {[
-          { href: '/help', label: 'Help', icon: HelpCircle, tip: 'Guides, glossary and how to use the platform.' },
-          { href: '/settings', label: 'Settings', icon: Settings, tip: 'Data uploads, retrain and preferences.' },
-        ].map(({ href, label, icon: Icon, tip }) => (
-          <Tooltip key={href} content={tip} side="right">
-            <Link
-              href={href}
-              className="flex items-center px-3 py-2 rounded-lg text-[13px] font-sans font-medium transition-colors"
-              style={
-                pathname === href
-                  ? { color: '#FFD000', background: 'rgba(255,208,0,0.08)' }
-                  : { color: 'rgba(240,237,232,0.5)' }
-              }
-            >
-              <Icon className="w-4 h-4 mr-2.5" style={{ opacity: 0.6 }} />
-              {label}
-            </Link>
-          </Tooltip>
+          { href: '/help', label: 'Help', icon: HelpCircle },
+          { href: '/settings', label: 'Settings', icon: Settings },
+        ].map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="flex items-center px-3 py-2 rounded-lg text-[13px] font-sans font-medium transition-colors"
+            style={
+              pathname === href
+                ? { color: '#FFD000', background: 'rgba(255,208,0,0.08)' }
+                : { color: 'rgba(240,237,232,0.5)' }
+            }
+          >
+            <Icon className="w-4 h-4 mr-2.5" style={{ opacity: 0.6 }} />
+            {label}
+          </Link>
         ))}
         <div className="px-3 pt-1.5 flex items-center justify-between">
           <span className="font-mono" style={{ fontSize: '9px', color: 'rgba(160,155,176,0.35)' }}>
-            v2.2 · FY25
+            v3.0 · FY26
           </span>
           <span
             className="font-mono px-1.5 py-0.5 rounded"
