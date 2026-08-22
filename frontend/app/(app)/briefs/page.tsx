@@ -113,54 +113,99 @@ export default function BriefsPage() {
           briefs.map(brief => (
             <Card
               key={brief.id}
-              className="flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-surface-container-high transition-colors"
+              className="hover:bg-surface-container-high transition-colors overflow-hidden"
             >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-2 flex-wrap">
-                  <h3 className="text-lg font-sans font-medium text-on-surface">{brief.title}</h3>
-                  <Chip
-                    variant={brief.status === 'Ready' ? 'success' : brief.status === 'Generating' ? 'warning' : 'error'}
-                    size="sm"
-                  >
-                    {brief.status}
-                  </Chip>
-                  {brief.severityScore > 0 && (
-                    <span className="font-mono text-xs text-on-surface-variant">
-                      Severity: <span className="text-warning">{brief.severityScore.toFixed(1)}</span>
-                    </span>
-                  )}
-                </div>
-                <div className="text-sm text-on-surface-variant font-mono mb-2">
-                  ID: {brief.id} &nbsp;|&nbsp; {new Date(brief.generatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  &nbsp;|&nbsp; Impact: {brief.estimatedImpact.currency} {brief.estimatedImpact.magnitude.toLocaleString()}{brief.estimatedImpact.unit}
-                </div>
-                {brief.status === 'Ready' && brief.executiveSummary && (
-                  <p className="text-sm text-on-surface-variant line-clamp-2 max-w-2xl">
-                    {brief.executiveSummary}
-                  </p>
-                )}
-              </div>
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                      <h3 className="text-lg font-sans font-medium text-on-surface">{brief.title}</h3>
+                      <Chip
+                        variant={brief.status === 'Ready' ? 'success' : brief.status === 'Generating' ? 'warning' : 'error'}
+                        size="sm"
+                      >
+                        {brief.status}
+                      </Chip>
+                      {brief.severityScore > 0 && (
+                        <span className="font-mono text-xs text-on-surface-variant">
+                          Severity: <span className="text-warning">{brief.severityScore.toFixed(1)}</span>
+                        </span>
+                      )}
+                    </div>
 
-              <div className="flex gap-2 shrink-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={brief.status !== 'Ready'}
-                  onClick={() => setSelectedBrief(brief)}
-                >
-                  <FileText className="w-4 h-4 mr-2" /> View
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={brief.status !== 'Ready'}
-                  onClick={() => {
-                    setSelectedBrief(brief);
-                    setTimeout(() => window.print(), 100);
-                  }}
-                >
-                  <Download className="w-4 h-4 mr-2" /> PDF
-                </Button>
+                    {/* Meta row */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-on-surface-variant font-mono mb-3">
+                      <span>ID: {brief.id}</span>
+                      <span>{new Date(brief.generatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      <span>Impact: <span className="text-mtn-yellow font-bold">{brief.estimatedImpact.currency} {brief.estimatedImpact.magnitude.toLocaleString()}{brief.estimatedImpact.unit}</span></span>
+                      {brief.scenarioIds.length > 0 && (
+                        <span>Scenarios: {brief.scenarioIds.join(', ')}</span>
+                      )}
+                    </div>
+
+                    {brief.status === 'Ready' && brief.executiveSummary && (
+                      <p className="text-sm text-on-surface-variant line-clamp-2 max-w-2xl leading-relaxed">
+                        {brief.executiveSummary}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={brief.status !== 'Ready'}
+                      onClick={() => setSelectedBrief(brief)}
+                    >
+                      <FileText className="w-4 h-4 mr-2" /> View
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={brief.status !== 'Ready'}
+                      onClick={() => {
+                        setSelectedBrief(brief);
+                        setTimeout(() => window.print(), 100);
+                      }}
+                    >
+                      <Download className="w-4 h-4 mr-2" /> PDF
+                    </Button>
+                  </div>
+                </div>
+
+                {/* KPI impact chips */}
+                {brief.status === 'Ready' && brief.keyKpiImpacts.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-outline/10">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant mb-2">Key KPI Impacts</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {brief.keyKpiImpacts.map((impact, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-full text-[10px] font-mono border border-outline/20 bg-surface-container text-on-surface-variant">
+                          {impact.kpiId}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recommended actions preview */}
+                {brief.status === 'Ready' && brief.recommendedActions.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-outline/10">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant mb-2">Recommended Actions</p>
+                    <ul className="space-y-1">
+                      {brief.recommendedActions.slice(0, 2).map((action, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-on-surface-variant">
+                          <span className="text-mtn-yellow mt-0.5">•</span>
+                          <span className="line-clamp-1">{action}</span>
+                        </li>
+                      ))}
+                      {brief.recommendedActions.length > 2 && (
+                        <li className="text-[10px] font-mono text-on-surface-variant">
+                          +{brief.recommendedActions.length - 2} more
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
               </div>
             </Card>
           ))
