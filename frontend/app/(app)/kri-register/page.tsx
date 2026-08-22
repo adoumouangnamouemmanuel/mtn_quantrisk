@@ -7,7 +7,8 @@ import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { formatNumber, formatPct } from '@/lib/format';
 import { SkeletonBlock } from '@/components/ui/SkeletonBlock';
-import { BookOpen, CheckCircle2, AlertTriangle, XCircle, Eye, ArrowUpDown, Search, Target, DollarSign, Activity, Cpu, Scale, Globe } from 'lucide-react';
+import { BookOpen, CheckCircle2, AlertTriangle, XCircle, Eye, ArrowUpDown, Search, Target, DollarSign, Activity, Cpu, Scale, Globe, Download } from 'lucide-react';
+import { downloadKriExcel } from '@/lib/api';
 import { LiveRiskEvents } from '@/components/intelligence/LiveRiskEvents';
 import { RISK_CATEGORIES, type RiskCategory } from '@/lib/riskTaxonomy';
 import { ThemeTokens } from '@/lib/theme';
@@ -116,6 +117,13 @@ export default function KriRegisterPage() {
               </span>
             ))}
           </div>
+          <button
+            onClick={() => downloadKriExcel().catch(console.error)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-400/10 text-blue-400 hover:bg-blue-400/20 transition-colors text-xs font-medium"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Export Excel
+          </button>
         </div>
       </div>
 
