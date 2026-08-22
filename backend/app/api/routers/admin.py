@@ -1,5 +1,5 @@
-"""Admin-only endpoints for user management."""
-from fastapi import APIRouter, Depends, HTTPException
+"""Admin-only endpoints for user management and audit trail."""
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from ...core.security import (
@@ -9,6 +9,8 @@ from ...core.security import (
     _seed_default_user,
 )
 from ...core.rbac import require_role, ROLE_HIERARCHY
+from ...models.database import SessionLocal
+from ...models.audit_log import AuditLog
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -84,3 +86,42 @@ def delete_user(email: str):
             raise HTTPException(status_code=400, detail="Cannot delete the last admin user")
     del _USERS[normalized]
     return None
+
+
+# ── Audit Trail ──────────────────────────────────────────────────────────────
+
+@router.get("/audit-log", dependencies=[Depends(require_role("admin"))])
+def get_audit_log(
+    limit: int = Query(default=100, ge=1, le=1000),
+    user_email: str | None = None,
+    method: str | None = None,
+    path: str | None = None,
+):
+    """Query the audit trail (admin only)."""
+    db = SessionLocal()
+    try:
+        q = db.query(AuditLog).order_by(AuditLog.timestamp.desc())
+        if user_email:
+            q = q.filter(AuditLog.user_email == user_email)
+        if method:
+            q = q.filter(AuditLog.method == method.upper())
+        if path:
+            q = q.filter(AuditLog.path.contains(path))
+        entries = q.limit(limit).all()
+        return [
+            {
+                "id": e.id,
+                "timestamp": e.timestamp.isoformat() if e.timestamp else None,
+                "userEmail": e.user_email,
+                "userRole": e.user_role,
+                "method": e.method,
+                "path": e.path,
+                "statusCode": e.status_code,
+                "queryParams": e.query_params,
+                "ipAddress": e.ip_address,
+                "durationMs": e.duration_ms,
+            }
+            for e in entries
+        ]
+    finally:
+        db.close()
