@@ -1,5 +1,5 @@
 """Scenario, reverse-stress, and Monte Carlo endpoints."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from ...schemas import (
     RunScenarioRequest,
@@ -16,6 +16,7 @@ from ...services.scenario_service import (
     delete_scenario,
 )
 from ...services.reverse_service import run_reverse_stress
+from ...core.rbac import require_role, require_permission
 
 router = APIRouter(prefix="/api", tags=["scenarios"])
 
@@ -35,12 +36,12 @@ def get_scenario(scenario_id: str):
     return sc
 
 
-@router.post("/scenarios", status_code=201)
+@router.post("/scenarios", status_code=201, dependencies=[Depends(require_role("cro", "admin"))])
 def create_scenario_route(body: ScenarioMutateInput):
     return create_scenario(body.model_dump())
 
 
-@router.put("/scenarios/{scenario_id}")
+@router.put("/scenarios/{scenario_id}", dependencies=[Depends(require_role("cro", "admin"))])
 def update_scenario_route(scenario_id: str, body: ScenarioMutateInput):
     result = update_scenario(scenario_id, body.model_dump())
     if not result:
@@ -48,7 +49,7 @@ def update_scenario_route(scenario_id: str, body: ScenarioMutateInput):
     return result
 
 
-@router.delete("/scenarios/{scenario_id}", status_code=204)
+@router.delete("/scenarios/{scenario_id}", status_code=204, dependencies=[Depends(require_role("cro", "admin"))])
 def delete_scenario_route(scenario_id: str):
     if not delete_scenario(scenario_id):
         raise HTTPException(status_code=404, detail=f"Scenario {scenario_id} not found")
