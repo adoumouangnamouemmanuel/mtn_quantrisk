@@ -1,5 +1,5 @@
 """Backtesting and model accuracy endpoints."""
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 from ...services.backtest_service import backtest_kpi, backtest_all_kpis
 
@@ -7,7 +7,11 @@ router = APIRouter(prefix="/api", tags=["backtest"])
 
 
 @router.get("/backtest/{kpi_id}")
-def get_backtest(kpi_id: str, train_size: int | None = None, test_size: int = 2):
+def get_backtest(
+    kpi_id: str,
+    train_size: int | None = Query(default=None, ge=4, le=64),
+    test_size: int = Query(default=2, ge=1, le=8),
+):
     """Walk-forward backtest for a single KPI.
 
     Returns actual-vs-predicted time series, per-fold metrics, and
