@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FlaskConical, GitCompare, ActivitySquare, Dices,
   Settings, HelpCircle, LineChart, Newspaper, Bell, TrendingUp, Brain,
-  FileText, CalendarDays, Calendar, BookOpen, Grid3X3,
+  FileText, CalendarDays, Calendar, BookOpen, Grid3X3, Target,
 } from 'lucide-react';
 
 interface NavItem {
@@ -39,6 +39,7 @@ const NAV_ITEMS: NavGroup[] = [
       { href: '/reverse',     label: 'Reverse',       icon: ActivitySquare },
       { href: '/monte-carlo', label: 'Monte Carlo',   icon: Dices,           badge: 'AI' },
       { href: '/briefs',      label: 'Briefs',        icon: FileText },
+      { href: '/backtest',    label: 'Backtest',      icon: Target },
     ],
   },
   {
