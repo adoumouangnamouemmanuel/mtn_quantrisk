@@ -5,8 +5,10 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FlaskConical, GitCompare, ActivitySquare, Dices,
   Settings, HelpCircle, LineChart, Newspaper, Bell, TrendingUp, Brain,
-  FileText, CalendarDays, Calendar, BookOpen, Grid3X3, Target,
+  FileText, CalendarDays, Calendar, BookOpen, Grid3X3, Target, Shield,
 } from 'lucide-react';
+import { getStoredUser } from '@/lib/auth';
+import { ROLE_LABELS, ROLE_COLORS, hasRole } from '@/lib/roles';
 
 interface NavItem {
   href: string;
@@ -122,6 +124,24 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="px-2 py-2 border-t space-y-0.5" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+        {/* User role badge */}
+        {(() => {
+          const user = getStoredUser();
+          if (!user) return null;
+          return (
+            <div className="px-3 py-2 mb-1">
+              <div className="flex items-center gap-2">
+                <Shield className="w-3.5 h-3.5" style={{ color: 'rgba(255,208,0,0.5)' }} />
+                <span className="font-mono text-[10px]" style={{ color: 'rgba(240,237,232,0.5)' }}>
+                  {user.name || user.email}
+                </span>
+              </div>
+              <span className={`mt-1 inline-block font-mono text-[8px] px-1.5 py-0.5 rounded ${ROLE_COLORS[user.role] ?? 'bg-gray-100 text-gray-700'}`}>
+                {ROLE_LABELS[user.role] ?? user.role}
+              </span>
+            </div>
+          );
+        })()}
         {[
           { href: '/help', label: 'Help', icon: HelpCircle },
           { href: '/settings', label: 'Settings', icon: Settings },
