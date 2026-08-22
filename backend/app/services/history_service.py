@@ -1,104 +1,159 @@
+"""Validated historical KPI series loaded from repository CSV files.
+
+No random or synthetic history is generated here. When monthly observations do
+not exist, the monthly endpoint returns the best available quarterly or annual
+observations and declares that actual frequency in its metadata.
 """
-Generates deterministic historical time-series anchored to real base-case values.
 
-Strategy: grow a relative index with seeded random noise, then scale the entire
-series so the final point equals the actual FY25 base-case value from the CSV.
-That way the charts always end exactly on the real number while looking realistic.
-"""
-import random
-from datetime import date
-from .data_loader import load_base_case, FRONTEND_KPIS
+from pathlib import Path
+from typing import Any
 
-# KPIs where higher = worse (they spiked UP during FY22 Ghana macro crisis)
-_CRISIS_SPIKE = {"EXT01", "EXT02", "EXT03"}
-# KPIs where FY22 was a stress period (dipped)
-_CRISIS_DIP = {"FIN01", "FIN02", "FIN03", "FIN04", "FIN05", "SEG01", "SEG03"}
+import pandas as pd
+
+from .data_loader import ROOT
 
 
-def _seed(kpi_id: str, suffix: str) -> int:
-    return abs(hash(kpi_id + suffix)) % (2**31)
+QUARTERLY_FINANCIAL = ROOT / "data/structured/quarterly.csv"
+QUARTERLY_SEGMENTS = ROOT / "data/structured/segments_quarterly.csv"
+QUARTERLY_OPERATIONAL = ROOT / "data/structured/operational_quarterly.csv"
+MACRO_CONTEXT = ROOT / "data/structured/macro_context.csv"
+
+_QUALITY_LABELS = {"R": "Reported", "I": "Interpolated", "E": "Estimated"}
+
+_KPI_SOURCES: dict[str, dict[str, Any]] = {
+    "FIN01": {"path": QUARTERLY_FINANCIAL, "column": "Service_Revenue", "flag": "Service_Revenue_Flag"},
+    "FIN02": {"path": QUARTERLY_FINANCIAL, "column": "EBITDA", "flag": "EBITDA_Flag"},
+    "FIN03": {"path": QUARTERLY_FINANCIAL, "column": "EBITDA_Margin_Pct", "flag": "EBITDA_Margin_Flag"},
+    "FIN04": {"path": QUARTERLY_FINANCIAL, "column": "PAT", "flag": "PAT_Flag"},
+    "FIN05": {"path": QUARTERLY_FINANCIAL, "column": "PAT_Margin_Pct", "flag": "PAT_Margin_Flag"},
+    "FIN06": {"path": QUARTERLY_FINANCIAL, "column": "Service_Revenue", "flag": "Service_Revenue_Flag", "yoy": True},
+    "SEG01": {"path": QUARTERLY_SEGMENTS, "column": "Data_Revenue", "flag": "Data_Flag"},
+    "SEG03": {"path": QUARTERLY_SEGMENTS, "column": "MoMo_Revenue", "flag": "MoMo_Flag"},
+    "OPS01": {"path": QUARTERLY_OPERATIONAL, "column": "Total_Subscribers_M", "flag": "Subs_Flag"},
+    "OPS04": {"path": QUARTERLY_OPERATIONAL, "column": "ARPU_GHS", "flag": "ARPU_Flag"},
+    "OPS07": {"path": QUARTERLY_OPERATIONAL, "column": "4G_Coverage_Pct", "flag": "Coverage_Flag"},
+    "EXT01": {"path": MACRO_CONTEXT, "column": "Inflation_YoY_Pct", "frequency": "mixed"},
+    "EXT02": {"path": MACRO_CONTEXT, "column": "Policy_Rate_Pct", "frequency": "mixed"},
+    "EXT03": {"path": MACRO_CONTEXT, "column": "Cedi_USD_Avg", "frequency": "mixed"},
+}
 
 
-def get_quarterly(kpi_id: str) -> list:
-    """
-    Returns 24 quarterly data points: FY20Q1 → FY25Q4.
-    Final value = real base-case FY25 value.
-    """
-    base = load_base_case()
-    val = float(base.get(kpi_id, 0.0))
-    if val == 0.0:
-        return []
-
-    rng = random.Random(_seed(kpi_id, "quarterly"))
-    current = 0.50  # relative index starts at 50% of final
-
-    raw: list[tuple[str, float]] = []
-
-    for year in range(2020, 2026):
-        for q in range(1, 5):
-            # FY22 macro crisis inflection (Q3-Q4 2022)
-            if year == 2022 and q in (3, 4):
-                if kpi_id in _CRISIS_SPIKE:
-                    current *= rng.uniform(1.20, 1.45)
-                elif kpi_id in _CRISIS_DIP:
-                    current *= rng.uniform(0.80, 0.90)
-
-            # Gradual recovery in FY23
-            if year == 2023 and kpi_id in _CRISIS_DIP:
-                current *= rng.uniform(1.00, 1.06)
-            elif year == 2023 and kpi_id in _CRISIS_SPIKE:
-                current *= rng.uniform(0.96, 1.02)  # easing
-            else:
-                current *= rng.uniform(0.97, 1.07)
-
-            raw.append((f"FY{str(year)[2:]}Q{q}", current))
-
-    # Scale so last point = real base case value
-    scale = val / raw[-1][1]
-    return [
-        {"quarter": lbl, "value": float(round(v * scale, 4))}
-        for lbl, v in raw
-    ]
+def _read_source(kpi_id: str) -> tuple[pd.DataFrame, dict[str, Any]]:
+    config = _KPI_SOURCES.get(kpi_id)
+    if not config:
+        raise ValueError(f"No historical source configured for KPI {kpi_id}")
+    path: Path = config["path"]
+    frame = pd.read_csv(path, encoding="utf-8-sig", on_bad_lines="error")
+    required = {"Period_ID", "Year", config["column"]}
+    missing = required.difference(frame.columns)
+    if missing:
+        raise ValueError(f"{path.name} is missing columns: {', '.join(sorted(missing))}")
+    return frame, config
 
 
-def _month_label(end_date: date, months_back: int) -> str:
-    """Return 'Jan 2023' style label for (end_date - months_back months)."""
-    total_months = end_date.year * 12 + (end_date.month - 1) - months_back
-    y, m = divmod(total_months, 12)
-    return date(y, m + 1, 1).strftime("%b %Y")
+def _quality(flag: Any) -> str:
+    return _QUALITY_LABELS.get(str(flag).strip().upper(), "Source")
 
 
-def get_monthly(kpi_id: str, n_months: int = 36) -> list:
-    """
-    Returns n_months of monthly data ending at Dec 2025.
-    Final value = real base-case FY25 value.
-    """
-    base = load_base_case()
-    val = float(base.get(kpi_id, 0.0))
-    if val == 0.0:
-        return []
+def _series(kpi_id: str, requested_frequency: str, limit: int | None = None) -> dict:
+    frame, config = _read_source(kpi_id)
+    actual_frequency = config.get("frequency", "quarterly")
+    values = pd.to_numeric(frame[config["column"]], errors="coerce")
+    if config.get("yoy"):
+        values = values.pct_change(periods=4, fill_method=None) * 100
 
-    rng = random.Random(_seed(kpi_id, "monthly"))
-    current = 0.82  # start at 82% of final
-
-    raw: list[float] = []
-    end = date(2025, 12, 1)
-
-    for i in range(n_months):
-        # EXT KPIs were elevated in early window (FY22-23 crisis)
-        if kpi_id in _CRISIS_SPIKE and i < 15:
-            current *= rng.uniform(1.001, 1.025)
-        elif kpi_id in _CRISIS_DIP and i < 10:
-            current *= rng.uniform(0.985, 1.010)
+    records = []
+    for index, row in frame.assign(_value=values).iterrows():
+        value = row["_value"]
+        if pd.isna(value):
+            continue
+        period_id = str(row["Period_ID"])
+        row_frequency = str(row.get("Period_Type", actual_frequency)).strip().lower()
+        is_quarter = row_frequency == "quarter" or "Q" in period_id.upper()
+        if is_quarter:
+            quarter = str(row.get("Quarter", period_id[-2:]))
+            if quarter.lower() == "nan":
+                quarter = period_id[-2:]
+            month_number = {"Q1": 3, "Q2": 6, "Q3": 9, "Q4": 12}.get(quarter, 12)
+            display = f"FY{str(int(row['Year']))[-2:]}{quarter}"
+            month = pd.Timestamp(int(row["Year"]), month_number, 1).strftime("%b %Y")
         else:
-            current *= rng.uniform(0.985, 1.030)
-        raw.append(current)
+            display = f"FY{str(int(row['Year']))[-2:]}"
+            month = f"Dec {int(row['Year'])}"
+        records.append({
+            "period": period_id,
+            "quarter": display,
+            "month": month,
+            "value": round(float(value), 4),
+            "quality": _quality(row.get(config.get("flag", ""), "Source")),
+        })
 
-    # Scale so last point = real base case
-    scale = val / raw[-1]
-    labels = [_month_label(end, n_months - 1 - i) for i in range(n_months)]
+    if limit:
+        records = records[-limit:]
+    qualities = {record["quality"] for record in records}
+    path: Path = config["path"]
+    metadata = {
+        "kpiId": kpi_id,
+        "requestedFrequency": requested_frequency,
+        "actualFrequency": actual_frequency,
+        "sourceFile": path.relative_to(ROOT).as_posix(),
+        "sourceModifiedAt": path.stat().st_mtime,
+        "lastPeriod": records[-1]["period"] if records else None,
+        "pointCount": len(records),
+        "containsReported": "Reported" in qualities,
+        "containsInterpolated": "Interpolated" in qualities,
+        "containsEstimated": "Estimated" in qualities,
+        "isSynthetic": False,
+        "note": (
+            f"No monthly source is available; showing {actual_frequency} observations without interpolation."
+            if requested_frequency == "monthly" and actual_frequency != "monthly"
+            else "Loaded directly from the repository historical CSV."
+        ),
+    }
+    return {"points": records, "metadata": metadata}
 
-    return [
-        {"month": lbl, "value": float(round(raw[i] * scale, 4))}
-        for i, lbl in enumerate(labels)
-    ]
+
+def get_quarterly_series(kpi_id: str) -> dict:
+    return _series(kpi_id, "quarterly")
+
+
+def get_monthly_series(kpi_id: str, n_months: int = 36) -> dict:
+    # 36 requested months corresponds to at most 12 quarterly or 3 annual points.
+    config = _KPI_SOURCES.get(kpi_id, {})
+    actual = config.get("frequency", "quarterly")
+    limit = max(1, n_months // (12 if actual in {"annual", "mixed"} else 3))
+    return _series(kpi_id, "monthly", limit=limit)
+
+
+def get_quarterly(kpi_id: str) -> list[dict]:
+    """Compatibility helper used by the FIN01 forecast route."""
+    return get_quarterly_series(kpi_id)["points"]
+
+
+def get_monthly(kpi_id: str, n_months: int = 36) -> list[dict]:
+    return get_monthly_series(kpi_id, n_months)["points"]
+
+
+def historical_source_health() -> list[dict]:
+    results = []
+    for path in dict.fromkeys(config["path"] for config in _KPI_SOURCES.values()):
+        try:
+            frame = pd.read_csv(path, encoding="utf-8-sig", on_bad_lines="error")
+            results.append({
+                "name": path.name,
+                "status": "Healthy" if len(frame) else "Failed",
+                "path": path.relative_to(ROOT).as_posix(),
+                "rows": len(frame),
+                "lastModifiedAt": path.stat().st_mtime,
+                "error": None,
+            })
+        except Exception as exc:
+            results.append({
+                "name": path.name,
+                "status": "Failed",
+                "path": path.relative_to(ROOT).as_posix(),
+                "rows": 0,
+                "lastModifiedAt": None,
+                "error": str(exc),
+            })
+    return results

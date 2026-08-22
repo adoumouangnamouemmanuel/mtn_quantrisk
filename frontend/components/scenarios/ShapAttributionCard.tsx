@@ -9,9 +9,10 @@ import { Info, Table, LayoutList } from 'lucide-react';
 
 interface ShapAttributionCardProps {
   attributions: Array<{ feature: string; contribution: number }>;
+  unavailable?: boolean;
 }
 
-export function ShapAttributionCard({ attributions }: ShapAttributionCardProps) {
+export function ShapAttributionCard({ attributions, unavailable }: ShapAttributionCardProps) {
   const [viewAsTable, setViewAsTable] = useState(false);
 
   const { chartData, topFeatures } = useMemo(() => {
@@ -60,7 +61,16 @@ export function ShapAttributionCard({ attributions }: ShapAttributionCardProps) 
       </div>
 
       <div className="flex-1 min-h-[300px]">
-        {viewAsTable ? (
+        {unavailable || attributions.length === 0 ? (
+          <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-center border border-dashed border-outline/20 rounded-lg">
+            <Info className="w-6 h-6 text-on-surface-variant mb-3" />
+            <p className="font-sans text-sm text-on-surface mb-1">Attribution Unavailable</p>
+            <p className="font-sans text-xs text-on-surface-variant max-w-xs leading-relaxed">
+              SHAP driver attribution could not be computed because the trained model is
+              missing or the explainer failed. The scenario impact itself is still valid.
+            </p>
+          </div>
+        ) : viewAsTable ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>

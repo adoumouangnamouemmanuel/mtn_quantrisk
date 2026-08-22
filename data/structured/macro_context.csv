@@ -5,3 +5,4 @@ Period_ID,Year,Period_Type,GDP_Growth_Pct,Inflation_YoY_Pct,Policy_Rate_Pct,Cedi
 2023FY,2023,Annual,2.9,23.2,30,11.5,-28.5,2.8,145,68
 2024FY,2024,Annual,5.7,23.8,27,14.8,-28.7,3,148,72
 2025FY,2025,Annual,6.5,5.4,16,11.6,21.6,3.3,151,76
+2026Q1,2026,Quarter,,3.2,14,11.0,,,,

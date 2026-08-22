@@ -1,0 +1,52 @@
+# Render.com deployment config — free tier, Docker-based
+# https://render.com/docs/render-yaml-reference
+#
+# To deploy:
+#   1. Push this repo to GitHub (already done on Foureiratou branch)
+#   2. Go to https://dashboard.render.com → New → Blueprint
+#   3. Connect your GitHub repo, pick this file
+#   4. Set env vars: HF_TOKEN, GNEWS_TOKEN (optional but recommended)
+#   5. Click Deploy
+#
+# Free tier limits:
+#   - 512MB RAM per service
+#   - Spins down after 15 min inactivity (first request takes ~30s to wake)
+#   - 750 hours/month free (enough for 1 service running 24/7)
+
+services:
+  - type: web
+    name: quantrisk-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DB_PATH
+        value: /data/quantrisk_news.db
+      - key: HF_TOKEN
+        sync: false   # Set this manually in Render dashboard
+      - key: GNEWS_TOKEN
+        sync: false   # Set this manually in Render dashboard
+      - key: SCRAPE_INTERVAL_MINUTES
+        value: "15"
+      - key: CORS_ORIGINS
+        value: "https://quantrisk-frontend.onrender.com,http://localhost:3000"
+    disk:
+      name: quantrisk-db
+      mountPath: /data
+      sizeGB: 1
+
+  - type: web
+    name: quantrisk-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: NEXT_PUBLIC_API_BASE
+        value: https://quantrisk-backend.onrender.com

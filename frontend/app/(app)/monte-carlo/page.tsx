@@ -239,6 +239,29 @@ function KpiRow({ r, nSims }: { r: MonteCarloKpiResult; nSims: number }) {
             </p>
           </div>
 
+          {/* VaR / CVaR row */}
+          {r.var95 !== undefined && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg bg-surface-container p-3 text-center">
+                <p className="text-[9px] font-mono uppercase text-on-surface-variant">95% VaR</p>
+                <p className="text-sm font-mono font-bold text-error mt-0.5">{fmt(r.var95)} {r.unit}</p>
+                <p className="text-[8px] font-mono text-on-surface-variant">Loss threshold at 95% confidence</p>
+              </div>
+              {r.cvar95 !== undefined && r.cvar95 !== null && (
+                <div className="rounded-lg bg-surface-container p-3 text-center">
+                  <p className="text-[9px] font-mono uppercase text-on-surface-variant">95% CVaR</p>
+                  <p className="text-sm font-mono font-bold text-error mt-0.5">{fmt(r.cvar95)} {r.unit}</p>
+                  <p className="text-[8px] font-mono text-on-surface-variant">Expected shortfall beyond VaR</p>
+                </div>
+              )}
+              <div className="rounded-lg bg-surface-container p-3 text-center">
+                <p className="text-[9px] font-mono uppercase text-on-surface-variant">Std Dev</p>
+                <p className="text-sm font-mono font-bold text-mtn-yellow mt-0.5">±{((r.std / r.baseValue) * 100).toFixed(1)}%</p>
+                <p className="text-[8px] font-mono text-on-surface-variant">Outcome dispersion</p>
+              </div>
+            </div>
+          )}
+
           {/* Distribution bar */}
           <DistributionBar result={r} />
 
@@ -530,9 +553,9 @@ export default function MonteCarloPage() {
             <ol className="space-y-1.5">
               {[
                 'Load base-case KPI values from the data pipeline',
-                'For each simulation, add Gaussian noise (±uncertainty%) to every impact value',
-                'Apply the perturbed impacts to compute stressed KPI outcomes',
-                'Repeat N times and compute P05 / P50 / P95 percentile distributions',
+                'Generate correlated random shocks via Cholesky decomposition on the KPI correlation matrix',
+                'Apply perturbed impacts + correlated noise to compute stressed outcomes',
+                'Compute percentile distributions, VaR, CVaR, and tornado sensitivity',
               ].map((step, i) => (
                 <li key={i} className="flex gap-2">
                   <span className="font-mono text-[8px] text-mtn-yellow mt-0.5 shrink-0">{i + 1}.</span>
@@ -612,14 +635,72 @@ export default function MonteCarloPage() {
                 ))}
               </div>
 
+              {/* Portfolio VaR summary */}
+              {result.portfolioVar && (
+                <div className="rounded-xl border border-error/20 bg-error/5 p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ShieldAlert className="w-4 h-4 text-error" />
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-error">Portfolio Risk Summary</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <p className="text-[9px] font-mono uppercase text-on-surface-variant">95% VaR</p>
+                      <p className="text-xl font-mono font-bold text-error">GHS {fmt(result.portfolioVar.var95)}m</p>
+                      <p className="text-[8px] font-mono text-on-surface-variant">Portfolio loss threshold at 95%</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[9px] font-mono uppercase text-on-surface-variant">95% CVaR</p>
+                      <p className="text-xl font-mono font-bold text-error">GHS {fmt(result.portfolioVar.cvar95)}m</p>
+                      <p className="text-[8px] font-mono text-on-surface-variant">Expected loss in worst 5% of outcomes</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[9px] font-mono uppercase text-on-surface-variant">Expected Loss</p>
+                      <p className="text-xl font-mono font-bold text-mtn-yellow">GHS {fmt(result.portfolioVar.expectedLoss)}m</p>
+                      <p className="text-[8px] font-mono text-on-surface-variant">Mean loss across all simulations</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tornado sensitivity */}
+              {result.tornado && result.tornado.length > 0 && (
+                <div className="rounded-xl border border-outline/20 bg-surface-container-low p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <BarChart3 className="w-4 h-4 text-mtn-yellow" />
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-on-surface-variant">Sensitivity Tornado</span>
+                    <span className="font-mono text-[8px] text-on-surface-variant ml-auto">Which KPIs drive portfolio variance</span>
+                  </div>
+                  <div className="space-y-2">
+                    {[...result.tornado!].sort((a, b) => b.variance - a.variance).slice(0, 8).map((t, i) => {
+                      const maxVar = result.tornado![0]?.variance ?? 1;
+                      const pct = maxVar > 0 ? (t.variance / maxVar) * 100 : 0;
+                      return (
+                        <div key={t.kpiId} className="flex items-center gap-3">
+                          <span className="font-mono text-[9px] text-on-surface-variant w-14 text-right shrink-0">{t.kpiId}</span>
+                          <div className="flex-1 h-4 rounded bg-surface-container overflow-hidden">
+                            <div
+                              className="h-full rounded bg-mtn-yellow/60 transition-all duration-500"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="font-mono text-[9px] text-on-surface-variant w-16 text-right shrink-0">±{t.stdPct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Footer note */}
               <div className="rounded-xl border border-outline/10 bg-surface-container-low/50 p-4 flex gap-3">
                 <Info className="w-4 h-4 text-on-surface-variant shrink-0 mt-0.5" />
                 <p className="font-sans text-[10px] text-on-surface-variant leading-relaxed">
                   <strong className="text-on-surface">Reading this report:</strong> P05 is your key risk metric — only 5% of simulated outcomes
                   fall below it, making it the statistical equivalent of a "stress floor." The IQR band (P25–P75) shows where half of all
-                  outcomes are expected to land. Std deviation measures how much outcomes vary; a higher value signals greater uncertainty in that KPI.
-                  Results are sensitive to the uncertainty band and severity multiplier — re-run with different settings to stress-test your assumptions.
+                  outcomes are expected to land. <strong className="text-on-surface">VaR</strong> (Value at Risk) is the maximum loss at 95% confidence;
+                  <strong className="text-on-surface"> CVaR</strong> (Conditional VaR) is the expected loss in the worst 5% of outcomes — a more
+                  conservative measure. The tornado chart shows which KPIs contribute most to portfolio variance.
+                  Results use correlated sampling via Cholesky decomposition to reflect real-world co-movement of risk factors.
                 </p>
               </div>
             </>

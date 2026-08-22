@@ -427,7 +427,10 @@ export default function ScenariosPage() {
                   </div>
 
                   <SectionDivider label="Driver Attribution (XGBoost SHAP)" />
-                  <ShapAttributionCard attributions={output.shapAttributions} />
+                  <ShapAttributionCard
+                    attributions={output.shapAttributions}
+                    unavailable={output.shapUnavailable}
+                  />
 
                   {/* Reading guide */}
                   <div className="rounded-xl border border-outline/10 bg-surface-container-low/50 p-4 flex gap-3">

@@ -55,6 +55,56 @@ export default function SettingsPage() {
                 <span className="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">Global Status</span>
                 <Chip variant={health.status === 'Healthy' ? 'success' : 'warning'}>{health.status}</Chip>
               </div>
+              {health.automaticScraper && (
+                <div className="rounded-lg border border-outline/20 bg-surface-container-low p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-sans text-sm text-on-surface">Automatic News Scraper</span>
+                    <Chip variant={health.automaticScraper.status === 'Scheduled' ? 'success' : 'warning'}>
+                      {health.automaticScraper.status}
+                    </Chip>
+                  </div>
+                  <p className="mt-1 font-mono text-[10px] text-on-surface-variant uppercase tracking-wider">
+                    Next run: {health.automaticScraper.nextRunAt
+                      ? new Date(health.automaticScraper.nextRunAt).toLocaleString()
+                      : 'Not scheduled'}
+                  </p>
+                  {health.externalFeeds && (
+                    <div className="mt-2 grid grid-cols-2 gap-2 font-mono text-[9px] text-on-surface-variant">
+                      <span>Feeds: {health.externalFeeds.summary.healthy}/{health.externalFeeds.summary.total} healthy</span>
+                      <span>Failed: {health.externalFeeds.summary.failed}</span>
+                      <span>Fetched: {health.externalFeeds.fetchedCount}</span>
+                      <span>New: {health.externalFeeds.newArticleCount}</span>
+                      <span className="col-span-2">Last success: {health.externalFeeds.lastSuccessfulFetchAt
+                        ? new Date(health.externalFeeds.lastSuccessfulFetchAt).toLocaleString()
+                        : 'No successful fetch recorded'}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              {health.historicalData && (
+                <div className="rounded-lg border border-outline/20 bg-surface-container-low p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-sans text-sm text-on-surface">Historical CSV Sources</span>
+                    <Chip size="sm" variant={health.historicalData.every(source => source.status === 'Healthy') ? 'success' : 'error'}>
+                      {health.historicalData.filter(source => source.status === 'Healthy').length}/{health.historicalData.length} readable
+                    </Chip>
+                  </div>
+                  <p className="mt-1 font-mono text-[9px] text-on-surface-variant">
+                    {health.historicalData.map(source => `${source.name}: ${source.rows} rows`).join(' · ')}
+                  </p>
+                </div>
+              )}
+              {health.modelQuality && (
+                <div className="rounded-lg border border-outline/20 bg-surface-container-low p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-sans text-sm text-on-surface">Model Validation Evidence</span>
+                    <Chip size="sm" variant={health.modelQuality.status === 'MetricsAvailable' ? 'warning' : 'error'}>
+                      {health.modelQuality.metrics.length} metrics
+                    </Chip>
+                  </div>
+                  <p className="mt-1 text-[10px] leading-relaxed text-on-surface-variant">{health.modelQuality.note}</p>
+                </div>
+              )}
               <div className="space-y-2">
                 {health.sources.map(s => (
                   <div key={s.name} className="flex items-center justify-between p-2.5 border border-outline/10 rounded-lg hover:bg-surface-container transition-colors">

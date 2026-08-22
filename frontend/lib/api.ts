@@ -1,33 +1,80 @@
 import type {
   Kpi, Scenario, ScenarioOutput, ReverseStressResult, ReverseStressInput,
-  ForecastPoint, MonteCarloResult, BoardBrief, PipelineHealth,
-  QuarterlyPoint, MonthlyPoint,
+  ForecastPoint, EventForecast, MonteCarloResult, BoardBrief, PipelineHealth,
+  QuarterlySeries, MonthlySeries,
   KpiId, MacroOverlays, ScenarioFormData,
   FeedbackPayload, BaseCaseLogEntry, UploadResult, PdfKpiCandidate,
+  NewsReasoning,
 } from './types';
+import { getAccessToken } from './auth';
 
-const USE_MOCK_API = false;
-const API_BASE = 'http://127.0.0.1:8001';
+// Mock data is strictly a development aid. It is only enabled when
+// NEXT_PUBLIC_USE_MOCK_API === 'true' AND we are not in a production build,
+// so fabricated data can never ship to real users (audit finding H12 / TD-12).
+const USE_MOCK_API =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8001';
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`API ${path} → ${res.status}: ${body.slice(0, 200)}`);
-  }
-  if (res.status === 204) return undefined as unknown as T;
-  return res.json() as Promise<T>;
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function fetchKpis(): Promise<Kpi[]> {
+async function apiFetch<T>(
+  path: string,
+  init?: RequestInit,
+  retries = 2,
+): Promise<T> {
+  const token = getAccessToken();
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${API_BASE}${path}`, {
+        ...init,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(init?.headers ?? {}),
+        },
+      });
+
+      // Don't retry on 4xx client errors (except 429 rate limit)
+      if (!res.ok && res.status >= 400 && res.status < 500 && res.status !== 429) {
+        const body = await res.text();
+        throw new Error(`API ${path} → ${res.status}: ${body.slice(0, 200)}`);
+      }
+
+      // Retry on 5xx or 429
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`API ${path} → ${res.status}: ${body.slice(0, 200)}`);
+      }
+
+      if (res.status === 204) return undefined as unknown as T;
+      return res.json() as Promise<T>;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      // Don't retry if it's a clear client error
+      if (lastError.message.includes('→ 4') && !lastError.message.includes('→ 429')) {
+        throw lastError;
+      }
+      // Exponential backoff: 500ms, 1500ms, ...
+      if (attempt < retries) {
+        await sleep(500 * Math.pow(3, attempt) + Math.random() * 200);
+      }
+    }
+  }
+
+  throw lastError ?? new Error(`API ${path}: all ${retries + 1} attempts failed`);
+}
+
+export async function fetchKpis(period?: '2025FY' | '2026Q1'): Promise<Kpi[]> {
   if (USE_MOCK_API) {
     const { MOCK_KPIS } = await import('./mockData');
     return MOCK_KPIS;
   }
-  return apiFetch<Kpi[]>('/api/kpis');
+  return apiFetch<Kpi[]>(`/api/kpis${period ? `?period=${period}` : ''}`);
 }
 
 export async function fetchScenarios(): Promise<Scenario[]> {
@@ -78,6 +125,11 @@ export async function fetchForecast(kpiId: KpiId, horizon: 7 | 30 | 90): Promise
   return apiFetch<ForecastPoint[]>(`/api/forecast/${kpiId}?horizon=${horizon}`);
 }
 
+/** Real-time, event-aware forecast with per-point drill-down reasons. */
+export async function fetchEventForecast(kpiId: KpiId, horizon: 7 | 30 | 90 = 90): Promise<EventForecast> {
+  return apiFetch<EventForecast>(`/api/forecast/${kpiId}/events?horizon=${horizon}`);
+}
+
 // fetchMonteCarlo kept for backwards compat — prefer runMonteCarlo(scenarioId)
 export async function fetchMonteCarlo(): Promise<MonteCarloResult | null> {
   return null;
@@ -102,12 +154,12 @@ export async function fetchBriefs(): Promise<BoardBrief[]> {
   return apiFetch<BoardBrief[]>('/api/briefs');
 }
 
-export async function fetchQuarterly(kpiId: KpiId): Promise<QuarterlyPoint[]> {
-  return apiFetch<QuarterlyPoint[]>(`/api/quarterly/${kpiId}`);
+export async function fetchQuarterly(kpiId: KpiId): Promise<QuarterlySeries> {
+  return apiFetch<QuarterlySeries>(`/api/quarterly/${kpiId}`);
 }
 
-export async function fetchMonthly(kpiId: KpiId, nMonths: number = 36): Promise<MonthlyPoint[]> {
-  return apiFetch<MonthlyPoint[]>(`/api/monthly/${kpiId}?n_months=${nMonths}`);
+export async function fetchMonthly(kpiId: KpiId, nMonths: number = 36): Promise<MonthlySeries> {
+  return apiFetch<MonthlySeries>(`/api/monthly/${kpiId}?n_months=${nMonths}`);
 }
 
 export async function createScenario(data: ScenarioFormData): Promise<Scenario> {
@@ -141,7 +193,12 @@ export async function fetchPipelineHealth(): Promise<PipelineHealth> {
 export async function uploadCsv(file: File): Promise<UploadResult> {
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch(`${API_BASE}/api/upload/csv`, { method: 'POST', body: form });
+  const token = getAccessToken();
+  const res = await fetch(`${API_BASE}/api/upload/csv`, {
+    method: 'POST',
+    body: form,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   if (!res.ok) { const t = await res.text(); throw new Error(`Upload failed: ${t.slice(0, 200)}`); }
   return res.json();
 }
@@ -149,7 +206,12 @@ export async function uploadCsv(file: File): Promise<UploadResult> {
 export async function uploadPdf(file: File): Promise<UploadResult> {
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch(`${API_BASE}/api/upload/pdf`, { method: 'POST', body: form });
+  const token = getAccessToken();
+  const res = await fetch(`${API_BASE}/api/upload/pdf`, {
+    method: 'POST',
+    body: form,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   if (!res.ok) { const t = await res.text(); throw new Error(`Upload failed: ${t.slice(0, 200)}`); }
   return res.json();
 }
@@ -196,3 +258,458 @@ export async function fetchFeedback(): Promise<FeedbackPayload[]> {
 export async function fetchBaseCaseLogs(): Promise<BaseCaseLogEntry[]> {
   return apiFetch('/api/logs/base-case');
 }
+
+// ── News Feed ──────────────────────────────────────────────────────────────────
+
+export interface NewsArticle {
+  id: string;
+  url: string;
+  title: string;
+  body?: string;
+  sourceName: string | null;
+  publishedAt: string | null;
+  scrapedAt: string | null;
+  category: string | null;
+  severity: number | null;
+  confidence: number | null;
+  mtnRelevance: number | null;
+  alertTier: string | null;
+  sentiment: string | null;
+  impactGhsMin: number | null;
+  impactGhsMid: number | null;
+  impactGhsMax: number | null;
+  entities: { orgs: string[]; money: string[]; locations: string[]; persons: string[] } | null;
+  keywordHits?: Record<string, number>;
+}
+
+export interface NewsSummary {
+  articlesToday: number;
+  totalArticles: number;
+  topRiskCategory: string | null;
+  categoryBreakdown: Record<string, number>;
+  sourceBreakdown: Record<string, number>;
+}
+
+export async function fetchNews(params: {
+  category?: string;
+  source?: string;
+  keyword?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  limit?: number;
+  offset?: number;
+} = {}): Promise<NewsArticle[]> {
+  const qs = new URLSearchParams();
+  if (params.category) qs.set('category', params.category);
+  if (params.source)   qs.set('source',   params.source);
+  if (params.keyword)  qs.set('q', params.keyword);
+  if (params.dateFrom) qs.set('date_from', params.dateFrom);
+  if (params.dateTo)   qs.set('date_to', params.dateTo);
+  if (params.limit)    qs.set('limit',    String(params.limit));
+  if (params.offset)   qs.set('offset',   String(params.offset));
+  return apiFetch<NewsArticle[]>(`/api/news?${qs}`);
+}
+
+export async function fetchNewsArticle(id: string): Promise<NewsArticle> {
+  return apiFetch<NewsArticle>(`/api/news/${id}`);
+}
+
+/** Drill-down reasoning for an article's relevance, severity, and category. */
+export async function fetchNewsReasoning(id: string): Promise<NewsReasoning> {
+  return apiFetch<NewsReasoning>(`/api/news/${id}/reasoning`);
+}
+
+export async function fetchNewsSummary(): Promise<NewsSummary> {
+  return apiFetch<NewsSummary>('/api/news/summary');
+}
+
+export async function triggerScrape(): Promise<{ newArticles: number; status: string }> {
+  return apiFetch('/api/news/scrape', { method: 'POST' });
+}
+
+// ── Alerts ─────────────────────────────────────────────────────────────────────
+
+export interface NewsAlert {
+  id: string;
+  articleId: string;
+  tier: 'Critical' | 'Warning' | 'Watch';
+  category: string;
+  headline: string;
+  sourceName: string | null;
+  severity: number;
+  impactGhsMid: number | null;
+  mtnRelevance: number | null;
+  acknowledged: boolean;
+  acknowledgedAt: string | null;
+  createdAt: string;
+}
+
+export interface AlertSummary {
+  total_active: number;
+  critical: number;
+  warning: number;
+  watch: number;
+}
+
+export async function fetchAlerts(params: {
+  tier?: string;
+  acknowledged?: boolean;
+  limit?: number;
+} = {}): Promise<NewsAlert[]> {
+  const qs = new URLSearchParams();
+  if (params.tier !== undefined)         qs.set('tier',         params.tier);
+  if (params.acknowledged !== undefined) qs.set('acknowledged', String(params.acknowledged));
+  if (params.limit !== undefined)        qs.set('limit',        String(params.limit));
+  return apiFetch<NewsAlert[]>(`/api/alerts?${qs}`);
+}
+
+export async function fetchAlertSummary(): Promise<AlertSummary> {
+  return apiFetch<AlertSummary>('/api/alerts/summary');
+}
+
+export async function acknowledgeAlert(alertId: string): Promise<NewsAlert> {
+  return apiFetch<NewsAlert>(`/api/alerts/${alertId}/acknowledge`, { method: 'PATCH' });
+}
+
+// ── Ghana Economics (World Bank) ───────────────────────────────────────────────
+
+export interface EconomicIndicator {
+  latest: number | null;
+  year: number | null;
+  unit: string;
+  description: string;
+  history: { year: number; value: number }[];
+  period?: string | null;
+  source?: string;
+  sourceUrl?: string;
+  frequency?: 'Daily' | 'Monthly' | 'Quarterly' | 'Annual';
+}
+
+export interface GhanaEconomics {
+  lastUpdated: string;
+  source: string;
+  country: string;
+  indicators: {
+    inflation:    EconomicIndicator;
+    gdp_growth:   EconomicIndicator;
+    fx_usd_ghs:   EconomicIndicator;
+    unemployment: EconomicIndicator;
+    debt_service:  EconomicIndicator;
+    fdi_inflows:  EconomicIndicator;
+  };
+}
+
+export interface EconomicsRiskContext {
+  inflation_risk: 'Critical' | 'Warning' | 'Watch' | 'Normal' | 'Unavailable';
+  growth_risk:    'Critical' | 'Warning' | 'Normal' | 'Unavailable';
+  fx_risk:        'Critical' | 'Warning' | 'Watch' | 'Normal' | 'Unavailable';
+  summary: string;
+  raw: GhanaEconomics;
+}
+
+export async function fetchGhanaEconomics(refresh = false): Promise<GhanaEconomics> {
+  return apiFetch<GhanaEconomics>(`/api/economics${refresh ? '?refresh=true' : ''}`);
+}
+
+export async function fetchEconomicsRiskContext(): Promise<EconomicsRiskContext> {
+  return apiFetch<EconomicsRiskContext>('/api/economics/risk-context');
+}
+
+// ── Intelligence Briefing (LLM daily summary) ─────────────────────────────────
+
+export interface IntelligenceTopArticle {
+  title: string;
+  source: string | null;
+  url: string | null;
+  tier: string | null;
+  severity: number | null;
+  sentiment: string | null;
+  impact_ghs_mid: number | null;
+  coverage_count?: number;
+  sources?: string[];
+}
+
+export interface IntelligenceSection {
+  category: string;
+  label: string;
+  icon: string;
+  article_count: number;
+  unique_event_count: number;
+  critical_count: number;
+  summary: string;
+  movement: { current: number; previous: number; change: number; direction: 'up' | 'down' | 'flat' };
+  top_articles: IntelligenceTopArticle[];
+}
+
+export interface IntelligenceSummary {
+  generated_at: string;
+  period: string;
+  total_articles: number;
+  relevant_articles: number;
+  unique_events: number;
+  source_count: number;
+  executive_summary: string;
+  recommended_actions: string[];
+  category_movement: Record<string, { current: number; previous: number; change: number; direction: 'up' | 'down' | 'flat' }>;
+  tier_counts: { Critical: number; Warning: number; Watch: number };
+  overall_risk: string;
+  risk_color: string;
+  headline: {
+    title: string;
+    source: string | null;
+    tier: string;
+    severity: number | null;
+    url: string | null;
+  } | null;
+  sections: IntelligenceSection[];
+  used_llm: boolean;
+}
+
+export async function fetchIntelligenceSummary(): Promise<IntelligenceSummary> {
+  return apiFetch<IntelligenceSummary>('/api/intelligence/summary');
+}
+
+// ── History (persisted forecast adjustments + news reasoning) ────────────────
+
+export interface ForecastAdjustmentRecord {
+  id: string;
+  kpiId: string;
+  date: string;
+  baselineP50: number;
+  adjustedP50: number;
+  adjustmentAbs: number;
+  adjustmentPct: number;
+  eventCount: number;
+  aggregatePressure: { up: number; down: number; net: number };
+  events: unknown[];
+  narrative: string | null;
+  llmUsed: boolean;
+  computedAt: string;
+}
+
+export async function fetchForecastAdjustments(
+  kpiId: string,
+  limit = 50,
+): Promise<ForecastAdjustmentRecord[]> {
+  return apiFetch<ForecastAdjustmentRecord[]>(
+    `/api/history/forecast-adjustments?kpi_id=${kpiId}&limit=${limit}`,
+  );
+}
+
+export interface NewsReasoningRecord {
+  id: string;
+  articleId: string;
+  title: string | null;
+  scored: boolean;
+  category: string | null;
+  categoryLabel: string | null;
+  severity: number | null;
+  mtnRelevance: number | null;
+  computedAt: string;
+}
+
+export async function fetchNewsReasoningHistory(
+  params: { articleId?: string; category?: string; limit?: number } = {},
+): Promise<NewsReasoningRecord[]> {
+  const qs = new URLSearchParams();
+  if (params.articleId) qs.set('article_id', params.articleId);
+  if (params.category) qs.set('category', params.category);
+  if (params.limit) qs.set('limit', String(params.limit));
+  return apiFetch<NewsReasoningRecord[]>(`/api/history/news-reasoning?${qs}`);
+}
+
+export interface LLMUsageEntry {
+  provider: string;
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+  costUsd: number;
+  latencyMs: number;
+  success: boolean;
+  error: string | null;
+}
+
+export async function fetchLLMUsage(): Promise<{
+  totalCostUsd: number;
+  totalLatencyMs: number;
+  calls: LLMUsageEntry[];
+}> {
+  return apiFetch('/api/llm/usage');
+}
+
+// ── Backtesting ─────────────────────────────────────────────────────────────
+
+export interface BacktestFold {
+  foldIndex: number;
+  mae: number;
+  rmse: number;
+  mape: number;
+  mdape: number;
+  biasPct: number;
+  rSquared: number;
+  directionAccuracy?: number;
+  n: number;
+  trainStart: string;
+  trainEnd: string;
+  testPeriods: string[];
+  actualValues: number[];
+  predictedValues: number[];
+}
+
+export interface BacktestResult {
+  kpiId: string;
+  kpiName: string;
+  modelName: string;
+  trainWindowSize: number;
+  testWindowSize: number;
+  totalFolds: number;
+  folds: BacktestFold[];
+  aggregate: {
+    mae: number;
+    rmse: number;
+    mape: number;
+    mdape: number;
+    biasPct: number;
+    rSquared: number;
+    directionAccuracy?: number;
+    totalFolds: number;
+    totalTestPoints: number;
+  };
+  actualVsPredicted: Array<{
+    period: string;
+    actual: number;
+    predicted: number | null;
+  }>;
+  generatedAt: string;
+  error?: string;
+}
+
+export async function fetchBacktest(
+  kpiId: string,
+  trainSize?: number,
+  testSize?: number,
+): Promise<BacktestResult> {
+  const params = new URLSearchParams();
+  if (trainSize) params.set('train_size', String(trainSize));
+  if (testSize) params.set('test_size', String(testSize));
+  const result = await apiFetch<BacktestResult>(
+    `/api/backtest/${kpiId}${params.toString() ? `?${params}` : ''}`,
+  );
+  // Reject responses with no folds — indicates insufficient data or bad config
+  if (!result.folds || result.folds.length === 0) {
+    return { ...result, error: result.error ?? `No backtest folds produced for ${kpiId}. Need more historical data.` };
+  }
+  return result;
+}
+
+export async function fetchAllBacktests(): Promise<BacktestResult[]> {
+  return apiFetch<BacktestResult[]>('/api/backtest');
+}
+
+// ── Business Stress Test ──────────────────────────────────────────────────
+
+export interface StressTestResult {
+  plan: {
+    revenue: number[];
+    ebitda: number[];
+    capex: number[];
+    subscribers: number[];
+    years: string[];
+  };
+  shocks: Record<string, number>;
+  deterministic: {
+    ebitda: number[];
+    impact: number;
+    revenueAtRisk: number;
+    margin: number;
+    resilience: number;
+    baseTotal: number;
+    stressedTotal: number;
+  };
+  monteCarlo: {
+    nSimulations: number;
+    years: string[];
+    p05: number[];
+    p25: number[];
+    p50: number[];
+    p75: number[];
+    p95: number[];
+    mean: number[];
+    std: number[];
+  };
+  tornado: Array<{
+    param: string;
+    label: string;
+    lowTotal: number;
+    highTotal: number;
+    spread: number;
+  }>;
+  signals: Array<{ title: string; status: string; detail: string }>;
+  generatedAt: string;
+}
+
+export async function runStressTest(params: {
+  plan?: Record<string, number[]>;
+  shocks?: Record<string, number>;
+  preset?: string;
+  nSimulations?: number;
+}): Promise<StressTestResult> {
+  return apiFetch<StressTestResult>('/api/stress-test', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+}
+
+// ── Export ────────────────────────────────────────────────────────────────
+
+export async function downloadKriExcel(period?: string): Promise<void> {
+  const token = getAccessToken();
+  const qs = period ? `?period=${period}` : '';
+  const res = await fetch(`${API_BASE}/api/export/kri-excel${qs}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('Export failed');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kri_register.xlsx';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadBriefPdf(briefId?: string): Promise<void> {
+  const token = getAccessToken();
+  const qs = briefId ? `?brief_id=${briefId}` : '';
+  const res = await fetch(`${API_BASE}/api/export/brief-pdf${qs}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('Export failed');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'board_brief.pdf';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadScenarioComparisonExcel(
+  scenarioAId: string,
+  scenarioBId: string,
+): Promise<void> {
+  const token = getAccessToken();
+  const qs = `?scenario_a_id=${scenarioAId}&scenario_b_id=${scenarioBId}`;
+  const res = await fetch(`${API_BASE}/api/export/scenario-comparison-excel${qs}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error('Export failed');
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `compare_${scenarioAId}_vs_${scenarioBId}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+

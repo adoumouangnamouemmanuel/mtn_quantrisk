@@ -14,13 +14,19 @@ export type KpiId = 'FIN01' | 'FIN02' | 'FIN03' | 'FIN04' | 'FIN05' | 'FIN06'
 export interface Kpi {
   id: KpiId;
   name: string;
-  category: 'Financial' | 'Segment' | 'Operational' | 'External';
+  // One of the six canonical risk categories: strategic / financial /
+  // operational / technological / governance / external.
+  category: string;
   unit: string;             // 'GHSm' | '%' | 'GHS' | 'M' | 'GHS/USD'
   fy25Value: number;
   lowerThreshold: number | null;
   upperThreshold: number | null;
   currentStatus: StatusLevel;
   trend24m: number[];       // for sparkline
+  reportingPeriod?: string;
+  sourcePeriod?: string;
+  sourceType?: 'Reported' | 'Derived' | 'Carried forward';
+  notes?: string;
 }
 
 export interface Scenario {
@@ -58,6 +64,7 @@ export interface ScenarioOutput {
     feature: string;
     contribution: number;   // SHAP value, can be negative
   }>;
+  shapUnavailable?: boolean; // true when real SHAP attributions could not be computed
   waterfallDrivers?: {
     FIN01: Array<{ name: string; contribution: number }>;
     FIN03: Array<{ name: string; contribution: number }>;
@@ -74,6 +81,68 @@ export interface ForecastPoint {
   isHistorical: boolean;
 }
 
+/** An event that pressures a forecast point, surfaced for drill-down. */
+export interface ForecastEvent {
+  articleId: string;
+  title: string;
+  source: string | null;
+  category: string;
+  severity: number;
+  mtnRelevance: number;
+  alertTier: string | null;
+  scrapedAt: string;
+  ageDays: number;
+  decayWeight: number;
+  pressureDirection: 'up' | 'down';
+  pressureAbs: number;
+  pressurePct: number;
+  url: string | null;
+}
+
+/** A forecast point enriched with live-event pressure + drill-down. */
+export interface EventForecastPoint extends ForecastPoint {
+  adjustmentAbs?: number;
+  adjustmentPct?: number;
+  events?: ForecastEvent[];
+}
+
+export interface EventForecast {
+  kpiId: string;
+  baselineModel: string;
+  eventAdjusted: boolean;
+  eventCount: number;
+  aggregatePressure: { up: number; down: number; net: number };
+  narrative: string;
+  llmUsed: boolean;
+  points: EventForecastPoint[];
+  generatedAt: string;
+}
+
+/** Reasoning breakdown for a news article's scores. */
+export interface NewsReasoning {
+  articleId: string;
+  title: string;
+  scored: boolean;
+  note?: string;
+  category?: string;
+  categoryLabel?: string;
+  originalCategory?: string;
+  severity?: number;
+  mtnRelevance?: number;
+  confidence?: number;
+  alertTier?: string | null;
+  sentiment?: string | null;
+  relevanceReasons?: Array<{ signal: string; keyword: string | null; weight: number; note?: string }>;
+  severityReasons?: Array<{ signal: string; keyword?: string; category?: string; mappedCategory?: string; value?: number | string; note?: string }>;
+  sentimentReasons?: Array<{ signal: string; value?: string | null; confidence?: number | null; note?: string }>;
+  impactReasons?: Array<{ signal: string; min: number | null; mid: number | null; max: number | null; note?: string }>;
+  entities?: { orgs: string[]; money: string[]; locations: string[]; persons: string[] } | null;
+  keywordHits?: Record<string, number>;
+  matchedCategoryKeywords?: string[];
+  llmExplanation?: string | null;
+  llmUsed?: boolean;
+}
+
 export interface MonteCarloKpiResult {
   kpiId: string;
   kpiName: string;
@@ -88,13 +157,34 @@ export interface MonteCarloKpiResult {
   std: number;
   worstCase: number;
   bestCase: number;
+  var95?: number;
+  cvar95?: number;
+}
+
+export interface TornadoItem {
+  kpiId: string;
+  variance: number;
+  stdPct: number;
+}
+
+export interface PortfolioVar {
+  var95: number;
+  cvar95: number;
+  expectedLoss: number;
+  totalBaseExposure: number;
+  weights: Record<string, number>;
 }
 
 export interface MonteCarloResult {
   scenarioId: string;
+  scenarioName?: string;
   nSimulations: number;
   uncertaintyPct: number;
+  severityMultiplier?: number;
   results: MonteCarloKpiResult[];
+  tornado?: TornadoItem[];
+  portfolioVar?: PortfolioVar;
+  correlationLabels?: string[];
 }
 
 export interface FeedbackPayload {
@@ -149,6 +239,38 @@ export interface BoardBrief {
 export interface PipelineHealth {
   status: 'Healthy' | 'Degraded' | 'Failed';
   lastBeatAt: string;
+  automaticScraper?: {
+    status: 'Scheduled' | 'Unavailable';
+    nextRunAt: string | null;
+    schedule: string | null;
+  };
+  historicalData?: Array<{
+    name: string;
+    status: 'Healthy' | 'Failed';
+    path: string;
+    rows: number;
+    lastModifiedAt: number | null;
+    error: string | null;
+  }>;
+  externalFeeds?: {
+    lastAttemptAt: string | null;
+    lastCompletedAt: string | null;
+    lastSuccessfulFetchAt: string | null;
+    lastNewArticleAt: string | null;
+    latestStoredArticleAt: string | null;
+    fetchedCount: number;
+    newArticleCount: number;
+    filteredCount: number;
+    gnewsConfigured: boolean;
+    summary: { healthy: number; degraded: number; failed: number; total: number };
+  };
+  modelQuality?: {
+    status: 'MetricsAvailable' | 'MetricsUnavailable';
+    lastTrainedAt: string | null;
+    metrics: Array<{ target: string; mae: number | null; r2: number | null; trainRows: number | null }>;
+    accuracyProven: boolean;
+    note: string;
+  };
   sources: Array<{
     name: string;
     status: 'Healthy' | 'Degraded' | 'Failed';
@@ -192,12 +314,41 @@ export interface MacroOverlays {
 
 export interface QuarterlyPoint {
   quarter: string; // "FY20Q1"
+  period: string;
   value: number;
+  quality: 'Reported' | 'Interpolated' | 'Estimated' | 'Source';
 }
 
 export interface MonthlyPoint {
   month: string; // "Jan 2023"
+  period: string;
   value: number;
+  quality: 'Reported' | 'Interpolated' | 'Estimated' | 'Source';
+}
+
+export interface HistoryMetadata {
+  kpiId: string;
+  requestedFrequency: 'quarterly' | 'monthly';
+  actualFrequency: 'quarterly' | 'annual' | 'monthly';
+  sourceFile: string;
+  sourceModifiedAt: number;
+  lastPeriod: string | null;
+  pointCount: number;
+  containsReported: boolean;
+  containsInterpolated: boolean;
+  containsEstimated: boolean;
+  isSynthetic: boolean;
+  note: string;
+}
+
+export interface QuarterlySeries {
+  points: QuarterlyPoint[];
+  metadata: HistoryMetadata;
+}
+
+export interface MonthlySeries {
+  points: MonthlyPoint[];
+  metadata: HistoryMetadata;
 }
 
 export interface ScenarioFormData {

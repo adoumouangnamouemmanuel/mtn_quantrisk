@@ -1,0 +1,23 @@
+# Next.js
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Test / build artefacts
+*.tsbuildinfo
+build_output.txt
+depcheck_output.txt
+lint_output.txt
+tsc_output.txt
+
+# Secrets — never copy env files into the image
+.env
+.env.local
+.env.*.local
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,63 @@
+version: "3.9"
+
+# ── MTN QuantRisk — Docker Compose ───────────────────────────────────────────
+# Usage:
+#   cd infrastructure
+#   docker compose up --build
+#
+# Services:
+#   backend  → FastAPI + APScheduler (port 8001)
+#   frontend → Next.js standalone   (port 3000)
+#
+# Volumes:
+#   db_data  → SQLite database persisted across restarts
+
+services:
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: quantrisk_backend
+    restart: unless-stopped
+    environment:
+      DB_PATH: /data/quantrisk_news.db
+      SCRAPE_INTERVAL_MINUTES: "15"
+      # Allow requests from the frontend container and localhost
+      CORS_ORIGINS: "http://frontend:3000,http://localhost:3000,http://127.0.0.1:3000"
+    volumes:
+      # Persist the SQLite DB. The model directory is writable so the
+      # /api/retrain endpoint can persist newly trained models (audit C9).
+      - db_data:/data
+      - ../models/artefacts:/app/../models/artefacts:rw
+      # Data is mounted read-write because uploads and retrain write to it.
+      - ../data:/app/../data:rw
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: http://localhost:8001
+    container_name: quantrisk_frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  db_data:
+    driver: local

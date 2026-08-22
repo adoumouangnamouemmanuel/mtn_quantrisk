@@ -19,11 +19,15 @@ interface BarChartProps {
   height?: number | string;
   horizontal?: boolean;
   options?: Record<string, unknown>;
+  /** Called with the data index of the clicked bar (drill-down support). */
+  onElementClick?: (index: number) => void;
 }
 
-export function BarChart({ data, height = 300, horizontal = false, options = {} }: BarChartProps) {
+export function BarChart({ data, height = 300, horizontal = false, options = {}, onElementClick }: BarChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<ChartInstance | null>(null);
+  const onClickRef = useRef(onElementClick);
+  onClickRef.current = onElementClick;
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -48,8 +52,22 @@ export function BarChart({ data, height = 300, horizontal = false, options = {} 
       options: mergedOptions,
     });
 
+    // Resolve the nearest bar index on click → drill-down.
+    const canvas = canvasRef.current;
+    function handleClick(ev: MouseEvent) {
+      const chart = chartRef.current as unknown as { getElementsAtEventForMode: (e: MouseEvent, mode: string, opts: Record<string, unknown>, useFinalPosition: boolean) => Array<{ index: number }> } | null;
+      if (!chart || typeof chart.getElementsAtEventForMode !== 'function') return;
+      const els = chart.getElementsAtEventForMode(ev, 'nearest', { intersect: true }, true);
+      const first = els[0];
+      if (first && first.index !== undefined) {
+        onClickRef.current?.(first.index);
+      }
+    }
+    canvas.addEventListener('click', handleClick);
+
     return () => {
       destroyChart(chartRef.current);
+      canvas.removeEventListener('click', handleClick);
     };
   }, [data, horizontal, options]);
 
