@@ -49,4 +49,5 @@ def init_db():
     from . import feedback  # noqa: F401 — Feedback + BaseCaseChangeLog
     from . import forecast_adjustment  # noqa: F401
     from . import news_reasoning  # noqa: F401
+    from . import audit_log  # noqa: F401
     Base.metadata.create_all(bind=engine)
