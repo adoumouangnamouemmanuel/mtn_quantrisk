@@ -1,7 +1,7 @@
 """Board brief, feedback, base-case log, and upload/retrain endpoints."""
 import os
 
-from fastapi import APIRouter, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 
 from ...schemas import (
     FeedbackInput,
@@ -16,6 +16,7 @@ from ...services.upload_service import (
     apply_pdf_candidates,
     retrain_xgboost,
 )
+from ...core.rbac import require_role, require_permission
 
 router = APIRouter(prefix="/api", tags=["briefs"])
 
@@ -30,7 +31,7 @@ def list_briefs():
     return list_board_briefs()
 
 
-@router.post("/briefs/generate")
+@router.post("/briefs/generate", dependencies=[Depends(require_role("risk_manager", "cro", "admin"))])
 def generate_brief(payload: dict):
     try:
         return generate_board_brief(payload.get("scenarioIds", []))
@@ -75,7 +76,7 @@ def _safe_filename(raw: str | None, extension: str) -> str:
     return name
 
 
-@router.post("/upload/csv")
+@router.post("/upload/csv", dependencies=[Depends(require_role("risk_manager", "cro", "admin"))])
 async def upload_csv(file: UploadFile = File(...)):
     filename = _safe_filename(file.filename, ".csv")
     contents = await file.read()
@@ -85,7 +86,7 @@ async def upload_csv(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail=str(e)) from e
 
 
-@router.post("/upload/pdf")
+@router.post("/upload/pdf", dependencies=[Depends(require_role("risk_manager", "cro", "admin"))])
 async def upload_pdf(file: UploadFile = File(...)):
     filename = _safe_filename(file.filename, ".pdf")
     contents = await file.read()
@@ -95,7 +96,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail=str(e)) from e
 
 
-@router.post("/upload/pdf/apply")
+@router.post("/upload/pdf/apply", dependencies=[Depends(require_role("risk_manager", "cro", "admin"))])
 def apply_pdf(body: ApplyPdfCandidatesInput):
     return apply_pdf_candidates(
         [c.model_dump() for c in body.candidates],
@@ -105,7 +106,7 @@ def apply_pdf(body: ApplyPdfCandidatesInput):
 
 # ── Retrain ───────────────────────────────────────────────────────────────────
 
-@router.post("/retrain")
+@router.post("/retrain", dependencies=[Depends(require_role("cro", "admin"))])
 def retrain():
     try:
         return retrain_xgboost()
