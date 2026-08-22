@@ -4,7 +4,7 @@ Stores the full reasoning breakdown for every scored article so drill-down
 history survives restarts and is queryable.
 """
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import DateTime, Float, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
