@@ -16,22 +16,57 @@ const USE_MOCK_API =
   process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8001';
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function apiFetch<T>(
+  path: string,
+  init?: RequestInit,
+  retries = 2,
+): Promise<T> {
   const token = getAccessToken();
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(init?.headers ?? {}),
-    },
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`API ${path} → ${res.status}: ${body.slice(0, 200)}`);
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`${API_BASE}${path}`, {
+        ...init,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(init?.headers ?? {}),
+        },
+      });
+
+      // Don't retry on 4xx client errors (except 429 rate limit)
+      if (!res.ok && res.status >= 400 && res.status < 500 && res.status !== 429) {
+        const body = await res.text();
+        throw new Error(`API ${path} → ${res.status}: ${body.slice(0, 200)}`);
+      }
+
+      // Retry on 5xx or 429
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`API ${path} → ${res.status}: ${body.slice(0, 200)}`);
+      }
+
+      if (res.status === 204) return undefined as unknown as T;
+      return res.json() as Promise<T>;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      // Don't retry if it's a clear client error
+      if (lastError.message.includes('→ 4') && !lastError.message.includes('→ 429')) {
+        throw lastError;
+      }
+      // Exponential backoff: 500ms, 1500ms, ...
+      if (attempt < retries) {
+        await sleep(500 * Math.pow(3, attempt) + Math.random() * 200);
+      }
+    }
   }
-  if (res.status === 204) return undefined as unknown as T;
-  return res.json() as Promise<T>;
+
+  throw lastError ?? new Error(`API ${path}: all ${retries + 1} attempts failed`);
 }
 
 export async function fetchKpis(period?: '2025FY' | '2026Q1'): Promise<Kpi[]> {
