@@ -60,6 +60,28 @@ export function NewsReasoningPanel({ articleId }: Props) {
         )}
       </div>
 
+      {/* Score summary bar */}
+      <div className="flex items-center gap-4 py-2 px-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+        {data.severity != null && (
+          <div className="flex items-center gap-1.5">
+            <span className="font-mono text-[9px] uppercase text-on-surface-variant">Severity</span>
+            <span className="font-mono text-xs font-bold text-mtn-yellow">{data.severity.toFixed(1)}/10</span>
+          </div>
+        )}
+        {data.mtnRelevance != null && (
+          <div className="flex items-center gap-1.5">
+            <span className="font-mono text-[9px] uppercase text-on-surface-variant">Relevance</span>
+            <span className="font-mono text-xs font-bold text-mtn-yellow">{(data.mtnRelevance * 100).toFixed(0)}%</span>
+          </div>
+        )}
+        {data.confidence != null && (
+          <div className="flex items-center gap-1.5">
+            <span className="font-mono text-[9px] uppercase text-on-surface-variant">Confidence</span>
+            <span className="font-mono text-xs font-bold text-on-surface">{(data.confidence * 100).toFixed(0)}%</span>
+          </div>
+        )}
+      </div>
+
       {/* LLM explanation */}
       {data.llmExplanation && (
         <div className="rounded-lg p-3" style={{ background: 'rgba(130,177,255,0.06)', borderLeft: '3px solid rgba(130,177,255,0.4)' }}>
