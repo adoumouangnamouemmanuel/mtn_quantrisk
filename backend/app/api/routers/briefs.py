@@ -1,4 +1,6 @@
 """Board brief, feedback, base-case log, and upload/retrain endpoints."""
+import os
+
 from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 
 from ...schemas import (
@@ -63,23 +65,31 @@ def base_case_logs(limit: int = Query(default=100, ge=1, le=500)):
 
 # ── Upload ─────────────────────────────────────────────────────────────────────
 
+def _safe_filename(raw: str | None, extension: str) -> str:
+    """Reduce an uploaded filename to its basename and validate the extension."""
+    name = os.path.basename(raw or "").strip()
+    if not name or name in {".", ".."}:
+        raise HTTPException(status_code=400, detail="A valid filename is required")
+    if not name.lower().endswith(extension):
+        raise HTTPException(status_code=400, detail=f"Only {extension} files are accepted")
+    return name
+
+
 @router.post("/upload/csv")
 async def upload_csv(file: UploadFile = File(...)):
-    if not file.filename.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only .csv files are accepted")
+    filename = _safe_filename(file.filename, ".csv")
     contents = await file.read()
     try:
-        return process_csv_upload(contents, file.filename)
+        return process_csv_upload(contents, filename)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
 
 
 @router.post("/upload/pdf")
 async def upload_pdf(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only .pdf files are accepted")
+    filename = _safe_filename(file.filename, ".pdf")
     contents = await file.read()
-    return process_pdf_upload(contents, file.filename)
+    return process_pdf_upload(contents, filename)
 
 
 @router.post("/upload/pdf/apply")
